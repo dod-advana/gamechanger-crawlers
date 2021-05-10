@@ -231,10 +231,10 @@ class MarineCorpSpider(GCSpider):
     start_urls = [
         f"{base_url}{current_page}"
     ]
-    cac_login_required = False
     rotate_user_agent = True
     randomly_delay_request = True
-    doc_types = {}
+
+    cac_required_options = ["placeholder", "FOUO", "for_official_use_only"]
 
     def parse(self, response):
         source_page_url = response.url
@@ -288,6 +288,8 @@ class MarineCorpSpider(GCSpider):
 
                 doc_title = self.ascii_clean(doc_title_raw)
                 doc_name = self.ascii_clean(raw_data['doc_name'])
+                cac_login_required = True if any(
+                    x in doc_title for x in self.cac_required_options) else False
 
                 incomplete_item = {
                     "item": DocItem(
@@ -297,6 +299,7 @@ class MarineCorpSpider(GCSpider):
                         doc_title=doc_title,
                         source_page_url=source_page_url,
                         version_hash_raw_data=version_hash_fields,
+                        cac_login_required=cac_login_required
                     )
                 }
 
