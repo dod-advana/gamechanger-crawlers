@@ -237,6 +237,7 @@ class MarineCorpSpider(GCSpider):
     cac_required_options = ["placeholder", "FOUO", "for_official_use_only"]
 
     def parse(self, response):
+        print('PARSE RESPONSE', response)
         source_page_url = response.url
         rows = response.css('div.alist-more-here div.litem')
 
