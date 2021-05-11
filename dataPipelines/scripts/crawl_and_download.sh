@@ -9,14 +9,13 @@ set -o nounset
 # path-to-local-job-log-file: local path where the job log, the bash output of the script, will be placed
 # base-container-name: base name for the Docker containers that will be run
 # full-path-to-crawler-output-dir: local directory where the PDFs and metadata will be placed
-# full-path-to-ingester-output-dir: local directory where the output of the parser and db_backup
 
 BASE_JOB_IMAGE="10.194.9.80:5000/gamechanger/core/dev-env:latest"
 HOST_REPO_DIR="$HOME/gamechanger-crawlers"
 CONTAINER_PYTHON_CMD="/opt/gc-venv/bin/python"
 
 DEPLOYMENT_ENV="dev"
-TEST_RUN="yes"
+TEST_RUN="no"
 
 function crawl_and_download() {
 

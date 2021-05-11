@@ -4,6 +4,7 @@ import re
 import typing
 from urllib.parse import urljoin, urlparse
 from os.path import splitext
+from time import perf_counter
 
 from dataPipelines.gc_scrapy.gc_scrapy.runspider_settings import general_settings
 
@@ -22,10 +23,17 @@ class GCSpider(scrapy.Spider):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if self.time_lifespan:
+            self.start_time = perf_counter()
+
+    def __del__(self):
+        alive = perf_counter() - self.start_time
+        print(f"{self.name} lived for {alive}")
 
     custom_settings: dict = general_settings
     rotate_user_agent: bool = False
     randomly_delay_request: typing.Union[bool, range, typing.List[int]] = False
+    time_lifespan: bool = False
 
     @staticmethod
     def get_href_file_extension(url: str) -> str:

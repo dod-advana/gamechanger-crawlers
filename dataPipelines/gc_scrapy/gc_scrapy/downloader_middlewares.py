@@ -172,16 +172,16 @@ class BanEvasionMiddleware:
         'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)'
     )
 
-    delays = range(0, 5)
+    delays = range(0, 3)
 
     def process_request(self, request, spider):
-        request.headers["referrer"]: 'https://google.com'
-        dr = spider.randomly_delay_request
 
-        if(spider.rotate_user_agent):
+        if spider.rotate_user_agent:
             agent = choice(self.user_agent_list)
             request.headers["User-Agent"] = agent
 
-        if dr:
+        dr = spider.randomly_delay_request
+        if dr and not request.meta.get("skip_delay"):
             delay_opts = dr if isinstance(dr, (range, list)) else self.delays
-            sleep(choice(delay_opts))
+            delay = choice(delay_opts)
+            sleep(delay)

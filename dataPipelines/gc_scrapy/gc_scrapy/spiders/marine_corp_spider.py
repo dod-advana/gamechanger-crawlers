@@ -237,7 +237,6 @@ class MarineCorpSpider(GCSpider):
     cac_required_options = ["placeholder", "FOUO", "for_official_use_only"]
 
     def parse(self, response):
-        print('PARSE RESPONSE', response)
         source_page_url = response.url
         rows = response.css('div.alist-more-here div.litem')
 
@@ -312,11 +311,11 @@ class MarineCorpSpider(GCSpider):
                 print('ERROR', type(e), e)
                 continue
 
-            # increment page and send next request
-            self.current_page += 1
-            next_url = f"{self.base_url}{self.current_page}"
+        # increment page and send next request
+        self.current_page += 1
+        next_url = f"{self.base_url}{self.current_page}"
 
-            yield scrapy.Request(next_url, callback=self.parse)
+        yield scrapy.Request(next_url, callback=self.parse)
 
     def parse_download_page(self, response):
 
