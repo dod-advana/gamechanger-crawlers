@@ -3,13 +3,14 @@ from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 import time
 
+
 class ArmySpider(GCSpider):
     """
         Parser for Army Publications
     """
 
     name = "army_pubs"
-    allowed_domains = ['armypubs.army.mil/']
+    allowed_domains = ['armypubs.army.mil']
     start_urls = [
         'https://armypubs.army.mil/'
     ]
@@ -20,35 +21,42 @@ class ArmySpider(GCSpider):
     pub_url = base_url + '/ProductMaps/PubForm/'
 
     def parse(self, response):
-        #print(response)
+        # print(response)
         # these links are not in the proper format to be scraped
-        do_not_process = ["/ProductMaps/PubForm/PB.aspx", "/Publications/Administrative/POG/AllPogs.aspx"]
+        do_not_process = ["/ProductMaps/PubForm/PB.aspx",
+                          "/Publications/Administrative/POG/AllPogs.aspx"]
 
         publications_list = response.css('li.nav-item')[2]
 
-        links = [link for link in publications_list.css('a.dropdown-item')
-                 if link.css('::attr(href)').extract()[0] not in do_not_process and link.css('::attr(href)').extract()[0] != "#"]
+        # links = [link for link in publications_list.css('a.dropdown-item')
+        #          if link.css('::attr(href)').extract()[0] not in do_not_process and link.css('::attr(href)').extract()[0] != "#"]
+        all_hrefs = response.css(
+            'li.nav-item')[2].css('a.dropdown-item::attr(href)').getall()
 
-        print([link.css('::attr(href)').extract()[0] for link in links])
-        yield from response.follow_all(publications_list.css('a.dropdown-item'), self.parse_source_page, errback=lambda x: print(x))
+        links = [link for link in all_hrefs if link not in do_not_process]
+
+        yield from response.follow_all(links, self.parse_source_page)
 
     def parse_source_page(self, response):
-        print("in parser_source_page")
-        time.sleep(3)
+        print('parse_source_page', response.url)
         table_links = response.css('table.gridview a::attr(href)').extract()
-        for link in table_links:
-            yield scrapy.Request(self.pub_url + link, callback=self.parse_detail_page)
-            #for item in self.parse_detail_page(self.pub_url+link):
-            #    yield item
-        #yield from response.follow_all([self.pub_url+link for link in table_links], self.parse_detail_page)
+        # for link in table_links:
+        #     yield scrapy.Request(self.pub_url + link, callback=self.parse_detail_page)
+        # for item in self.parse_detail_page(self.pub_url+link):
+        #    yield item
+        # yield from response.follow_all([self.pub_url+link for link in table_links], self.parse_detail_page)
+        # print([self.pub_url+link for link in table_links])
+        yield from response.follow_all([self.pub_url+link for link in table_links], self.parse_detail_page)
 
     def parse_detail_page(self, response):
+        print('parse_detail_page', response.url)
         rows = response.css('tr')
         doc_name_raw = rows.css('span#MainContent_PubForm_Number::text').get()
         doc_title = rows.css('span#MainContent_PubForm_Title::text').get()
         doc_num_raw = doc_name_raw.split()[-1]
         doc_type_raw = doc_name_raw.split()[0]
-        publication_date = rows.css("span#MainContent_PubForm_Date::text").get()
+        publication_date = rows.css(
+            "span#MainContent_PubForm_Date::text").get()
         dist_stm = rows.css("span#MainContent_PubForm_Sec_Class::text").get()
         if dist_stm.startswith("A") or dist_stm.startswith("N"):
             # the distribution statement is distribution A or says Not Applicable so anyone can access the information
@@ -71,12 +79,12 @@ class ArmySpider(GCSpider):
             downloadable_items.append(di)
         else:
             for item in linked_items:
-                    di = {
-                            "doc_type": item.css("::text").get().strip().lower(),
-                            "web_url": item.css("::attr(href)").get(),
-                            "compression_type": None
-                        }
-                    downloadable_items.append(di)
+                di = {
+                    "doc_type": item.css("::text").get().strip().lower(),
+                    "web_url": item.css("::attr(href)").get(),
+                    "compression_type": None
+                }
+                downloadable_items.append(di)
         version_hash_fields = {
             "pub_date": publication_date,
             "pub_pin": rows.css("span#MainContent_PubForm_PIN::text").get(),
