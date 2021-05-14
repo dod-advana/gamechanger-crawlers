@@ -27,8 +27,9 @@ class GCSpider(scrapy.Spider):
             self.start_time = perf_counter()
 
     def __del__(self):
-        alive = perf_counter() - self.start_time
-        print(f"{self.name} lived for {alive}")
+        if self.time_lifespan:
+            alive = perf_counter() - self.start_time
+            print(f"{self.name} lived for {alive}")
 
     custom_settings: dict = general_settings
     rotate_user_agent: bool = False
