@@ -32,7 +32,7 @@ class GCSpider(scrapy.Spider):
             print(f"{self.name} lived for {alive}")
 
     custom_settings: dict = general_settings
-    rotate_user_agent: bool = False
+    rotate_user_agent: bool = True
     randomly_delay_request: typing.Union[bool, range, typing.List[int]] = False
     time_lifespan: bool = False
 
