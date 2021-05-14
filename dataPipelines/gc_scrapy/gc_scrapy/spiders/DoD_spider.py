@@ -1,19 +1,21 @@
 import scrapy
 import re
 import bs4
-from dataPipelines.gc_scrapy.gc_scrapy.items import DocumentItem
-from dataPipelines.gc_scrapy.gc_scrapy.data_model import Document, DownloadableItem
+from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
+from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
 from dataPipelines.gc_scrapy.gc_scrapy.utils import abs_url
 
 
-class DoDSpider(scrapy.Spider):
-    name = 'DoD'
+class DoDSpider(GCSpider):
+    name = 'dod_issuances'
 
     start_urls = ['https://www.esd.whs.mil/DD/DoD-Issuances/DTM/']
+    allowed_domains = ['www.esd.whs.mil']
 
     def parse(self, response):
         links = response.css('li.col-sm-6')[0].css('a')
+        print(links)
         yield from response.follow_all(links[4:-1], self.parse_documents)
 
     def parse_documents(self, response):
@@ -74,10 +76,11 @@ class DoDSpider(scrapy.Spider):
                 if idx == 0:
                     pdf_url = abs_url(
                         base_url, cell.a['href']).replace(' ', '%20')
-                    pdf_di = DownloadableItem(
-                        doc_type='pdf',
-                        web_url=pdf_url
-                    )
+                    pdf_di = {
+                        "doc_type": 'pdf',
+                        "web_url": pdf_url,
+                        "compression_type": None
+                    }
 
                     # remove parenthesis from document name
                     data = re.sub(r'\(.*\)', '', data).strip()
@@ -121,29 +124,15 @@ class DoDSpider(scrapy.Spider):
                 "pub_date": publication_date.strip(),
                 "chapter_date": chapter_date.strip()
             }
-            doc = Document(
+
+            yield DocItem(
                 doc_name=doc_name.strip(),
                 doc_title=re.sub('\\"', '', doc_title),
                 doc_num=doc_num.strip(),
                 doc_type=doc_type.strip(),
                 publication_date=publication_date,
                 cac_login_required=cac_login_required,
-                crawler_used="dod_issuances",
-                source_page_url=page_url.strip(),
-                version_hash_raw_data=version_hash_fields,
-                downloadable_items=[pdf_di]
+                downloadable_items=[pdf_di],
+                version_hash_raw_data=version_hash_fields
             )
-            # doc = DocumentItem()
-            # doc['doc_name']=doc_name.strip()
-            # doc['doc_title']=re.sub('\\"', '', doc_title)
-            # doc['doc_num']=doc_num.strip()
-            # doc['doc_type']=doc_type.strip()
-            # doc['publication_date']=publication_date
-            # doc['cac_login_required']=cac_login_required
-            # doc['crawler_used']="dod_issuances"
-            # doc['source_page_url']=page_url.strip()
-            # doc['version_hash_raw_data']=version_hash_fields
-            # doc['downloadable_items']=[pdf_di]
-            item = doc.to_item()
-            # print(doc['source_page_url'])
-            yield item
+
