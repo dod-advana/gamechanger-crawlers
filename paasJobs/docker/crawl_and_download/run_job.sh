@@ -50,16 +50,6 @@ function run_crawler() {
 
   set +o pipefail
 
-  new
-- [x] coast guard
-- [x] chief national guard bureau
-
-old
-- [x] bupers
-- [x] marine corp - doesnt 
-- [x] air force
-- [x] navy reserve
-
   echo -e "\nRUNNING MARINE PUBLICATION CRAWLER - SCRAPY\n"
   ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/marine_corp_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
    || echo "^^^ CRAWLER ERROR ^^^"
@@ -82,6 +72,10 @@ old
 
   echo -e "\nRUNNING NAVY BUPERS CRAWLER - SCRAPY\n"
   ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/bupers_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
+   || echo "^^^ CRAWLER ERROR ^^^"
+
+  echo -e "\nRUNNING MILPERSMAN CRAWLER - SCRAPY\n"
+  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/milpersman_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
    || echo "^^^ CRAWLER ERROR ^^^"
 
   echo -e "\nRUNNING ARMY CRAWLER\n"
@@ -116,10 +110,6 @@ old
   echo -e "\nRUNNING JCS PUBLICATION CRAWLER\n"
   ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.jcs_pubs run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
     || echo "^^^ CRAWLER ERROR ^^^"
-
- echo -e "\nRUNNING MILPERSMAN CRAWLER\n"
- ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.milpersman_crawler run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
 
   echo -e "\nRUNNING NATO STANAG CRAWLER\n"
   ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.nato_stanag run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
