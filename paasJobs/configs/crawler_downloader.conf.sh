@@ -18,7 +18,7 @@ readonly REPO_DIR="$( cd "$SCRIPT_PARENT_DIR/../../"  >/dev/null 2>&1 && pwd )"
 
 ## BASE JOB_CONF
 
-JOB_NAME="${JOB_SCRIPT:-Crawler-Downloader Job}"
+JOB_NAME="${JOB_NAME:-Crawler-Downloader Job}"
 JOB_SCRIPT="${REPO_DIR}/paasJobs/scripts/run_prod_gc_crawler_downloader.sh"
 SEND_NOTIFICATIONS="${SEND_NOTIFICATIONS:-yes}"
 UPLOAD_LOGS="${UPLOAD_LOGS:-yes}"
