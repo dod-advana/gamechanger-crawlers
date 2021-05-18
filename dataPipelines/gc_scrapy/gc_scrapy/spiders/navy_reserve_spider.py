@@ -29,10 +29,13 @@ class NavyReserveSpider(GCSeleniumSpider):
 
     def parse(self, response):
         driver: Chrome = response.meta["driver"]
+
+        anchors = driver.find_elements_by_css_selector(
+            "#header > div.navbar-collapse.nav-main-collapse.collapse.otnav.nopad > div > nav > ul > li:nth-child(4) > ul > li.dm.dropdown > ul > li > a"
+        )
+
         pages = [
-            'https://www.navyreserve.navy.mil/Resources/Official-Guidance/Instructions/',
-            'https://www.navyreserve.navy.mil/Resources/Official-Guidance/RESPERSMAN/',
-            'https://www.navyreserve.navy.mil/Resources/Official-Guidance/Notices/'
+            elem.get_attribute('href') for elem in anchors if 'Message' not in elem.get_attribute('href')
         ]
 
         for page_url in pages:
@@ -147,6 +150,6 @@ class NavyReserveSpider(GCSeleniumSpider):
 
                 if has_next_page:
                     el.click()
-                    # wait until paging table is stale from page load
-                    WebDriverWait(driver, 5).until(
+                    # wait until paging table is stale from page load, can be slow
+                    WebDriverWait(driver, 100).until(
                         EC.staleness_of(paging_table))
