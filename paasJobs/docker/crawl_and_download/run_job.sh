@@ -22,7 +22,7 @@ function setup_local_vars_and_dirs() {
 
   LOCAL_CRAWLER_OUTPUT_FILE_PATH="$LOCAL_DOWNLOAD_DIRECTORY_PATH/crawler_output.json"
   LOCAL_JOB_LOG_PATH="$LOCAL_DOWNLOAD_DIRECTORY_PATH/job.log"
-  LOCAL_PREVIOUS_MANIFEST_LOCATION="$SCRIPT_PARENT_DIR/previous-manifest.json"
+  LOCAL_PREVIOUS_MANIFEST_LOCATION="${LOCAL_PREVIOUS_MANIFEST_LOCATION:-$SCRIPT_PARENT_DIR/previous-manifest.json}"
   LOCAL_NEW_MANIFEST_PATH="$LOCAL_DOWNLOAD_DIRECTORY_PATH/manifest.json"
 
   if [[ ! -d "$LOCAL_DOWNLOAD_DIRECTORY_PATH" ]]; then
@@ -163,6 +163,15 @@ function run_downloader() {
   echo -e "\nDOWNLOADED FILES LOCATED AT: $LOCAL_DOWNLOAD_DIRECTORY_PATH \n"
 }
 
+function create_cumulative_manifest() {
+  local cumulative_manifest="$LOCAL_DOWNLOAD_DIRECTORY_PATH/cumulative-manifest.json"
+  if [[ -f "$LOCAL_PREVIOUS_MANIFEST_LOCATION" ]]; then
+    cat "$LOCAL_PREVIOUS_MANIFEST_LOCATION" > "$cumulative_manifest"
+    echo >> "$cumulative_manifest"
+  fi
+  cat "$LOCAL_NEW_MANIFEST_PATH" >> "$cumulative_manifest"
+}
+
 function register_log_in_manifest() {
   "$PYTHON_CMD" -m dataPipelines.gc_downloader add-to-manifest --file "$LOCAL_JOB_LOG_PATH" --manifest "$LOCAL_NEW_MANIFEST_PATH"
 }
@@ -204,3 +213,5 @@ echo -e "\n $(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.
 # register additional files in manifest
 register_log_in_manifest
 register_crawl_log_in_manifest
+# create combined manifest for future runs
+create_cumulative_manifest
