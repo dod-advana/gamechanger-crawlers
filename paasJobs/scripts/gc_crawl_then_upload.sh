@@ -27,6 +27,7 @@ esac
 
 # Set job vars
 JOB_TS="$(date +%FT%T)"
+JOB_TS_SIMPLE="$(date --date="$JOB_TS" +%Y%m%d_%H%M%S)"
 case "${1:?ERROR: Missing job name arg}" in
 gc_crawl_and_download)
   JOB_NAME="gc_crawl_and_download"
@@ -52,7 +53,7 @@ if [ ! -d "$HOST_JOB_TMP_DIR" ]; then
 fi
 
 # where files are downloaded before virus scan
-HOST_JOB_DL_DIR="$HOST_JOB_TMP_DIR/$JOB_NAME/$(date +%Y%m%d_%H%M%S)"
+HOST_JOB_DL_DIR="$HOST_JOB_TMP_DIR/$JOB_NAME/$JOB_TS_SIMPLE"
 # where files are downloaded from container's perspective
 CRAWLER_CONTAINER_DL_DIR="/var/tmp/output"
 # where files to be scanned are mounted inside scanner container
@@ -100,7 +101,7 @@ function grab_manifest() {
 function update_manifest() {
   local inner_job_dl_dir="${HOST_JOB_DL_DIR}/$(basename "$CRAWLER_CONTAINER_DL_DIR")"
   local local_new_cumulative_manifest="${inner_job_dl_dir}/cumulative-manifest.json"
-  local s3_backup_cumulative_manifest="${S3FULLPATH_MANIFEST%.json}.${JOB_TS}.json"
+  local s3_backup_cumulative_manifest="${S3FULLPATH_MANIFEST%.json}.${JOB_TS_SIMPLE}.json"
 
   >&2 echo -e "\n[INFO] UPDATING LATEST MANIFEST\n"
   # backup old manifest
