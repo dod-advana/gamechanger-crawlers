@@ -13,7 +13,7 @@ source "${SCRIPT_PARENT_DIR}/constants.conf"
 
 # change it on deploy time if it doesn't work
 export DEPLOYMENT_ENV="${DEPLOYMENT_ENV:-prod}"
-export HOST_JOB_TMP_DIR="/gamechanger/jobs/"
+export HOST_JOB_TMP_DIR="${HOST_JOB_TMP_DIR:-/gamechanger/jobs}"
 export JOB_LOG_FILE="${HOST_JOB_TMP_DIR}/logs/gc-crawler-downloader.$(date --iso-8601=seconds).log"
 
 # change to "yes" in order to only crawl/download couple pubs for test purposes
