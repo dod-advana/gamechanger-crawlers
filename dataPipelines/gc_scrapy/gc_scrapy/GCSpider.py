@@ -1,9 +1,19 @@
 # -*- coding: utf-8 -*-
 import scrapy
+import re
+import typing
 from urllib.parse import urljoin, urlparse
 from os.path import splitext
+from time import perf_counter
 
 from dataPipelines.gc_scrapy.gc_scrapy.runspider_settings import general_settings
+
+url_re = re.compile("((http|https)://)(www.)?" +
+                    "[a-zA-Z0-9@:%._\\+~#?&//=]" +
+                    "{2,256}\\.[a-z]" +
+                    "{2,6}\\b([-a-zA-Z0-9@:%" +
+                    "._\\+~#?&//=]*)"
+                    )
 
 
 class GCSpider(scrapy.Spider):
@@ -13,8 +23,18 @@ class GCSpider(scrapy.Spider):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if self.time_lifespan:
+            self.start_time = perf_counter()
 
-    custom_settings = general_settings
+    def __del__(self):
+        if self.time_lifespan:
+            alive = perf_counter() - self.start_time
+            print(f"{self.name} lived for {alive}")
+
+    custom_settings: dict = general_settings
+    rotate_user_agent: bool = True
+    randomly_delay_request: typing.Union[bool, range, typing.List[int]] = False
+    time_lifespan: bool = False
 
     @staticmethod
     def get_href_file_extension(url: str) -> str:
@@ -36,7 +56,8 @@ class GCSpider(scrapy.Spider):
             encodes to ascii, retaining non-breaking spaces and strips spaces from ends
             applys text.replace('\u00a0', ' ').encode('ascii', 'ignore').decode('ascii').strip()
         """
-        return text.replace('\u00a0', ' ').encode('ascii', 'ignore').decode('ascii').strip()
+
+        return text.replace('\u00a0', ' ').replace('\u2019', "'").encode('ascii', 'ignore').decode('ascii').strip()
 
     @staticmethod
     def ensure_full_href_url(href_raw: str, url_base: str) -> str:
@@ -49,3 +70,17 @@ class GCSpider(scrapy.Spider):
             web_url = href_raw
 
         return web_url
+
+    @staticmethod
+    def url_encode_spaces(href_raw: str) -> str:
+        """
+            encodes spaces as %20
+        """
+        return href_raw.replace(' ', '%20')
+
+    @staticmethod
+    def is_valid_url(url: str) -> bool:
+        """
+            checks if url is valid
+        """
+        return url_re.match(url)

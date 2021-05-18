@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import scrapy
+import re
 from urllib.parse import urljoin
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
@@ -22,6 +23,28 @@ class BupersSpider(GCSpider):
     @staticmethod
     def filter_empty(text_list):
         return list(filter(lambda a: a, text_list))
+
+    @staticmethod
+    def match_old_doc_name(text):
+        # match all these cases where the name came out different
+        if text == "BUPERSINST BUPERSNOTE 1401":
+            return "BUPERSINST BUPERSNOTE1401"
+
+        if text == "BUPERSINST 1510-100":
+            return "BUPERSINST 1510100"
+
+        if text == "BUPERSINST 5800.1A CH-1":
+            return "BUPERSINST 5800.1A"
+
+        if text == "BUPERSINST 12600.4 CH-1":
+            return "BUPERSINST 12600.4CH1"
+
+        if not "1640.20B" in text:
+            # turn CH-1 into CH1 to match old doc_names
+            doc_name = re.sub(r'CH-(\d)', r'CH\1', text)
+            return doc_name
+        else:
+            return text
 
     def parse(self, response):
         # first 3 rows are what should be header content but are just regular rows, so nth-child used
@@ -89,8 +112,11 @@ class BupersSpider(GCSpider):
                         "document_number": doc_num
                     }
 
+                    doc_name = self.match_old_doc_name(
+                        f"{self.doc_type} {doc_num}")
+
                     yield DocItem(
-                        doc_name=f"{self.doc_type} {doc_num}",
+                        doc_name=doc_name,
                         doc_title=doc_title,
                         doc_num=doc_num,
                         publication_date=dates_cleaned[i],
@@ -122,9 +148,11 @@ class BupersSpider(GCSpider):
                     "document_title": doc_title,
                     "document_number": doc_num
                 }
+                doc_name = self.match_old_doc_name(
+                    f"{self.doc_type} {doc_num}")
 
                 yield DocItem(
-                    doc_name=f"{self.doc_type} {doc_num}",
+                    doc_name=doc_name,
                     doc_title=doc_title,
                     doc_num=doc_num,
                     publication_date=dates_cleaned[0],
@@ -156,8 +184,11 @@ class BupersSpider(GCSpider):
                     "document_number": doc_num
                 }
 
+                doc_name = self.match_old_doc_name(
+                    f"{self.doc_type} {doc_num}")
+
                 yield DocItem(
-                    doc_name=f"{self.doc_type} {doc_num}",
+                    doc_name=doc_name,
                     doc_title=doc_title,
                     doc_num=doc_num,
                     publication_date=dates_cleaned[0],

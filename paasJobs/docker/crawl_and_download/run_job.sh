@@ -50,6 +50,10 @@ function run_crawler() {
 
   set +o pipefail
 
+  echo -e "\nRUNNING MARINE PUBLICATION CRAWLER - SCRAPY\n"
+  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/marine_corp_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
+   || echo "^^^ CRAWLER ERROR ^^^"
+
   echo -e "\nRUNNING Chief National Guard Bureau CRAWLER - SCRAPY\n"
   ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/chief_national_guard_bureau_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
     || echo "^^^ CRAWLER ERROR ^^^"
@@ -58,9 +62,21 @@ function run_crawler() {
   ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/coast_guard_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
     || echo "^^^ CRAWLER ERROR ^^^"
 
-  echo -e "\nRUNNING AIR FORCE LIBRARY CRAWLER\n"
-  ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.air_force_pubs run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
+  echo -e "\nRUNNING AIR FORCE LIBRARY CRAWLER - SCRAPY\n"
+  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/air_force_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
     || echo "^^^ CRAWLER ERROR ^^^"
+
+  echo -e "\nRUNNING NAVY RESERVES CRAWLER - SCRAPY\n"
+  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/navy_reserve_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
+    || echo "^^^ CRAWLER ERROR ^^^"
+
+  echo -e "\nRUNNING NAVY BUPERS CRAWLER - SCRAPY\n"
+  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/bupers_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
+   || echo "^^^ CRAWLER ERROR ^^^"
+
+  echo -e "\nRUNNING MILPERSMAN CRAWLER - SCRAPY\n"
+  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/milpersman_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
+   || echo "^^^ CRAWLER ERROR ^^^"
 
   echo -e "\nRUNNING ARMY CRAWLER\n"
   ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.army_pubs run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
@@ -70,9 +86,6 @@ function run_crawler() {
   ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.army_reserves run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
     || echo "^^^ CRAWLER ERROR ^^^"
 
-#  echo -e "\nRUNNING NAVY BUPERS CRAWLER\n"
-#  ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.bupers_pubs run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
-#    || echo "^^^ CRAWLER ERROR ^^^"
 
   echo -e "\nRUNNING DHA CRAWLER\n"
   ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.dha_pubs run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
@@ -98,24 +111,12 @@ function run_crawler() {
   ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.jcs_pubs run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
     || echo "^^^ CRAWLER ERROR ^^^"
 
-#  echo -e "\nRUNNING MARINE PUBLICATION CRAWLER\n"
-#  ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.marine_pubs run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
-#    || echo "^^^ CRAWLER ERROR ^^^"
-
-#  echo -e "\nRUNNING MILPERSMAN CRAWLER\n"
-#  ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.milpersman_crawler run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
-#    || echo "^^^ CRAWLER ERROR ^^^"
-
   echo -e "\nRUNNING NATO STANAG CRAWLER\n"
   ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.nato_stanag run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
     || echo "^^^ CRAWLER ERROR ^^^"
 
   echo -e "\nRUNNING NAVY MED PUBS CRAWLER\n"
   ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.navy_med_pubs run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
-    || echo "^^^ CRAWLER ERROR ^^^"
-
-  echo -e "\nRUNNING NAVY RESERVES CRAWLER\n"
-  ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.navy_reserves run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
     || echo "^^^ CRAWLER ERROR ^^^"
 
   echo -e "\nRUNNING OPM CRAWLER\n"
