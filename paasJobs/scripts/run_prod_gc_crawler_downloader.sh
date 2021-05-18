@@ -14,7 +14,7 @@ source "${SCRIPT_PARENT_DIR}/constants.conf"
 # change it on deploy time if it doesn't work
 export DEPLOYMENT_ENV="${DEPLOYMENT_ENV:-prod}"
 export HOST_JOB_TMP_DIR="/gamechanger/jobs/"
-export JOB_LOG_FILE="/gamechanger/jobs/logs/gc-crawler-downloader.$(date --iso-8601=seconds).log"
+export JOB_LOG_FILE="${HOST_JOB_TMP_DIR}/logs/gc-crawler-downloader.$(date --iso-8601=seconds).log"
 
 # change to "yes" in order to only crawl/download couple pubs for test purposes
 export TEST_RUN="${TEST_RUN:-no}"
@@ -27,16 +27,8 @@ About to run the GC CRAWLER/DOWNLOADER JOB ...
 
 EOF
 
-echo "SENDING NOTIFICATIONS TO: ${NOTIFICATION_EMAIL}"
-export NOTIFICATION_EMAIL
-
-source "${SCRIPT_PARENT_DIR}/../../dataPipelines/scripts/email_notifications_utils.sh"
-
-# email start
-send_email_notification "CRAWLER DOWNLOADER" "STARTING"
-
+mkdir -p "$HOST_JOB_TMP_DIR"
+mkdir -p "$(dirname "$JOB_LOG_FILE")"
 touch "$JOB_LOG_FILE"
-"$SCRIPT_PARENT_DIR/gc_crawl_then_upload.sh" gc_crawl_and_download 2>&1 | tee "$JOB_LOG_FILE"
 
-# email end
-send_email_notification "CRAWLER DOWNLOADER" "FINISHED"
+"$SCRIPT_PARENT_DIR/gc_crawl_then_upload.sh" gc_crawl_and_download 2>&1 | tee "$JOB_LOG_FILE"
