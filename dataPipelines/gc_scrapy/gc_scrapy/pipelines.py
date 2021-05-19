@@ -60,6 +60,9 @@ class AdditionalFieldsPipeline:
         if item.get('doc_type') is None:
             item['doc_type'] = spider.doc_type
 
+        if item.get('doc_num') is None:
+            item['doc_num'] = ""
+
         return item
 
 
