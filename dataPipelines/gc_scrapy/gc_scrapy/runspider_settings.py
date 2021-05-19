@@ -27,6 +27,7 @@ selenium_settings = {
     ],
     'DOWNLOADER_MIDDLEWARES': {
         **general_settings["DOWNLOADER_MIDDLEWARES"],
-        'dataPipelines.gc_scrapy.gc_scrapy.downloader_middlewares.SeleniumMiddleware': 100,
+        #                                                                              make sure the values are not clashing
+        'dataPipelines.gc_scrapy.gc_scrapy.downloader_middlewares.SeleniumMiddleware': max(general_settings["DOWNLOADER_MIDDLEWARES"].values()) + 1
     }
 }

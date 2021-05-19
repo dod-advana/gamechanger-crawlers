@@ -15,6 +15,12 @@ url_re = re.compile("((http|https)://)(www.)?" +
                     "._\\+~#?&//=]*)"
                     )
 
+mailto_re = re.compile(r'mailto\:', re.IGNORECASE)
+
+# placeholder so we can capture that there should be a downloadable item there but it doesnt have a file extension
+# if the link is updated, the hash will change and it will be downloadable later
+UNKNOWN_FILE_EXTENSION_PLACEHOLDER = "UNKNOWN"
+
 
 class GCSpider(scrapy.Spider):
     """
@@ -31,10 +37,13 @@ class GCSpider(scrapy.Spider):
             alive = perf_counter() - self.start_time
             print(f"{self.name} lived for {alive}")
 
+    # this class init/del timer
+    time_lifespan: bool = False
+    # runspider settings
     custom_settings: dict = general_settings
+    # downloader_middlewares #BanEvasionMiddleware
     rotate_user_agent: bool = True
     randomly_delay_request: typing.Union[bool, range, typing.List[int]] = False
-    time_lifespan: bool = False
 
     @staticmethod
     def get_href_file_extension(url: str) -> str:
@@ -46,9 +55,24 @@ class GCSpider(scrapy.Spider):
         ext: str = splitext(path)[1].replace('.', '').lower()
 
         if not ext:
-            return 'UNKNOWN'
+            return UNKNOWN_FILE_EXTENSION_PLACEHOLDER
 
-        return ext
+        return ext.strip()
+
+    @staticmethod
+    def get_href_file_extension_does_exist(url: str) -> typing.Tuple[str, bool]:
+        """
+            useful if links are a mix of other pages that need parsing and links to downloadable content
+            returns (file extension, True) if exists in passed url path, else ("UNKNOWN", False)
+            UNKNOWN is used so that if the website fixes their link it will trigger an update from the doc type changing
+        """
+        path = urlparse(url).path
+        ext: str = splitext(path)[1].replace('.', '').lower()
+
+        if not ext:
+            return (UNKNOWN_FILE_EXTENSION_PLACEHOLDER, False)
+
+        return (ext.strip(), True)
 
     @staticmethod
     def ascii_clean(text: str) -> str:
@@ -69,7 +93,7 @@ class GCSpider(scrapy.Spider):
         else:
             web_url = href_raw
 
-        return web_url
+        return web_url.strip()
 
     @staticmethod
     def url_encode_spaces(href_raw: str) -> str:
@@ -84,3 +108,10 @@ class GCSpider(scrapy.Spider):
             checks if url is valid
         """
         return url_re.match(url)
+
+    @staticmethod
+    def filter_mailto_hrefs(href_list: typing.List[str]) -> typing.List[str]:
+        """
+            Takes list of href strings and filters out those that are mailto:
+        """
+        return [href for href in href_list if not mailto_re.search(href)]
