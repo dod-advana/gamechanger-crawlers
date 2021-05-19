@@ -7,7 +7,10 @@ general_settings = {
     'FEED_EXPORTERS': {
         'json': 'dataPipelines.gc_scrapy.gc_scrapy.exporters.JsonLinesAsJsonItemExporter',
     },
-    'LOG_LEVEL': 'WARN'
+    'LOG_LEVEL': 'WARN',
+    'DOWNLOADER_MIDDLEWARES': {
+        'dataPipelines.gc_scrapy.gc_scrapy.downloader_middlewares.BanEvasionMiddleware': 1,
+    }
 }
 
 selenium_settings = {
@@ -23,6 +26,8 @@ selenium_settings = {
         "--enable-javascript"
     ],
     'DOWNLOADER_MIDDLEWARES': {
-        'dataPipelines.gc_scrapy.gc_scrapy.downloader_middlewares.SeleniumMiddleware': 1,
+        **general_settings["DOWNLOADER_MIDDLEWARES"],
+        #                                                                              make sure the values are not clashing
+        'dataPipelines.gc_scrapy.gc_scrapy.downloader_middlewares.SeleniumMiddleware': max(general_settings["DOWNLOADER_MIDDLEWARES"].values()) + 1
     }
 }
