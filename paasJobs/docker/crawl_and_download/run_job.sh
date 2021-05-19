@@ -22,7 +22,7 @@ function setup_local_vars_and_dirs() {
 
   LOCAL_CRAWLER_OUTPUT_FILE_PATH="$LOCAL_DOWNLOAD_DIRECTORY_PATH/crawler_output.json"
   LOCAL_JOB_LOG_PATH="$LOCAL_DOWNLOAD_DIRECTORY_PATH/job.log"
-  LOCAL_PREVIOUS_MANIFEST_LOCATION="$SCRIPT_PARENT_DIR/previous-manifest.json"
+  LOCAL_PREVIOUS_MANIFEST_LOCATION="${LOCAL_PREVIOUS_MANIFEST_LOCATION:-$SCRIPT_PARENT_DIR/previous-manifest.json}"
   LOCAL_NEW_MANIFEST_PATH="$LOCAL_DOWNLOAD_DIRECTORY_PATH/manifest.json"
 
   if [[ ! -d "$LOCAL_DOWNLOAD_DIRECTORY_PATH" ]]; then
@@ -50,6 +50,10 @@ function run_crawler() {
 
   set +o pipefail
 
+  echo -e "\nRUNNING MARINE PUBLICATION CRAWLER - SCRAPY\n"
+  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/marine_corp_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
+   || echo "^^^ CRAWLER ERROR ^^^"
+
   echo -e "\nRUNNING Chief National Guard Bureau CRAWLER - SCRAPY\n"
   ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/chief_national_guard_bureau_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
     || echo "^^^ CRAWLER ERROR ^^^"
@@ -58,9 +62,25 @@ function run_crawler() {
   ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/coast_guard_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
     || echo "^^^ CRAWLER ERROR ^^^"
 
-  echo -e "\nRUNNING AIR FORCE LIBRARY CRAWLER\n"
-  ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.air_force_pubs run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
+  echo -e "\nRUNNING AIR FORCE LIBRARY CRAWLER - SCRAPY\n"
+  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/air_force_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
     || echo "^^^ CRAWLER ERROR ^^^"
+
+  echo -e "\nRUNNING NAVY RESERVES CRAWLER - SCRAPY\n"
+  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/navy_reserve_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
+    || echo "^^^ CRAWLER ERROR ^^^"
+
+  echo -e "\nRUNNING NAVY BUPERS CRAWLER - SCRAPY\n"
+  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/bupers_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
+   || echo "^^^ CRAWLER ERROR ^^^"
+
+  echo -e "\nRUNNING MILPERSMAN CRAWLER - SCRAPY\n"
+  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/milpersman_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
+   || echo "^^^ CRAWLER ERROR ^^^"
+
+  echo -e "\nRUNNING DoD Coronavirus CRAWLER - SCRAPY\n"
+  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/dod_coronavirus_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
+   || echo "^^^ CRAWLER ERROR ^^^"
 
   echo -e "\nRUNNING ARMY CRAWLER\n"
   ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.army_pubs run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
@@ -70,9 +90,6 @@ function run_crawler() {
   ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.army_reserves run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
     || echo "^^^ CRAWLER ERROR ^^^"
 
-#  echo -e "\nRUNNING NAVY BUPERS CRAWLER\n"
-#  ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.bupers_pubs run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
-#    || echo "^^^ CRAWLER ERROR ^^^"
 
   echo -e "\nRUNNING DHA CRAWLER\n"
   ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.dha_pubs run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
@@ -98,24 +115,12 @@ function run_crawler() {
   ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.jcs_pubs run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
     || echo "^^^ CRAWLER ERROR ^^^"
 
-#  echo -e "\nRUNNING MARINE PUBLICATION CRAWLER\n"
-#  ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.marine_pubs run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
-#    || echo "^^^ CRAWLER ERROR ^^^"
-
-#  echo -e "\nRUNNING MILPERSMAN CRAWLER\n"
-#  ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.milpersman_crawler run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
-#    || echo "^^^ CRAWLER ERROR ^^^"
-
   echo -e "\nRUNNING NATO STANAG CRAWLER\n"
   ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.nato_stanag run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
     || echo "^^^ CRAWLER ERROR ^^^"
 
   echo -e "\nRUNNING NAVY MED PUBS CRAWLER\n"
   ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.navy_med_pubs run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
-    || echo "^^^ CRAWLER ERROR ^^^"
-
-  echo -e "\nRUNNING NAVY RESERVES CRAWLER\n"
-  ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.navy_reserves run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
     || echo "^^^ CRAWLER ERROR ^^^"
 
   echo -e "\nRUNNING OPM CRAWLER\n"
@@ -163,6 +168,15 @@ function run_downloader() {
   echo -e "\nDOWNLOADED FILES LOCATED AT: $LOCAL_DOWNLOAD_DIRECTORY_PATH \n"
 }
 
+function create_cumulative_manifest() {
+  local cumulative_manifest="$LOCAL_DOWNLOAD_DIRECTORY_PATH/cumulative-manifest.json"
+  if [[ -f "$LOCAL_PREVIOUS_MANIFEST_LOCATION" ]]; then
+    cat "$LOCAL_PREVIOUS_MANIFEST_LOCATION" > "$cumulative_manifest"
+    echo >> "$cumulative_manifest"
+  fi
+  cat "$LOCAL_NEW_MANIFEST_PATH" >> "$cumulative_manifest"
+}
+
 function register_log_in_manifest() {
   "$PYTHON_CMD" -m dataPipelines.gc_downloader add-to-manifest --file "$LOCAL_JOB_LOG_PATH" --manifest "$LOCAL_NEW_MANIFEST_PATH"
 }
@@ -204,3 +218,5 @@ echo -e "\n $(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.
 # register additional files in manifest
 register_log_in_manifest
 register_crawl_log_in_manifest
+# create combined manifest for future runs
+create_cumulative_manifest
