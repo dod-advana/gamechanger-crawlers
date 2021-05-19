@@ -57,7 +57,10 @@ class ArmySpider(GCSpider):
         doc_type_raw = doc_name_raw.split()[0]
         publication_date = rows.css(
             "span#MainContent_PubForm_Date::text").get()
-        dist_stm = rows.css("span#MainContent_PubForm_Sec_Class::text").get()
+        dist_stm = rows.css("span#MainContent_PubForm_Dist_Rest::text").get()
+        print("=========================")
+        print(doc_name_raw + " has distro statement: " + dist_stm)
+        print("=========================")
         if dist_stm.startswith("A") or dist_stm.startswith("N"):
             # the distribution statement is distribution A or says Not Applicable so anyone can access the information
             cac_login_required = False
