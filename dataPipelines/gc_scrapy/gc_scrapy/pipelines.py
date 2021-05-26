@@ -37,8 +37,11 @@ class AdditionalFieldsPipeline:
 
         source_page_url = item.get('source_page_url')
         if source_page_url is None:
-            source_page_url = spider.start_urls[0]
-            item['source_page_url'] = source_page_url
+            if spider.source_page_url:
+                item["source_page_url"] = spider.source_page_url
+            else:
+                source_page_url = spider.start_urls[0]
+                item['source_page_url'] = source_page_url
 
         if item.get('source_fqdn') is None:
             item['source_fqdn'] = get_fqdn_from_web_url(source_page_url)

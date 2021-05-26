@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-import scrapy
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
+import typing
 
 from dataPipelines.gc_scrapy.gc_scrapy.runspider_settings import general_settings, selenium_settings
 from dataPipelines.gc_scrapy.gc_scrapy.middleware_utils.selenium_request import SeleniumRequest
@@ -33,8 +33,15 @@ class GCSeleniumSpider(GCSpider):
         )
 
     @staticmethod
-    def wait_until_css_clickable(driver, css_selector):
-        WebDriverWait(driver, 5).until(
+    def wait_until_css_clickable(driver, css_selector: str, wait: typing.Union[int, float] = 5):
+        WebDriverWait(driver, wait).until(
             EC.element_to_be_clickable(
+                (By.CSS_SELECTOR, css_selector)
+            ))
+
+    @staticmethod
+    def wait_until_css_located(driver, css_selector: str, wait: typing.Union[int, float] = 5):
+        WebDriverWait(driver, wait).until(
+            EC.presence_of_element_located(
                 (By.CSS_SELECTOR, css_selector)
             ))

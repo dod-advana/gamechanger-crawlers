@@ -5,7 +5,7 @@ import typing
 from urllib.parse import urljoin, urlparse
 from os.path import splitext
 from time import perf_counter
-
+import urllib
 from dataPipelines.gc_scrapy.gc_scrapy.runspider_settings import general_settings
 
 url_re = re.compile("((http|https)://)(www.)?" +
@@ -115,3 +115,8 @@ class GCSpider(scrapy.Spider):
             Takes list of href strings and filters out those that are mailto:
         """
         return [href for href in href_list if not mailto_re.search(href)]
+
+    @staticmethod
+    def encode_url_params(params: dict) -> str:
+        print(params)
+        return urllib.parse.urlencode(params)
