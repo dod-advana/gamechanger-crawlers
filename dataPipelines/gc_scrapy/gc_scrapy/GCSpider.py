@@ -41,9 +41,10 @@ class GCSpider(scrapy.Spider):
     time_lifespan: bool = False
     # runspider settings
     custom_settings: dict = general_settings
-    # downloader_middlewares #BanEvasionMiddleware
+    # for downloader_middlewares.py#BanEvasionMiddleware
     rotate_user_agent: bool = True
     randomly_delay_request: typing.Union[bool, range, typing.List[int]] = False
+    source_page_url = None
 
     @staticmethod
     def get_href_file_extension(url: str) -> str:

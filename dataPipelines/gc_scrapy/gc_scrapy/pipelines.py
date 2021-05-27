@@ -22,8 +22,12 @@ class DeduplicaterPipeline():
         self.ids_seen = set()
 
     def process_item(self, item, spider):
-        if item['doc_name'] in self.ids_seen:
+        if not item['doc_name']:
+            raise DropItem("No doc_name")
+
+        elif item['doc_name'] in self.ids_seen:
             raise DropItem("Duplicate doc_name found")
+
         else:
             self.ids_seen.add(item['doc_name'])
 

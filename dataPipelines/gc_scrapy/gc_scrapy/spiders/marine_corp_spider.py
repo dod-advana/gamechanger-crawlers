@@ -58,7 +58,10 @@ def name_from_doc_type_num_raw(raw_data: dict) -> None:
 
 
 def name_from_title(raw_data: dict) -> None:
-    raw_data['doc_name'] = raw_data['doc_title_raw']
+    if raw_data['doc_title_raw']:
+        raw_data['doc_name'] = raw_data['doc_title_raw']
+    else:
+        name_from_doc_type_num_raw(raw_data)
 
 
 def name_from_type_title(raw_data: dict) -> None:
@@ -288,6 +291,9 @@ class MarineCorpSpider(GCSpider):
 
                 doc_title = self.ascii_clean(doc_title_raw)
                 doc_name = self.ascii_clean(raw_data['doc_name'])
+                if not doc_title:
+                    doc_title = doc_name
+
                 cac_login_required = True if any(
                     x in doc_title for x in self.cac_required_options) else False
 
