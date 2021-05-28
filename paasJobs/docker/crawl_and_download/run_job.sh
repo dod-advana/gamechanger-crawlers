@@ -84,10 +84,15 @@ function run_crawler() {
 
   echo -e "\nRUNNING DoD ISSUANCES CRAWLER - SCRAPY\n"
   ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/dod_issuances_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH )  \
-
+   || echo "^^^ CRAWLER ERROR ^^^"
+   
   echo -e "\nRUNNING DoD Coronavirus CRAWLER - SCRAPY\n"
   ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/dod_coronavirus_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
    || echo "^^^ CRAWLER ERROR ^^^"
+
+  echo -e "\nRUNNING EXECUTIVE ORDER CRAWLER\n"
+  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/executive_orders_spider.py -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
+    || echo "^^^ CRAWLER ERROR ^^^"
 
   echo -e "\nRUNNING ARMY RESERVES CRAWLER\n"
   ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.army_reserves run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
@@ -95,10 +100,6 @@ function run_crawler() {
 
   echo -e "\nRUNNING DHA CRAWLER\n"
   ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.dha_pubs run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
-    || echo "^^^ CRAWLER ERROR ^^^"
-
-  echo -e "\nRUNNING EXECUTIVE ORDER CRAWLER\n"
-  ( "$PYTHON_CMD" -m dataPipelines.gc_crawler.ex_orders run | tee -a "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" ) \
     || echo "^^^ CRAWLER ERROR ^^^"
 
   echo -e "\nRUNNING FMR CRAWLER\n"
