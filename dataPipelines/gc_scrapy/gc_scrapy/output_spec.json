@@ -67,6 +67,7 @@
     },
     "doc_name": {
       "type": "string",
+	  "minLength": 1,
       "title": "Document Name",
       "description": "Document Name as derived from source context.",
       "examples": [
