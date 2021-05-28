@@ -124,8 +124,9 @@ function run_crawler_downloader() {
     -e "LOCAL_DOWNLOAD_DIRECTORY_PATH=${CRAWLER_CONTAINER_DL_DIR}" \
     -e "LOCAL_PREVIOUS_MANIFEST_LOCATION=${CRAWLER_CONTAINER_MANIFEST_LOCATION}" \
     -e "TEST_RUN=${TEST_RUN:-no}" \
-    "${CRAWLER_CONTAINER_IMAGE}" \
-  && docker cp "$container_name":"$CRAWLER_CONTAINER_DL_DIR" "$HOST_JOB_DL_DIR"
+    "${CRAWLER_CONTAINER_IMAGE}"
+  sleep 5
+  docker cp "$container_name":"$CRAWLER_CONTAINER_DL_DIR" "$HOST_JOB_DL_DIR"
   local docker_run_status=$?
 
   docker rm "$container_name" || true
