@@ -1,15 +1,16 @@
-import scrapy
+# -*- coding: utf-8 -*-
 import re
 import bs4
-from ..items import DocumentItem
-from ..data_model import Document, DownloadableItem
-from ..utils import abs_url
+from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
+from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
 
-class OpmSpider(scrapy.Spider):
-    name = 'opm'
+class OpmSpider(GCSpider):
+    name = 'opm_pubs'
 
-    start_urls = ['https://www.whitehouse.gov/omb/information-for-agencies/memoranda/']
+    start_urls = [
+        'https://www.whitehouse.gov/omb/information-for-agencies/memoranda/'
+    ]
 
     def parse(self, response):
         page_url = response.url
@@ -55,34 +56,33 @@ class OpmSpider(scrapy.Spider):
                         doc_num = spaceTokens[0].rstrip(',.*')
                         doc_title = spaceTokens[1]
                         doc_name = "OMBM " + doc_num
-                    possible_date = li.text[li.text.find("(") + 1:li.text.find(")")]
+                    possible_date = li.text[li.text.find(
+                        "(") + 1:li.text.find(")")]
                     if re.match(pattern=r".*, \d{4}.*", string=possible_date):
                         publication_date = possible_date
                 if pdf_url != '' and doc_num.count('-') == 2:
-                    pdf_di = DownloadableItem(
-                        doc_type='pdf',
-                        web_url=pdf_url
-                    )
+                    pdf_di = {
+                        'doc_type': 'pdf',
+                        'web_url': pdf_url,
+                        'compression_type': None
+                    }
                     version_hash_fields = {
-                        "item_currency": pdf_url.split('/')[-1],  # version metadata found on pdf links
+                        # version metadata found on pdf links
+                        "item_currency": pdf_url.split('/')[-1],
                         "pub_date": publication_date.strip(),
                     }
                     parsed_title = re.sub('\\"', '', doc_title)
                     parsed_num = doc_num.strip()
                     if parsed_num not in parsed_nums:
-                        doc = Document(
+                        yield DocItem(
                             doc_name=doc_name.strip(),
                             doc_title=parsed_title,
                             doc_num=parsed_num,
                             doc_type=doc_type.strip(),
                             publication_date=publication_date,
                             cac_login_required=cac_login_required,
-                            crawler_used="opm_pubs",
                             source_page_url=page_url.strip(),
                             version_hash_raw_data=version_hash_fields,
                             downloadable_items=[pdf_di]
                         )
-                        parsed_docs.append(doc)
                         parsed_nums.append(parsed_num)
-                        doc_item = doc.to_item()
-                        yield doc_item
