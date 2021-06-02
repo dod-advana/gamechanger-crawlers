@@ -1,7 +1,4 @@
-import scrapy
-from datetime import datetime
 import re
-from urllib.parse import urlparse
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
@@ -67,11 +64,19 @@ class DHASpider(GCSpider):
                 }
             ]
 
+            doc_type = doc_name.replace(" ", "-")
+
+            if doc_num == '7220.01' and 'Crosswalk' in doc_title:
+                doc_name = doc_name.replace(
+                    " ", "-")+" "+doc_num + ' crosswalk'
+            else:
+                doc_name = doc_name.replace(" ", "-")+" "+doc_num
+
             yield DocItem(
-                doc_name=doc_name.replace(" ", "-")+" "+doc_num,
-                doc_title=doc_title,
-                doc_num=doc_num,
-                doc_type=doc_name.replace(" ", "-"),
+                doc_name=doc_name,
+                doc_title=self.ascii_clean(doc_title),
+                doc_num=self.ascii_clean(doc_num),
+                doc_type=self.ascii_clean(doc_type),
                 publication_date=publication_date,
                 cac_login_required=False,
                 downloadable_items=downloadable_items,
