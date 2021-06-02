@@ -1,24 +1,25 @@
-import scrapy
 import re
 import bs4
-from ..items import DocumentItem
-from ..data_model import Document, DownloadableItem
-from ..utils import abs_url
+from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
+from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
+from dataPipelines.gc_scrapy.gc_scrapy.utils import abs_url
 
 
-class IcPoliciesSpider(scrapy.Spider):
+class IcPoliciesSpider(GCSpider):
     name = 'ic_policies'
 
-    start_urls = ['https://www.dni.gov/index.php/what-we-do/ic-policies-reports/']
+    start_urls = [
+        'https://www.dni.gov/index.php/what-we-do/ic-policies-reports/'
+    ]
 
     def parse(self, response):
         base_url = 'https://www.dni.gov'
-        links = response.css('div[itemprop="articleBody"]').css('ul')[0].css('li')[:-1]
+        links = response.css('div[itemprop="articleBody"]').css('ul')[
+            0].css('li')[:-1]
         full_links = [base_url + l.css('a::attr(href)').get() for l in links]
         yield from response.follow_all(full_links, self.parse_documents)
 
     def parse_documents(self, response):
-
         """Parse document objects from page of text"""
         page_url = response.url
         # parse html response
@@ -38,7 +39,8 @@ class IcPoliciesSpider(scrapy.Spider):
             doc_type = 'ICLR'
 
         # iterate through each publication
-        cac_required = ['CAC', 'PKI certificate required', 'placeholder', 'FOUO']
+        cac_required = ['CAC', 'PKI certificate required',
+                        'placeholder', 'FOUO']
         for row in pub_list:
 
             # skip empty rows
@@ -58,10 +60,11 @@ class IcPoliciesSpider(scrapy.Spider):
             doc_title = re.sub(parsed_text, '', data)
 
             pdf_url = abs_url(base_url, link)
-            pdf_di = DownloadableItem(
-                doc_type='pdf',
-                web_url=pdf_url
-            )
+            pdf_di = {
+                'doc_type': 'pdf',
+                'web_url': pdf_url,
+                'compression_type': None
+            }
 
             # extract publication date from the pdf url
             matches = re.findall(r'\((.+)\)', pdf_url.replace('%20', '-'))
@@ -69,25 +72,21 @@ class IcPoliciesSpider(scrapy.Spider):
 
             # set boolean if CAC is required to view document
             cac_login_required = True if any(x in pdf_url for x in cac_required) \
-                                         or any(x in doc_title for x in cac_required) else False
+                or any(x in doc_title for x in cac_required) else False
 
             # all fields that will be used for versioning
             version_hash_fields = {
                 "item_currency": publication_date  # version metadata found on pdf links
             }
 
-            doc = Document(
+            yield DocItem(
                 doc_name=doc_name.strip(),
                 doc_title=doc_title,
                 doc_num=doc_num,
                 doc_type=doc_type,
                 publication_date=publication_date,
                 cac_login_required=cac_login_required,
-                crawler_used="ic_policies",
                 source_page_url=page_url.strip(),
                 version_hash_raw_data=version_hash_fields,
                 downloadable_items=[pdf_di]
             )
-
-            item = doc.to_item()
-            yield item
