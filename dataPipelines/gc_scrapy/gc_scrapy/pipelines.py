@@ -20,18 +20,24 @@ from dataPipelines.gc_crawler.utils import dict_to_sha256_hex_digest, get_fqdn_f
 class DeduplicaterPipeline():
     def __init__(self):
         self.ids_seen = set()
+        self.dropped_count = 0
 
     def process_item(self, item, spider):
         if not item['doc_name']:
             raise DropItem("No doc_name")
 
         elif item['doc_name'] in self.ids_seen:
+            self.dropped_count += 1
             raise DropItem("Duplicate doc_name found")
 
         else:
             self.ids_seen.add(item['doc_name'])
 
         return item
+
+    # def close_spider(self, spider):
+    #     print()
+    #     print(spider.name, 'closed with', self.dropped_count, 'dropped items')
 
 
 class AdditionalFieldsPipeline:
