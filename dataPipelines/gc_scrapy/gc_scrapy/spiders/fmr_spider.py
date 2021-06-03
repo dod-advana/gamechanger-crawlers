@@ -1,5 +1,3 @@
-from re import IGNORECASE
-from sys import flags
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
@@ -10,6 +8,7 @@ class FmrSpider(GCSpider):
     start_urls = [
         "https://comptroller.defense.gov/FMR/vol1_chapters.aspx"
     ]
+
     download_base_url = 'https://comptroller.defense.gov/'
     doc_type = "DoDFMR"
     cac_login_required = False
@@ -17,7 +16,6 @@ class FmrSpider(GCSpider):
     seen = set({})
 
     def parse(self, response):
-
         volume_links = response.css('div[id="sitetitle"] a')[1:-1]
         for link in volume_links:
             vol_num = link.css('::text').get()
@@ -27,7 +25,7 @@ class FmrSpider(GCSpider):
         vol_num = response.meta["vol_num"]
         rows = response.css('tbody tr')
         source_page_url = response.url
-        print('source', source_page_url)
+
         for row in rows:
             href_raw = row.css('td:nth-child(1) a::attr(href)').get()
             if not href_raw:
@@ -41,12 +39,12 @@ class FmrSpider(GCSpider):
 
             doc_title_raw = "".join(
                 row.css('td:nth-child(2) *::text').getall())
-            # TODO: FIX THIS,  "doc_num": "V3CH8", "doc_title": "",
-            # creating empty doc titles b/c rpart doesnt find a ()
+
             if '(' in doc_title_raw:
                 doc_title_text, *_ = doc_title_raw.rpartition('(')
             else:
                 doc_title_text = doc_title_raw
+
             doc_title = self.ascii_clean(doc_title_text)
             publication_date_raw = row.css('td:nth-child(3)::text').get()
             publication_date = self.ascii_clean(publication_date_raw)
