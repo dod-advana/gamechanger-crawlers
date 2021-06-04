@@ -162,6 +162,7 @@ function run_downloader() {
       --output-dir "$LOCAL_DOWNLOAD_DIRECTORY_PATH" \
       --new-manifest "$LOCAL_NEW_MANIFEST_PATH" \
       --previous-manifest "$LOCAL_PREVIOUS_MANIFEST_LOCATION"
+      --create-dubs="$CREATE_DUMMY_FILES"
   fi
 
   echo -e "\nDOWNLOADED FILES LOCATED AT: $LOCAL_DOWNLOAD_DIRECTORY_PATH \n"
