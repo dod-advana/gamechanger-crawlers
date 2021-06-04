@@ -82,11 +82,19 @@ def cli():
     ),
     required=False
 )
+@click.option(
+    '--create-dubs',
+    help='Option of whether to create dummy files for pdfs that failed to pull',
+    type=bool,
+    default=False,
+    show_default=True
+)
 def download(input_json: str,
              output_dir: str,
              previous_manifest: Optional[str],
              new_manifest: Optional[str],
-             dead_queue: Optional[str]) -> None:
+             dead_queue: Optional[str],
+             create_dubs: bool) -> None:
     """Download & process files corresponding to json entries output by crawlers."""
 
     input_json_path = Path(input_json).resolve()
@@ -156,6 +164,7 @@ def download(input_json: str,
         docs=docs_sans_non_pdf_pubs,
         output_dir=output_dir_path,
         driver=driver,
+        create_dubs=create_dubs,
         echo=True
     )
 

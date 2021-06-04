@@ -72,7 +72,7 @@ def filter_out_already_downloaded_docs(
             yield doc
 
 
-def download_doc(doc: Document, output_dir: Union[Path, str]) -> DownloadedDocument:
+def download_doc(doc: Document, output_dir: Union[Path, str], create_dubs: bool) -> DownloadedDocument:
     """Download doc to given base_dir"""
     item = get_supported_downloadable_item(doc)
     if not item:
@@ -84,10 +84,13 @@ def download_doc(doc: Document, output_dir: Union[Path, str]) -> DownloadedDocum
     try:
         downloaded_file = download_file(
             url=item.web_url,
-            output_dir=output_dir_path
+            output_dir=output_dir_path,
+            create_dubs=create_dubs
         )
+
     except CouldNotDownload as e:
         # for transparency's sake...
+        print(e)
         raise e
 
     return DownloadedDocument(
@@ -97,7 +100,8 @@ def download_doc(doc: Document, output_dir: Union[Path, str]) -> DownloadedDocum
         entrypoint=doc.source_page_url
     )
 
-def download_doc_with_driver(doc: Document, output_dir: Union[Path, str], driver: webdriver.Chrome) -> DownloadedDocument:
+
+def download_doc_with_driver(doc: Document, output_dir: Union[Path, str], driver: webdriver.Chrome, create_dubs: bool) -> DownloadedDocument:
     """Download doc to given base_dir"""
     item = get_supported_downloadable_item(doc)
     if not item:
@@ -110,7 +114,8 @@ def download_doc_with_driver(doc: Document, output_dir: Union[Path, str], driver
         downloaded_file = download_file_with_driver(
             url=item.web_url,
             output_dir=output_dir_path,
-            driver=driver
+            driver=driver,
+            create_dubs=create_dubs
         )
     except CouldNotDownload as e:
         # for transparency's sake...

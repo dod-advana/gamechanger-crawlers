@@ -65,11 +65,12 @@ class DownloadHandler(ABC):
 
     @classmethod
     @abstractmethod
-    def process_doc(cls, doc: Document, output_dir: Union[str, Path]) -> List[ProcessedDocument]:
+    def process_doc(cls, doc: Document, output_dir: Union[str, Path], create_dubs: bool) -> List[ProcessedDocument]:
         """Process given Document and output final file to output directory
 
         :param doc: Single Document object, presumably read from crawler JSON output
         :param output_dir: Path to directory where processed doc should land
+        :param create_dubs: Flag - Whether to create dummy files when files can't be grabbed.
         :return: Iterable of ProcessedDocument(s)
         :raises: ProcessingError
         """
@@ -79,11 +80,13 @@ class DownloadHandler(ABC):
     @abstractmethod
     def process_all_docs(cls,
                          docs: Iterable[Document],
-                         output_dir: Union[str, Path]) -> Iterable[ProcessedDocument]:
+                         output_dir: Union[str, Path],
+                         create_dubs: bool) -> Iterable[ProcessedDocument]:
         """Process given DownloadedDocuments and output final files to output directory
 
         :param docs: Iterable of Document objects, presumably read from crawler JSON output
         :param output_dir: Path to directory where all processed docs should land
+        :param create_dubs: Flag - Whether to create dummy files when files can't be grabbed.
         :return: Iterable of ProcessedDocument(s)
         """
         pass
@@ -126,11 +129,11 @@ class DefaultDownloadHandler(DownloadHandler):
         return unpacked_renamed_docs
 
     @classmethod
-    def process_doc(cls, doc: Document, output_dir: Union[str, Path]) -> List[ProcessedDocument]:
+    def process_doc(cls, doc: Document, output_dir: Union[str, Path], create_dubs: bool) -> List[ProcessedDocument]:
 
         with tempfile.TemporaryDirectory() as temp_dir_path:
             try:
-                ddoc = download_doc(doc=doc, output_dir=temp_dir_path)
+                ddoc = download_doc(doc=doc, output_dir=temp_dir_path, create_dubs=create_dubs)
             except CouldNotDownload as e:
                 # for transparency's sake...
                 print(e)
@@ -173,10 +176,11 @@ class DefaultDownloadHandler(DownloadHandler):
     @classmethod
     def process_all_docs(cls,
                          docs: Iterable[Document],
-                         output_dir: Union[str, Path]) -> Iterable[Union[ProcessedDocument, DeadDocument]]:
+                         output_dir: Union[str, Path],
+                         create_dubs: bool) -> Iterable[Union[ProcessedDocument, DeadDocument]]:
         for doc in docs:
             try:
-                for pdoc in cls.process_doc(doc=doc, output_dir=output_dir):
+                for pdoc in cls.process_doc(doc=doc, output_dir=output_dir, create_dubs=create_dubs):
                     print(f"Processed {pdoc.normalized_filename} -- {pdoc.local_file_path}")
                     yield pdoc
             except ProcessingError as e:
@@ -237,9 +241,9 @@ class DriverDownloadHandler(DefaultDownloadHandler):
         self.update_driver(driver)
 
     @classmethod
-    def process_doc(cls, doc: Document, output_dir: Union[str, Path]) -> List[ProcessedDocument]:
+    def process_doc(cls, doc: Document, output_dir: Union[str, Path], create_dubs: bool) -> List[ProcessedDocument]:
         try:
-            ddoc = download_doc_with_driver(doc=doc, output_dir=output_dir, driver=cls.driver)
+            ddoc = download_doc_with_driver(doc=doc, output_dir=output_dir, driver=cls.driver, create_dubs=create_dubs)
         except CouldNotDownload as e:
             # for transparency's sake...
             print(e)
@@ -297,11 +301,13 @@ def process_all_docs(
         docs: Iterable[Document],
         output_dir: Union[str, Path],
         driver: webdriver.Chrome,
+        create_dubs: bool = False,
         echo: bool = True) -> Iterable[Union[ProcessedDocument, DeadDocument]]:
     """Process all documents
     :param docs: Iterable of Document(s)
     :param output_dir: Final ouutput dir for downloaded/processed documents
     :param driver: Chrome webdriver session
+    :param create_dubs: Whether to create dummy files when files can't be grabbed.
     :param echo: Flag - echo file info as they're being processed, or not.
     :return: Iterable returning either ProcessedDocument(s) or DeadDocument(s), depending on
     whether doc was successfully processed or not
@@ -312,5 +318,5 @@ def process_all_docs(
             print(f"Processing document: {doc.doc_name}")
         handler = get_appropriate_file_handler(doc=doc, driver=driver)
 
-        for pdoc in handler.process_all_docs(docs=[doc], output_dir=output_dir):
+        for pdoc in handler.process_all_docs(docs=[doc], output_dir=output_dir, create_dubs=create_dubs):
             yield pdoc

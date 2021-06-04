@@ -11,7 +11,7 @@ from .config import SUPPORTED_FILE_EXTENSIONS
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException, WebDriverException
 import os
-
+import PyPDF2
 
 
 def is_downloadable(url: str) -> bool:
@@ -90,6 +90,7 @@ def download_file(
     num_retries: int = 2,
     overwrite: bool = False,
     check_first: bool = False,
+    create_dubs: bool = False,
     timeout_secs: Union[int, float] = 10
 ) -> Path:
     """Download file at given url to given output directory, preserving file name
@@ -99,6 +100,7 @@ def download_file(
     :param num_retries: number of times download will retry in case of failure
     :param overwrite: whether downloader should overwrite files with same base names in output dir
     :param check_first: check whether url is downloadable., undesirable if web host could deny HEAD requests
+    :param create_dubs: whether downloader should create empty dummy files when the file cannot be created
     :param timeout_secs: timeout, in seconds, before receiving first byte of response
 
     :returns: pathlib.Path of the downloaded file
@@ -117,29 +119,45 @@ def download_file(
         try:
             # NOTE the stream=True parameter below
             with requests.get(url, stream=True, timeout=timeout_secs, allow_redirects=True,verify=False) as r:
-                r.raise_for_status()
-
                 local_file_path = _output_dir.joinpath(derive_download_filename(resp=r, request_url=url))
                 if not overwrite:
                     local_file_path = Path(get_available_path(local_file_path))
+
+                r.raise_for_status()
 
                 with open(local_file_path, 'wb') as f:
                     for chunk in r.iter_content(chunk_size=8192):
                         f.write(chunk)
         except requests.exceptions.ReadTimeout as e:
-            print(e)
             print(f"Timed out fetching: {url}")
+            if create_dubs:
+                print('Creating dub document for missing PDF')
+                create_pdf_dubs(local_file_path=local_file_path)
+            else:
+                print(e)
             continue
         except requests.exceptions.InvalidURL as e:
-            print(e)
             print(f"Invalid URL: {url}")
+            if create_dubs:
+                print('Creating dub document for missing PDF')
+                create_pdf_dubs(local_file_path=local_file_path)
+            else:
+                print(e)
             continue
         except requests.ConnectionError as e:
-            print(e)
             print(f"Connection error while fetching: {url}")
+            if create_dubs:
+                print('Creating dub document for missing PDF')
+                create_pdf_dubs(local_file_path=local_file_path)
+            else:
+                print(e)
             continue
         except requests.HTTPError as e:
-            print(e)
+            if create_dubs:
+                print('Creating dub document for missing PDF')
+                create_pdf_dubs(local_file_path=local_file_path)
+            else:
+                print(e)
             break
         else:
             break
@@ -163,7 +181,8 @@ def download_file_with_driver(
         output_dir: str,
         driver: webdriver.Chrome,
         num_retries: int = 2,
-        overwrite: bool = False
+        overwrite: bool = False,
+        create_dubs: bool = False
 
 ) -> Path:
     """Download file at given url to given output directory, preserving file name
@@ -174,6 +193,7 @@ def download_file_with_driver(
     :param num_retries: number of times download will retry in case of failure
     :param overwrite: whether downloader should overwrite files with same base names in output dir
     :param timeout_secs: timeout, in seconds, before receiving first byte of response
+    :param create_dubs: whether downloader should create empty dummy files when the file cannot be created
 
     :returns: pathlib.Path of the downloaded file
     :raises: CouldNotDownload
@@ -204,14 +224,26 @@ def download_file_with_driver(
         except WebDriverException as e:
             if overwrite and os.path.isfile(temp_file_path):
                 os.rename(temp_file_path, local_file_path)
-            print(e)
             print(f"Web Driver Exceptions when fetching: {url}")
+
+            if create_dubs:
+                print('Creating dub document for missing PDF')
+                create_pdf_dubs(local_file_path=local_file_path)
+            else:
+                print(e)
+
             continue
         except TimeoutException as e:
             if overwrite and os.path.isfile(temp_file_path):
                 os.rename(temp_file_path, local_file_path)
-            print(e)
             print(f"Timeout fetching: {url}")
+
+            if create_dubs:
+                print('Creating dub document for missing PDF')
+                create_pdf_dubs(local_file_path=local_file_path)
+            else:
+                print(e)
+
             continue
         else:
             break
@@ -245,3 +277,9 @@ def doc_in_manifest(manifest: List[Any], version_hash: str) -> bool:
         flag = True
 
     return flag
+
+def create_pdf_dubs(local_file_path: Optional[Path]):
+    writer = PyPDF2.PdfFileWriter()
+    writer.addBlankPage(219, 297)
+    with open(local_file_path, "wb") as f:
+        writer.write(f)
