@@ -10,7 +10,8 @@ general_settings = {
     'LOG_LEVEL': 'WARN',
     'DOWNLOADER_MIDDLEWARES': {
         'dataPipelines.gc_scrapy.gc_scrapy.downloader_middlewares.BanEvasionMiddleware': 1,
-    }
+    },
+    "ROBOTSTXT_OBEY": False
 }
 
 selenium_settings = {
