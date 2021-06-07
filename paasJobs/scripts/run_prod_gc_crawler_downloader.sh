@@ -19,7 +19,7 @@ export JOB_LOG_FILE="${HOST_JOB_TMP_DIR}/logs/gc-crawler-downloader.$(date --iso
 # change to "yes" in order to only crawl/download couple pubs for test purposes
 export TEST_RUN="${TEST_RUN:-no}"
 
-# change to "yes" to allow dummy files to take the place of failed to download documents
+# change to "yes" to allow dummy files to take the place of documents that failed to download
 export CREATE_DUMMY_FILES="${CREATE_DUMMY_FILES:-no}"
 
 cat <<EOF

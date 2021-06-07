@@ -9,6 +9,7 @@ itemadapter==0.2.0
 jsonschema==3.2.0
 lxml==4.5.1
 PyMuPDF==1.17.2
+PyPDF2==1.26.0
 pyrsistent==0.16.0
 requests==2.23.0
 selenium==3.141.0
