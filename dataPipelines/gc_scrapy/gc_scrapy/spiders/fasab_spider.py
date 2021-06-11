@@ -35,6 +35,8 @@ class BrickSetSpider(scrapy.Spider):
             doc_num = doc_name.rsplit(' ', 1)[-1]
             doc_type = doc_name.rsplit(' ', 1)[0]
             cac_login_required = False
+            if not url.startswith("http"):
+                url = "https:" + url
             downloadable_items = [
                 {
                     "doc_type": 'pdf',
