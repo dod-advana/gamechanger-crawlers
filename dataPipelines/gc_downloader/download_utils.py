@@ -163,7 +163,6 @@ def download_file(
             if create_dubs:
                 print('Creating dub document for missing PDF')
                 create_pdf_dubs(local_file_path=local_file_path)
-
             break
         finally:
             time.sleep(1 + retry_attempt)
@@ -250,6 +249,9 @@ def download_file_with_driver(
 
             continue
         else:
+            if create_dubs:
+                print('Creating dub document for missing PDF')
+                create_pdf_dubs(local_file_path=local_file_path)
             break
         finally:
             time.sleep(1 + num_retries)
