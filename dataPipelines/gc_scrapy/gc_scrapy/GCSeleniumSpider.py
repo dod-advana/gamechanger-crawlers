@@ -17,20 +17,25 @@ class GCSeleniumSpider(GCSpider):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    custom_settings = {**general_settings, **selenium_settings}
+    custom_settings: dict = {**general_settings, **selenium_settings}
     selenium_request_overrides: dict = {}
+
+    selenium_spider_start_request_retries_allowed: int
+    selenium_spider_start_request_retry_wait: int
 
     def start_requests(self):
         """
             Applies selenium_request_overrides dict and returns a selenium response instead of standard scrapy response
         """
 
-        yield SeleniumRequest(
-            url=self.start_urls[0],
-            callback=self.parse,
-            wait_time=5,
+        opts = {
+            "url": self.start_urls[0],
+            "callback": self.parse,
+            "wait_time": 5,
             **self.selenium_request_overrides
-        )
+        }
+
+        yield SeleniumRequest(**opts)
 
     @staticmethod
     def wait_until_css_clickable(driver, css_selector: str, wait: typing.Union[int, float] = 5):

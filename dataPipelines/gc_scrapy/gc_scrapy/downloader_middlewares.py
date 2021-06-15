@@ -9,6 +9,7 @@ from itemadapter import is_item, ItemAdapter
 from importlib import import_module
 
 from dataPipelines.gc_scrapy.gc_scrapy.middleware_utils.selenium_request import SeleniumRequest
+from selenium.common.exceptions import TimeoutException
 
 
 class SeleniumMiddleware:
@@ -104,8 +105,6 @@ class SeleniumMiddleware:
         if not isinstance(request, SeleniumRequest):
             return None
 
-        self.driver.get(request.url)
-
         for cookie_name, cookie_value in request.cookies.items():
             self.driver.add_cookie(
                 {
@@ -115,9 +114,27 @@ class SeleniumMiddleware:
             )
 
         if request.wait_until:
-            WebDriverWait(self.driver, request.wait_time).until(
-                request.wait_until
-            )
+            retries = getattr(
+                spider, 'selenium_spider_start_request_retries_allowed', 0)
+            retry_wait = getattr(
+                spider, 'selenium_spider_start_request_retry_wait', 30)
+
+            reqs_remaining = retries + 1
+            while reqs_remaining:
+                try:
+                    self.driver.get(request.url)
+                    WebDriverWait(self.driver, request.wait_time).until(
+                        request.wait_until
+                    )
+                    reqs_remaining = 0
+                except TimeoutException:
+                    reqs_remaining -= 1
+                    print(
+                        f"{spider.name} : Selenium request timeout, retries remaining = {reqs_remaining}")
+                    print(f"Waiting {retry_wait} seconds...")
+                    sleep(retry_wait)
+        else:
+            self.driver.get(request.url)
 
         if request.screenshot:
             request.meta['screenshot'] = self.driver.get_screenshot_as_png()
