@@ -16,6 +16,83 @@ from . import OUTPUT_FOLDER_NAME
 
 from dataPipelines.gc_crawler.utils import dict_to_sha256_hex_digest, get_fqdn_from_web_url
 
+from urllib.parse import urlparse
+import scrapy
+from scrapy.pipelines.media import MediaPipeline
+import random
+
+
+class FileDownloadPipeline(MediaPipeline):
+    # steps
+    # crawl page
+    # for each downloadable item in a doc, check prior downloads list and filter if needed
+    # if need to download, download
+    # ++> success
+    #       scan downloaded
+    #       pass scan >
+    #            put in upload list
+    #
+    # --> fail
+    #       put doc in dead queue
+    #
+    # after all downloads attempted
+    # upload doc (as metadata) TODO!! should this be edited to remove docs that failed? !!
+    #  and all successful downloads
+    MEDIA_ALLOW_REDIRECTS = True
+
+    def get_media_requests(self, item, info):
+        """Yields the media requests to download"""
+        # info.spider.prior_downloads
+        # info = SpiderInfo
+        # self.spider = spider
+        # self.downloading = set()
+        # self.downloaded = {}
+        # self.waiting = defaultdict(list)
+        # TODO filter these
+        doc_name = item["doc_name"]
+        print('item', item["doc_name"], len(item["downloadable_items"]))
+        for file_item in item["downloadable_items"]:
+            # rando = file_item.get('web_url', '') + 'gobbledygoop'
+            # url = random.choice(
+            #     [file_item.get('web_url'), rando, 'gobbledygoop'])
+            url = file_item.get('web_url')
+            print('url', url)
+            yield scrapy.Request(url, meta={"doc_name": doc_name})
+
+    def media_downloaded(self, response, request, info):
+        """Handler for success downloads"""
+        # TODO run scanner
+        print('media_downloaded response', response)
+        if 200 <= int(response.status) <= 299:
+            name = response.meta["doc_name"]
+            path = '/Users/dakotahavel/Desktop/gamechanger-crawlers/tmp/test/' + name
+            print('path', path)
+            with open(path, 'wb') as f:
+                f.write(response.body)
+
+        return response
+
+    def media_failed(self, failure, request, info):
+        """Handler for failed downloads"""
+        # TODO add to dead queue
+        print('------------------------------- media failed', failure)
+        return failure
+
+    def item_completed(self, results, item, info):
+        """Called per item when all media requests has been processed"""
+        # TODO upload item as metadata file
+
+        # if self.LOG_FAILED_RESULTS:
+        #     for ok, value in results:
+        #         if not ok:
+        #             logger.error(
+        #                 '%(class)s found errors processing %(item)s',
+        #                 {'class': self.__class__.__name__, 'item': item},
+        #                 exc_info=failure_to_exc_info(value),
+        #                 extra={'spider': info.spider}
+        #             )
+        return item
+
 
 class DeduplicaterPipeline():
     def __init__(self):
