@@ -25,3 +25,6 @@ class DocItem(scrapy.Item):
     access_timestamp = scrapy.Field()
     source_fqdn = scrapy.Field()
     version_hash = scrapy.Field()
+    display_doc_type = scrapy.Field()
+    display_org = scrapy.Field()
+    display_source = scrapy.Field()

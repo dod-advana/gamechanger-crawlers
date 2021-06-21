@@ -9,6 +9,9 @@ bill_version_re = re.compile(r'\((.*)\)')
 
 class CFRSpider(GCSpider):
     name = "code_of_federal_regulations"
+    display_org = "Congress"
+    display_source = "U.S. Publishing Office"
+
     cac_login_required = False
     visible_start = "https://www.govinfo.gov/app/collection/cfr"
     start_urls = [
@@ -67,6 +70,7 @@ class CFRSpider(GCSpider):
         is_index_type = "GPO-CFR-INDEX" in package_id
 
         doc_type = "CFR Index" if is_index_type else 'CFR Title'
+        display_doc_type = doc_type
         doc_title = title if is_index_type else title.title()
         doc_num = f"{title_num} Vol. {vol_num}" if vol_num else title_num
 
@@ -91,6 +95,7 @@ class CFRSpider(GCSpider):
             doc_num=doc_num,
             doc_title=doc_title,
             doc_type=doc_type,
+            display_doc_type=display_doc_type,
             publication_date=publication_date,
             source_page_url=source_page_url,
             downloadable_items=downloadable_items,

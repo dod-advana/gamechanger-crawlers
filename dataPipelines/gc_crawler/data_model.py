@@ -38,7 +38,8 @@ class DownloadableItem:
     @staticmethod
     def from_dict(obj_dict: Dict[Any, Any]) -> 'DownloadableItem':
         """Deserialize DownloadableItem object from plain dictionary"""
-        _obj_dict = copy.deepcopy(obj_dict)  # avoid problems with arrays and other ref types
+        _obj_dict = copy.deepcopy(
+            obj_dict)  # avoid problems with arrays and other ref types
         return DownloadableItem(**_obj_dict)
 
 
@@ -65,6 +66,9 @@ class Document:
         doc_title: str,
         doc_num: str,
         doc_type: str,
+        display_doc_type: str,
+        display_org: str,
+        display_source: str,
         publication_date: str,
         cac_login_required: bool,
         crawler_used: str,
@@ -74,7 +78,7 @@ class Document:
         original_publication_date: Optional[str] = None,
         access_timestamp: datetime = datetime.now(),
         source_fqdn: Optional[str] = None,
-        version_hash: Optional[str] = None
+        version_hash: Optional[str] = None,
     ):
         self.doc_name = doc_name
         self.doc_title = doc_title
@@ -88,8 +92,13 @@ class Document:
         self.downloadable_items = downloadable_items
         self.version_hash_raw_data = version_hash_raw_data
         self.access_timestamp = access_timestamp
-        self.source_fqdn = source_fqdn or get_fqdn_from_web_url(self.source_page_url)
-        self.version_hash = version_hash or dict_to_sha256_hex_digest(version_hash_raw_data)
+        self.source_fqdn = source_fqdn or get_fqdn_from_web_url(
+            self.source_page_url)
+        self.version_hash = version_hash or dict_to_sha256_hex_digest(
+            version_hash_raw_data)
+        self.display_doc_type = display_doc_type
+        self.display_org = display_org
+        self.display_source = display_source
 
     def to_dict(self) -> Dict[str, Any]:
         """Plain dictionary representation"""
@@ -115,7 +124,8 @@ class Document:
     @staticmethod
     def from_dict(obj_dict: Dict[Any, Any]) -> 'Document':
         """Deserialize Document object from plain dictionary"""
-        _obj_dict = copy.deepcopy(obj_dict)  # avoid problems with arrays and other ref types
+        _obj_dict = copy.deepcopy(
+            obj_dict)  # avoid problems with arrays and other ref types
 
         downloadable_items = [
             DownloadableItem.from_dict(item) for item in _obj_dict['downloadable_items']

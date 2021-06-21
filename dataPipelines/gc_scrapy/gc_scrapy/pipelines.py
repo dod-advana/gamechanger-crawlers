@@ -43,6 +43,12 @@ class DeduplicaterPipeline():
 class AdditionalFieldsPipeline:
     def process_item(self, item, spider):
 
+        if spider.display_org:
+            item["display_org"] = spider.display_org
+
+        if spider.display_source:
+            item["display_source"] = spider.display_source
+
         if item.get('crawler_used') is None:
             item['crawler_used'] = spider.name
 
