@@ -43,10 +43,10 @@ class DeduplicaterPipeline():
 class AdditionalFieldsPipeline:
     def process_item(self, item, spider):
 
-        if spider.display_org:
+        if getattr(spider, 'display_org', None)::
             item["display_org"] = spider.display_org
 
-        if spider.display_source:
+        if getattr(spider, 'display_source', None)::
             item["display_source"] = spider.display_source
 
         if item.get('crawler_used') is None:
@@ -54,7 +54,7 @@ class AdditionalFieldsPipeline:
 
         source_page_url = item.get('source_page_url')
         if source_page_url is None:
-            if spider.source_page_url:
+            if getattr(spider, 'source_page_url', None)::
                 item["source_page_url"] = spider.source_page_url
             else:
                 source_page_url = spider.start_urls[0]
