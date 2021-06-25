@@ -18,14 +18,10 @@ from . import OUTPUT_FOLDER_NAME
 
 from dataPipelines.gc_crawler.utils import dict_to_sha256_hex_digest, get_fqdn_from_web_url
 
-from urllib.parse import urlparse
 import scrapy
 from scrapy.pipelines.media import MediaPipeline
-import random
+
 from pathlib import Path
-
-
-path_base = '/Users/dakotahavel/Desktop/gamechanger-crawlers/tmp/test/'
 
 SUPPORTED_FILE_EXTENSIONS = [
     "pdf",
@@ -35,68 +31,69 @@ SUPPORTED_FILE_EXTENSIONS = [
 
 
 class FileDownloadPipeline(MediaPipeline):
-    # steps
-    # crawl page
-    # for each downloadable item in a doc, check prior downloads list and filter if needed
-    # if need to download, download
-    # ++> success
-    #       scan downloaded
-    #       pass scan >
-    #            put in upload list
-    #
-    # --> fail
-    #       put doc in dead queue
-    #
-    # after all downloads attempted
-    # upload doc (as metadata) TODO!! should this be edited to remove docs that failed? !!
-    #  and all successful downloads
     MEDIA_ALLOW_REDIRECTS = True
     previous_hashes = set()
-    prev_hash_names = set()
+    output_dir: str
+    cumulative_manifest_path: str
+    job_manifest_path: str
 
-    def load_previous_manifest(self, previous_manifest_path):
-        manifest_path = (
-            Path(previous_manifest_path).resolve()
-            if previous_manifest_path
+    def open_spider(self, spider):
+        super().open_spider(spider)
+        self.output_dir = spider.download_output_dir
+        self.cumulative_manifest_path = f"{self.output_dir}cumulative-manifest.json.json"
+        self.job_manifest_path = f"{self.output_dir}manifest.json"
+        self.load_hashes_from_cumulative_manifest(
+            self.cumulative_manifest_path, spider.name)
+
+    def load_hashes_from_cumulative_manifest(self, cumulative_manifest_path, spider_name):
+        file_location = (
+            Path(cumulative_manifest_path).resolve()
+            if cumulative_manifest_path
             else None
         )
 
-        with manifest_path.open(mode="r") as f:
+        if not file_location or not os.path.isfile(file_location):
+            return
+
+        with file_location.open(mode="r") as f:
             for line in f.readlines():
                 if not line.strip():
                     continue
 
                 jdoc = json.loads(line)
-                self.previous_hashes.add(jdoc['version_hash'])
-                self.prev_hash_names.add(jdoc["doc_name"])
+                crawler_used = jdoc.get('crawler_used')
+                # covers old manifest items with no crawler info
+                if not crawler_used:
+                    self.previous_hashes.add(jdoc['version_hash'])
+                # skips adding hashes for other spiders for combined manifest files with that info
+                elif crawler_used == spider_name:
+                    self.previous_hashes.add(jdoc['version_hash'])
 
     @staticmethod
     def get_first_supported_downloadable_item(downloadable_items: list) -> Union[dict, None]:
-        """Get supported downloadable item corresponding to doc"""
+        """Get first supported downloadable item corresponding to doc, has correct type and is not cac blocked"""
         return next((item for item in downloadable_items if item["doc_type"] in SUPPORTED_FILE_EXTENSIONS), None)
 
     def get_media_requests(self, item, info):
         """Called per DocItem from spider output, yields the media requests to download, response sent to media_downloaded"""
-        previous_manifest_path = f"{path_base}manifest.json"
-        self.load_previous_manifest(previous_manifest_path)
-        # self.load_previous_dead_queue(previous_dead_queue_path)
+
         # info = SpiderInfo
-        # SpiderInfo:
+        # class SpiderInfo:
         ## self.spider = spider
         ## self.downloading = set()
         ## self.downloaded = {}
         ## self.waiting = defaultdict(list)
-        # TODO filter these based on previous download
 
         doc_name = item["doc_name"]
-        # if len(item["downloadable_items"]) > 1:
-        #     print('++++++++++++ more than one item', item["doc_name"], len(
-        #         item["downloadable_items"]))
-        # TODO filter these by checking if type is supported
         if item["version_hash"] in self.previous_hashes:
             # dont download anything just send item to crawl output
             print(
-                f"Skipping {item.get('doc_name')} because it was in previous_manifest")
+                f"Skipping download of {item.get('doc_name')} because it was in previous_hashes")
+            return item
+
+        if item["cac_login_required"]:
+            print(
+                f"Skipping download of {item.get('doc_name')} because it requires cac login")
             return item
 
         # currently we only associate 1 file with each doc, this gets the first we know how to parse
@@ -113,6 +110,7 @@ class FileDownloadPipeline(MediaPipeline):
             except Exception as probably_url_error:
                 print('~~~~~~~~~~~~~~~~~~~~~~~~~~ REQUEST ERR', probably_url_error)
         else:
+            print(f"No supported downloadable item for {item['doc_name']}")
             return item
 
     def media_downloaded(self, response, request, info):
@@ -120,16 +118,21 @@ class FileDownloadPipeline(MediaPipeline):
         # I dont know why this isnt being handled automatically here
         # Just filtering by response code
         if 200 <= response.status < 300:
-            return (True, response)
+            return (True, response, None)
+        elif not len(response.body):
+            return (False, response, "Response has empty body")
         else:
-            return (False, response)
+            return (False, response, None)
 
     def media_failed(self, failure, request, info):
-        print("************************************************************************** MEDIA FAILED")
-        return (False, failure)
+        # I have never seen this called
+        print("****************************** MEDIA FAILED")
+        print(failure)
+        print(info.spider)
+        return (False, failure, None)
 
     def add_to_dead_queue(self, item, reason):
-        path = f'{path_base}dead_queue.json'
+        path = f'{self.output_dir}dead_queue.json'
         if isinstance(reason, int):
             reason_text = f"HTTP Response Code {reason}"
         elif isinstance(reason, str):
@@ -147,43 +150,65 @@ class FileDownloadPipeline(MediaPipeline):
                 print('Failed to write to dead_queue file',
                       path, e)
 
-    def add_to_manifest(self, item):
-        path = f'{path_base}manifest.json'
-        with open(path, 'a+') as f:
-            try:
-                f.write(json.dumps(dict(item)))
-                f.write('\n')
+    def add_to_manifests(self, item):
+        for path in [self.job_manifest_path, self.cumulative_manifest_path]:
+            with open(path, 'a') as f:
+                try:
+                    f.write(
+                        json.dumps(
+                            {
+                                "version_hash": item["version_hash"],
+                                "doc_name": item["doc_name"],
+                                "crawler_used": item["crawler_used"],
+                                "access_timestamp": item["access_timestamp"]
+                            }
+                        )
+                    )
+                    f.write('\n')
 
-            except Exception as e:
-                print('Failed to write to manifest file',
-                      path, e)
+                except Exception as e:
+                    print('Failed to write to manifest file',
+                          path, e)
 
     def item_completed(self, results, item, info):
         """Called per item when all media requests have been processed"""
+        # return item for crawler output if download was skipped
+        if not info.downloaded:
+            return item
 
         # first in results is supposed to be ok status but it always returns true b/c 404 doesnt cause failure for some reason :(
         # so I added it in the media downloaded part as a sub tuple in return
         file_downloads = []
-        for (_, (okay, response)) in results:
+        for (_, (okay, response, reason)) in results:
             if not okay:
-                self.add_to_dead_queue(item, int(response.status))
+                self.add_to_dead_queue(
+                    item, reason if reason else int(response.status))
             else:
                 output_file_name = response.meta["output_file_name"]
 
-                path = f'{path_base}{output_file_name}'
+                file_download_path = f'{self.output_dir}{output_file_name}'
+                metadata_download_path = f"{file_download_path}.metadata"
 
-                with open(path, 'wb') as f:
+                with open(file_download_path, 'wb') as f:
                     try:
                         f.write(response.body)
-                        print('downloaded ', path)
-                        file_downloads.append(path)
+                        print('downloaded', file_download_path)
+                        file_downloads.append(file_download_path)
 
                     except Exception as e:
-                        print('Failed to write file', path, e)
+                        print('Failed to write file', file_download_path, e)
+
+                with open(metadata_download_path, 'w') as f:
+                    try:
+                        f.write(json.dumps(dict(item)))
+
+                    except Exception as e:
+                        print('Failed to write metadata',
+                              file_download_path, e)
 
         # if nothing was downloaded so don't add to manifest, just return item to crawl output
         if file_downloads:
-            self.add_to_manifest(item)
+            self.add_to_manifests(item)
 
         return item
 

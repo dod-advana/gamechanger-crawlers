@@ -1,3 +1,4 @@
+
 general_settings = {
     'ITEM_PIPELINES': {
         'dataPipelines.gc_scrapy.gc_scrapy.pipelines.DeduplicaterPipeline': 1,
@@ -8,11 +9,11 @@ general_settings = {
     'FEED_EXPORTERS': {
         'json': 'dataPipelines.gc_scrapy.gc_scrapy.exporters.JsonLinesAsJsonItemExporter',
     },
-    'LOG_LEVEL': 'WARN',
     'DOWNLOADER_MIDDLEWARES': {
         'dataPipelines.gc_scrapy.gc_scrapy.downloader_middlewares.BanEvasionMiddleware': 1,
     },
-    "ROBOTSTXT_OBEY": False
+    "ROBOTSTXT_OBEY": False,
+    'LOG_LEVEL': 'INFO',
 }
 
 selenium_settings = {
