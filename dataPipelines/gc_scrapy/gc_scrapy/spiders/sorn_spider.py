@@ -53,6 +53,7 @@ class SornSpider(GCSpider):
                 doc_title=sorn["title"],
                 doc_num=sorn["document_number"],
                 display_org= "Dept. of Defense",
+                display_doc_type = "SORN",
                 publication_date=sorn["publication_date"],
                 downloadable_items=downloadable_items,
                 version_hash_raw_data=version_hash_raw_data,
