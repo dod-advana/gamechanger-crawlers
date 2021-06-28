@@ -33,15 +33,17 @@ SUPPORTED_FILE_EXTENSIONS = [
 class FileDownloadPipeline(MediaPipeline):
     MEDIA_ALLOW_REDIRECTS = True
     previous_hashes = set()
-    output_dir: str
-    cumulative_manifest_path: str
-    job_manifest_path: str
+    output_dir: Path
+    cumulative_manifest_path: Path
+    job_manifest_path: Path
 
     def open_spider(self, spider):
         super().open_spider(spider)
-        self.output_dir = spider.download_output_dir
-        self.cumulative_manifest_path = f"{self.output_dir}cumulative-manifest.json.json"
-        self.job_manifest_path = f"{self.output_dir}manifest.json"
+        self.output_dir = Path(spider.download_output_dir).resolve()
+        self.cumulative_manifest_path = Path(
+            self.output_dir, 'cumulative-manifest.json').resolve()
+        self.job_manifest_path = Path(
+            self.output_dir, 'manifest.json').resolve()
         self.load_hashes_from_cumulative_manifest(
             self.cumulative_manifest_path, spider.name)
 
