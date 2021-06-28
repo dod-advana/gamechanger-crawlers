@@ -56,7 +56,7 @@ class SornSpider(GCSpider):
                 publication_date=sorn["publication_date"],
                 downloadable_items=downloadable_items,
                 version_hash_raw_data=version_hash_raw_data,
-                source_page_url="https://www.federalregister.gov/developers/documentation/api/v1"
+                source_page_url=sorn["html_url"]
             )
         if 'next_page_url' in response_json:
             yield scrapy.Request(url=response_json['next_page_url'], callback=self.parse_data)
