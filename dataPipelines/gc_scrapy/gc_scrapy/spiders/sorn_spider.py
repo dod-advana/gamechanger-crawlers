@@ -2,7 +2,6 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 import json
 import scrapy
-import re
 
 class SornSpider(GCSpider):
     name = "SORN"
@@ -42,13 +41,13 @@ class SornSpider(GCSpider):
 
             version_hash_raw_data={
                 "item_currency": sorn["publication_date"],
-                "version_hash": sorn["document_number"],
                 "public_inspection": sorn["public_inspection_pdf_url"],
                 "title": sorn["title"],
+                "type":sorn["type"]
             }
 
             yield DocItem(
-                doc_type="doc_type_raw",
+                doc_type="SORN",
                 doc_name="SORN " + sorn["document_number"],
                 doc_title=sorn["title"],
                 doc_num=sorn["document_number"],
