@@ -188,7 +188,7 @@ class FileDownloadPipeline(MediaPipeline):
             else:
                 output_file_name = response.meta["output_file_name"]
 
-                file_download_path = f'{self.output_dir}{output_file_name}'
+                file_download_path = Path(self.output_dir, output_file_name)
                 metadata_download_path = f"{file_download_path}.metadata"
 
                 with open(file_download_path, 'wb') as f:
