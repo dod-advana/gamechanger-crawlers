@@ -184,14 +184,14 @@ function run_crawler() {
 #   echo -e "\nDOWNLOADED FILES LOCATED AT: $LOCAL_DOWNLOAD_DIRECTORY_PATH \n"
 # }
 
-# function create_cumulative_manifest() {
-#   local cumulative_manifest="$LOCAL_DOWNLOAD_DIRECTORY_PATH/cumulative-manifest.json"
-#   if [[ -f "$LOCAL_PREVIOUS_MANIFEST_LOCATION" ]]; then
-#     cat "$LOCAL_PREVIOUS_MANIFEST_LOCATION" > "$cumulative_manifest"
-#     echo >> "$cumulative_manifest"
-#   fi
-#   cat "$LOCAL_NEW_MANIFEST_PATH" >> "$cumulative_manifest"
-# }
+function create_cumulative_manifest() {
+  local cumulative_manifest="$LOCAL_DOWNLOAD_DIRECTORY_PATH/cumulative-manifest.json"
+  if [[ -f "$LOCAL_PREVIOUS_MANIFEST_LOCATION" ]]; then
+    cat "$LOCAL_PREVIOUS_MANIFEST_LOCATION" > "$cumulative_manifest"
+    echo >> "$cumulative_manifest"
+  fi
+  cat "$LOCAL_NEW_MANIFEST_PATH" >> "$cumulative_manifest"
+}
 
 function register_log_in_manifest() {
   "$PYTHON_CMD" -m dataPipelines.gc_downloader add-to-manifest --file "$LOCAL_JOB_LOG_PATH" --manifest "$LOCAL_NEW_MANIFEST_PATH"
@@ -207,6 +207,7 @@ function register_crawl_log_in_manifest() {
 
 # setup
 setup_local_vars_and_dirs
+create_cumulative_manifest
 
 SECONDS=0
 cat <<EOF 2>&1 | tee -a "$LOCAL_JOB_LOG_PATH"
