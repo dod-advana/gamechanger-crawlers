@@ -22,6 +22,7 @@ import scrapy
 from scrapy.pipelines.media import MediaPipeline
 
 from pathlib import Path
+from dataPipelines.gc_scrapy.gc_scrapy.scanner import scanner
 
 SUPPORTED_FILE_EXTENSIONS = [
     "pdf",
@@ -195,12 +196,23 @@ class FileDownloadPipeline(MediaPipeline):
                     try:
                         f.write(response.body)
                         print('downloaded', file_download_path)
-                        file_downloads.append(file_download_path)
 
                     except Exception as e:
                         print('Failed to write file', file_download_path, e)
 
+                passed_scan = scanner.run_scanner(
+                    file_download_path)
+
+                print("PASSED SCAN?", passed_scan)
+                if not passed_scan:
+                    os.unlink(file_download_path)
+                    print('SCAN FAILED, REMOVING FILE', file_download_path)
+                    continue
+                else:
+                    file_downloads.append(file_download_path)
+
                 with open(metadata_download_path, 'w') as f:
+                    print("WRITING METADATA")
                     try:
                         f.write(json.dumps(dict(item)))
 
@@ -211,6 +223,9 @@ class FileDownloadPipeline(MediaPipeline):
         # if nothing was downloaded so don't add to manifest, just return item to crawl output
         if file_downloads:
             self.add_to_manifests(item)
+        else:
+            print("------------------ Nothing downloaded for",
+                  item.get('doc_name'))
 
         return item
 

@@ -4,7 +4,7 @@ general_settings = {
         'dataPipelines.gc_scrapy.gc_scrapy.pipelines.DeduplicaterPipeline': 1,
         'dataPipelines.gc_scrapy.gc_scrapy.pipelines.AdditionalFieldsPipeline': 2,
         'dataPipelines.gc_scrapy.gc_scrapy.pipelines.ValidateJsonPipeline': 1000,
-        'dataPipelines.gc_scrapy.gc_scrapy.pipelines.FileDownloadPipeline': 1001
+        'dataPipelines.gc_scrapy.gc_scrapy.pipelines.FileDownloadPipeline': 1001,
     },
     'FEED_EXPORTERS': {
         'json': 'dataPipelines.gc_scrapy.gc_scrapy.exporters.JsonLinesAsJsonItemExporter',
@@ -12,6 +12,8 @@ general_settings = {
     'DOWNLOADER_MIDDLEWARES': {
         'dataPipelines.gc_scrapy.gc_scrapy.downloader_middlewares.BanEvasionMiddleware': 1,
     },
+    'DOWNLOAD_MAXSIZE': 0,  # unlimited
+    'DOWNLOAD_WARNSIZE': 0,  # no warnings
     "ROBOTSTXT_OBEY": False,
     'LOG_LEVEL': 'INFO',
 }
