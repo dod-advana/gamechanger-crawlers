@@ -207,7 +207,6 @@ function register_crawl_log_in_manifest() {
 
 # setup
 setup_local_vars_and_dirs
-create_cumulative_manifest
 
 SECONDS=0
 cat <<EOF 2>&1 | tee -a "$LOCAL_JOB_LOG_PATH"
@@ -236,4 +235,4 @@ echo -e "\n $(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.
 register_log_in_manifest
 register_crawl_log_in_manifest
 # create combined manifest for future runs
-# create_cumulative_manifest
+create_cumulative_manifest
