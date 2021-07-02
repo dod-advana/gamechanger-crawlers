@@ -127,12 +127,13 @@ class DefaultDownloadHandler(DownloadHandler):
 
     @classmethod
     def process_doc(cls, doc: Document, output_dir: Union[str, Path]) -> List[ProcessedDocument]:
-
         with tempfile.TemporaryDirectory() as temp_dir_path:
             try:
+                print("test")
                 ddoc = download_doc(doc=doc, output_dir=temp_dir_path)
             except CouldNotDownload as e:
                 # for transparency's sake...
+                print("test2")
                 print(e)
                 raise e
 
