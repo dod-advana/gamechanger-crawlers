@@ -115,10 +115,14 @@ def download_file(
     for retry_attempt in range(int(num_retries)):
         # TODO: Implement actual request throttling through custom request adapter
         try:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36'}
             # NOTE the stream=True parameter below
-            with requests.get(url, stream=True, timeout=timeout_secs, allow_redirects=True,verify=False) as r:
+            with requests.get(url, stream=True, timeout=timeout_secs, allow_redirects=True,verify=False,headers=headers) as r:
                 r.raise_for_status()
-
+                path = urlparse(url).path
+                if "html" in r.headers["content-type"] and os.path.splitext(path)[1] == '':
+                    url = url+".html"
                 local_file_path = _output_dir.joinpath(derive_download_filename(resp=r, request_url=url))
                 if not overwrite:
                     local_file_path = Path(get_available_path(local_file_path))
