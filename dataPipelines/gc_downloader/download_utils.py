@@ -53,7 +53,9 @@ def derive_download_filename(resp: requests.Response, request_url: Optional[str]
     filename_of_last_resort = "unknown_file"
 
     if "Content-Disposition" in resp.headers.keys():
-        filename_from_headers = normalize_string(re.findall("filename=(.+)", resp.headers["Content-Disposition"])[0])
+        content_disposition=re.findall("filename=(.+)", resp.headers["Content-Disposition"])
+        if len(content_disposition) > 0:
+            filename_from_headers = normalize_string(content_disposition[0])
 
     if is_supported_filename(filename_from_headers):
         return filename_from_headers
