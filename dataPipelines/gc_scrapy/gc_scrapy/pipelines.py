@@ -36,10 +36,12 @@ class FileDownloadPipeline(MediaPipeline):
     output_dir: Path
     previous_manifest_path: Path
     job_manifest_path: Path
+    dont_filter_previous_hashes: bool
 
     def open_spider(self, spider):
         super().open_spider(spider)
         self.output_dir = Path(spider.download_output_dir).resolve()
+        self.dont_filter_previous_hashes = spider.dont_filter_previous_hashes
         self.previous_manifest_path = Path(
             self.output_dir, 'previous-manifest.json').resolve()
         self.job_manifest_path = Path(
@@ -55,10 +57,20 @@ class FileDownloadPipeline(MediaPipeline):
         )
 
         if not file_location or not os.path.isfile(file_location):
-            return
+            print(
+                f"\n\nPrevious manifest at {file_location} is not a file! Nothing will be filtered!\n\n")
+            if self.dont_filter_previous_hashes:
+                return
+            else:
+                exit(1)
 
+        print('Reading in previous manifest')
+        count = 0
         with file_location.open(mode="r") as f:
             for line in f.readlines():
+                count += 1
+                if count % 1000 == 0:
+                    print(f"{count} lines read in")
                 if not line.strip():
                     continue
 
@@ -71,6 +83,9 @@ class FileDownloadPipeline(MediaPipeline):
                 elif crawler_used == spider_name:
                     self.previous_hashes.add(jdoc['version_hash'])
 
+        num_hashes = len(self.previous_hashes)
+        print(f"Previous manifest loaded, will filter {num_hashes} hashes")
+
     @staticmethod
     def get_first_supported_downloadable_item(downloadable_items: list) -> Union[dict, None]:
         """Get first supported downloadable item corresponding to doc, has correct type and is not cac blocked"""
@@ -81,10 +96,10 @@ class FileDownloadPipeline(MediaPipeline):
 
         # info = SpiderInfo
         # class SpiderInfo:
-        ## self.spider = spider
-        ## self.downloading = set()
-        ## self.downloaded = {}
-        ## self.waiting = defaultdict(list)
+        # self.spider = spider
+        # self.downloading = set()
+        # self.downloaded = {}
+        # self.waiting = defaultdict(list)
 
         doc_name = item["doc_name"]
         if item["version_hash"] in self.previous_hashes:
