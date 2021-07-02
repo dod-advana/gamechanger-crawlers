@@ -35,23 +35,23 @@ class FileDownloadPipeline(MediaPipeline):
     MEDIA_ALLOW_REDIRECTS = True
     previous_hashes = set()
     output_dir: Path
-    cumulative_manifest_path: Path
+    previous_manifest_path: Path
     job_manifest_path: Path
 
     def open_spider(self, spider):
         super().open_spider(spider)
         self.output_dir = Path(spider.download_output_dir).resolve()
-        self.cumulative_manifest_path = Path(
-            self.output_dir, 'cumulative-manifest.json').resolve()
+        self.previous_manifest_path = Path(
+            self.output_dir, 'previous-manifest.json').resolve()
         self.job_manifest_path = Path(
             self.output_dir, 'manifest.json').resolve()
         self.load_hashes_from_cumulative_manifest(
-            self.cumulative_manifest_path, spider.name)
+            self.previous_manifest_path, spider.name)
 
-    def load_hashes_from_cumulative_manifest(self, cumulative_manifest_path, spider_name):
+    def load_hashes_from_cumulative_manifest(self, previous_manifest_path, spider_name):
         file_location = (
-            Path(cumulative_manifest_path).resolve()
-            if cumulative_manifest_path
+            Path(previous_manifest_path).resolve()
+            if previous_manifest_path
             else None
         )
 
@@ -132,7 +132,7 @@ class FileDownloadPipeline(MediaPipeline):
         print("****************************** MEDIA FAILED")
         print(failure)
         print(info.spider)
-        return (False, failure, None)
+        return (False, failure, "Pipeline Media Request Failed")
 
     def add_to_dead_queue(self, item, reason):
         path = f'{self.output_dir}dead_queue.json'
@@ -153,25 +153,25 @@ class FileDownloadPipeline(MediaPipeline):
                 print('Failed to write to dead_queue file',
                       path, e)
 
-    def add_to_manifests(self, item):
-        for path in [self.job_manifest_path, self.cumulative_manifest_path]:
-            with open(path, 'a') as f:
-                try:
-                    f.write(
-                        json.dumps(
-                            {
-                                "version_hash": item["version_hash"],
-                                "doc_name": item["doc_name"],
-                                "crawler_used": item["crawler_used"],
-                                "access_timestamp": item["access_timestamp"]
-                            }
-                        )
+    def add_to_manifest(self, item):
+        path = self.job_manifest_path
+        with open(self.job_manifest_path, 'a') as f:
+            try:
+                f.write(
+                    json.dumps(
+                        {
+                            "version_hash": item["version_hash"],
+                            "doc_name": item["doc_name"],
+                            "crawler_used": item["crawler_used"],
+                            "access_timestamp": item["access_timestamp"]
+                        }
                     )
-                    f.write('\n')
+                )
+                f.write('\n')
 
-                except Exception as e:
-                    print('Failed to write to manifest file',
-                          path, e)
+            except Exception as e:
+                print('Failed to write to manifest file',
+                      path, e)
 
     def item_completed(self, results, item, info):
         """Called per item when all media requests have been processed"""
@@ -222,7 +222,7 @@ class FileDownloadPipeline(MediaPipeline):
 
         # if nothing was downloaded so don't add to manifest, just return item to crawl output
         if file_downloads:
-            self.add_to_manifests(item)
+            self.add_to_manifest(item)
         else:
             print("------------------ Nothing downloaded for",
                   item.get('doc_name'))
