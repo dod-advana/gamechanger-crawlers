@@ -41,13 +41,15 @@ class FileDownloadPipeline(MediaPipeline):
     def open_spider(self, spider):
         super().open_spider(spider)
         self.output_dir = Path(spider.download_output_dir).resolve()
-        self.dont_filter_previous_hashes = spider.dont_filter_previous_hashes
-        self.previous_manifest_path = Path(
-            self.output_dir, 'previous-manifest.json').resolve()
         self.job_manifest_path = Path(
             self.output_dir, 'manifest.json').resolve()
-        self.load_hashes_from_cumulative_manifest(
-            self.previous_manifest_path, spider.name)
+
+        self.previous_manifest_path = Path(
+            spider.previous_manifest_location).resolve()
+
+        if not spider.dont_filter_previous_hashes:
+            self.load_hashes_from_cumulative_manifest(
+                self.previous_manifest_path, spider.name)
 
     def load_hashes_from_cumulative_manifest(self, previous_manifest_path, spider_name):
         file_location = (
