@@ -127,7 +127,7 @@ class FileDownloadPipeline(MediaPipeline):
             try:
                 yield scrapy.Request(url, meta={"output_file_name": output_file_name})
             except Exception as probably_url_error:
-                print('~~~~~~~~~~~~~~~~~~~~~~~~~~ REQUEST ERR', probably_url_error)
+                print('~~~~ REQUEST ERR', probably_url_error)
         else:
             print(f"No supported downloadable item for {item['doc_name']}")
             return item
@@ -145,7 +145,7 @@ class FileDownloadPipeline(MediaPipeline):
 
     def media_failed(self, failure, request, info):
         # I have never seen this called
-        print("****************************** MEDIA FAILED")
+        print("**** MEDIA FAILED")
         print(failure)
         print(info.spider)
         return (False, failure, "Pipeline Media Request Failed")
