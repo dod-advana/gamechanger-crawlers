@@ -46,6 +46,8 @@ class GCSpider(scrapy.Spider):
     randomly_delay_request: typing.Union[bool, range, typing.List[int]] = False
     source_page_url = None
 
+    dont_filter_previous_hashes: str = "false"
+
     @staticmethod
     def get_href_file_extension(url: str) -> str:
         """

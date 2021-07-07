@@ -40,11 +40,24 @@ class FileDownloadPipeline(MediaPipeline):
 
     def open_spider(self, spider):
         super().open_spider(spider)
+        # print("dont_filter_previous_hashes on spider", type(
+        #     spider.dont_filter_previous_hashes), spider.dont_filter_previous_hashes
+        # )
         self.output_dir = Path(spider.download_output_dir).resolve()
         self.previous_manifest_path = Path(
             self.output_dir, 'previous-manifest.json').resolve()
         self.job_manifest_path = Path(
             self.output_dir, 'manifest.json').resolve()
+
+        if spider.dont_filter_previous_hashes == "true":
+            return
+
+        if not getattr(spider, 'previous_manifest_location', None):
+            raise Exception("Missing `-a previous_manifest_location` argument")
+
+        self.previous_manifest_path = Path(
+            spider.previous_manifest_location).resolve()
+
         self.load_hashes_from_cumulative_manifest(
             self.previous_manifest_path, spider.name)
 
@@ -56,7 +69,9 @@ class FileDownloadPipeline(MediaPipeline):
         )
 
         if not file_location or not os.path.isfile(file_location):
-            return
+            raise Exception(
+                f"Previous manifest at {file_location} is not a file! Nothing will be filtered! Use `-a dont_filter_previous_hashes=true` to skip filtering of previous"
+            )
 
         with file_location.open(mode="r") as f:
             for line in f.readlines():
