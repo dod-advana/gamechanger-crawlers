@@ -99,8 +99,7 @@ function grab_manifest() {
 }
 
 function update_manifest() {
-  local inner_job_dl_dir="${HOST_JOB_DL_DIR}/$(basename "$CRAWLER_CONTAINER_DL_DIR")"
-  local local_new_cumulative_manifest="${inner_job_dl_dir}/cumulative-manifest.json"
+  local local_new_cumulative_manifest="${HOST_JOB_DL_DIR}/cumulative-manifest.json"
   local s3_backup_cumulative_manifest="${S3FULLPATH_MANIFEST%.json}.${JOB_TS_SIMPLE}.json"
 
   >&2 echo -e "\n[INFO] UPDATING LATEST MANIFEST\n"
@@ -120,31 +119,26 @@ function run_crawler_downloader() {
   docker run \
     --name "$container_name" \
     -u "$(id -u):$(id -g)" \
-    -v "${LOCAL_PREVIOUS_MANIFEST_LOCATION}:${CRAWLER_CONTAINER_MANIFEST_LOCATION}" \
+    -v "${LOCAL_PREVIOUS_MANIFEST_LOCATION}:${CRAWLER_CONTAINER_MANIFEST_LOCATION}:z" \
+    -v "${HOST_JOB_DL_DIR}:${CRAWLER_CONTAINER_DL_DIR}:z" \
     -e "LOCAL_DOWNLOAD_DIRECTORY_PATH=${CRAWLER_CONTAINER_DL_DIR}" \
     -e "LOCAL_PREVIOUS_MANIFEST_LOCATION=${CRAWLER_CONTAINER_MANIFEST_LOCATION}" \
     -e "TEST_RUN=${TEST_RUN:-no}" \
     "${CRAWLER_CONTAINER_IMAGE}"
 
   local docker_run_status=$?
-  sleep 120
-  docker cp "$container_name":"$CRAWLER_CONTAINER_DL_DIR" "$HOST_JOB_DL_DIR"
-
-  docker rm "$container_name" || true
   return $docker_run_status
 }
 
 function run_scanner_uploader() {
-  local inner_job_dl_dir="${HOST_JOB_DL_DIR}/$(basename "$CRAWLER_CONTAINER_DL_DIR")"
-
   printf "\n\n>>> RUNNING SCANNER CONTAINER <<<\n"
-  printf "\tHost scan dir is %s \n" "$inner_job_dl_dir"
+  printf "\tHost scan dir is %s \n" "$HOST_JOB_DL_DIR"
   printf "\tMounted in scanner container at %s \n\n" "$SCANNER_SCAN_DIR"
 
   docker run \
     --rm \
     -u "$(id -u):$(id -g)" \
-    -v "${inner_job_dl_dir}:${SCANNER_SCAN_DIR}:z" \
+    -v "${HOST_JOB_DL_DIR}:${SCANNER_SCAN_DIR}:z" \
     -e "AWS_DEFAULT_REGION=${SCANNER_UPLOADER_AWS_DEFAULT_REGION}" \
     -e "BUCKET=${SCANNER_UPLOADER_BUCKET}" \
     -e "S3_UPLOAD_BASE_PATH=${SCANNER_UPLOADER_S3PATH}" \
