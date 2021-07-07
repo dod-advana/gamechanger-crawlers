@@ -149,6 +149,9 @@ function run_scanner_uploader() {
       "/srv/dlp-scanner/parallel-dlp-scanner.py" \
         --input-path "${SCANNER_SCAN_DIR}" \
         --scanner-path "/srv/dlp-scanner/dlp-scanner.sh"
+
+  local docker_run_status=$?
+  return $docker_run_status
 }
 
 #####
