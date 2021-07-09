@@ -7,7 +7,7 @@ from dataPipelines.gc_scrapy.gc_scrapy.utils import abs_url
 import re
 import os
 
-class BrickSetSpider(scrapy.Spider):
+class TradocSpider(GCSpider):
     name = 'TRADOC'
     allowed_domains = ['adminpubs.tradoc.army.mil']
     file_type = "pdf"
