@@ -7,9 +7,9 @@ from dataPipelines.gc_scrapy.gc_scrapy.utils import abs_url
 import re
 
 
-class BrickSetSpider(scrapy.Spider):
-    name = 'brick_spider'
-    allowed_domains = ["treasury.gov"]
+class SammSpider(GCSpider):
+    name = 'samm'
+    allowed_domains = ["samm.dsca.mil/"]
     start_urls = [
         "https://samm.dsca.mil/listing/chapters",
         "https://samm.dsca.mil/policy-memoranda/PolicyMemoList-All",
@@ -73,7 +73,11 @@ class BrickSetSpider(scrapy.Spider):
                 doc_num = doc_title
                 doc_type = "SAMM"
                 doc_name = doc_type + ' ' + doc_num
-                url = base_url + url[-1]
+                if url[-1].startswith("http"):
+                    url = url[-1]
+                else:
+                    url = base_url + url[-1]
+                url = url.replace(" ","%20")
                 cac_login_required = False
                 cac_login_required = False
                 if "pdf" in url:
@@ -131,8 +135,11 @@ class BrickSetSpider(scrapy.Spider):
                     doc_num = doc_title
                     doc_type = "SAMM"
                     doc_name = doc_type + ' ' + doc_num
-                url = base_url + url[-1]
-                cac_login_required = False
+                if url[-1].startswith("http"):
+                    url = url[-1]
+                else:
+                    url = base_url + url[-1]
+                url = url.replace(" ","%20")
                 cac_login_required = False
                 if "pdf" in url:
                     doc_extension = "pdf"
@@ -184,8 +191,11 @@ class BrickSetSpider(scrapy.Spider):
                 doc_num = doc_title
                 doc_type = "SAMM"
                 doc_name = doc_type + ' ' + doc_num
-                url = base_url + url[-1]
-                cac_login_required = False
+                if url[-1].startswith("http"):
+                    url = url[-1]
+                else:
+                    url = base_url + url[-1]
+                url = url.replace(" ","%20")
                 cac_login_required = False
                 if "pdf" in url:
                     doc_extension = "pdf"
@@ -235,7 +245,11 @@ class BrickSetSpider(scrapy.Spider):
                 doc_num = doc_title
                 doc_type = "SAMM"
                 doc_name = doc_type + ' ' + doc_num
-                url = base_url + url
+                if url.startswith("http"):
+                    url = url
+                else:
+                    url = base_url + url
+                url = url.replace(" ","%20")
                 cac_login_required = False
                 if "pdf" in url:
                     doc_extension = "pdf"
@@ -288,7 +302,11 @@ class BrickSetSpider(scrapy.Spider):
                     doc_num = doc_title
                     doc_type = "SAMM"
                     doc_name = doc_type + ' ' + doc_num
-                    url = base_url + url[0]
+                    if url[0].startswith("http"):
+                        url = url[0]
+                    else:
+                        url = base_url + url[0]
+                    url = url.replace(" ", "%20")
                     cac_login_required = False
                     if "pdf" in url:
                         doc_extension = "pdf"
@@ -329,7 +347,11 @@ class BrickSetSpider(scrapy.Spider):
                         doc_num = doc_title2
                         doc_type = "SAMM"
                         doc_name2 = doc_type + ' ' + doc_num
-                        url2 = base_url + url[i]
+                        if url[i].startswith("http"):
+                            url2 = url[i]
+                        else:
+                            url2 = base_url + url[i]
+                        url2 = url2.replace(" ", "%20")
                         cac_login_required = False
                         if "pdf" in url2:
                             doc_extension = "pdf"
@@ -380,7 +402,11 @@ class BrickSetSpider(scrapy.Spider):
                 doc_num = doc_title
                 doc_type = "SAMM"
                 doc_name = doc_type + ' ' + doc_num
-                url = base_url + url[-1]
+                if url[-1].startswith("http"):
+                    url = url[-1]
+                else:
+                    url = base_url + url[-1]
+                url = url.replace(" ","%20")
                 cac_login_required = False
                 if "pdf" in url:
                     doc_extension = "pdf"
@@ -432,7 +458,11 @@ class BrickSetSpider(scrapy.Spider):
                 doc_num = doc_title
                 doc_type = "SAMM"
                 doc_name = doc_type + ' ' + doc_num
-                url = base_url + url[-1]
+                if url[-1].startswith("http"):
+                    url = url[-1]
+                else:
+                    url = base_url + url[-1]
+                url = url.replace(" ","%20")
                 cac_login_required = False
                 if "pdf" in url:
                     doc_extension = "pdf"
@@ -484,7 +514,11 @@ class BrickSetSpider(scrapy.Spider):
                 doc_num = doc_title
                 doc_type = "SAMM"
                 doc_name = doc_type + ' ' + doc_num
-                url = base_url + url[-1]
+                if url[-1].startswith("http"):
+                    url = url[-1]
+                else:
+                    url = base_url + url[-1]
+                url = url.replace(" ","%20")
                 cac_login_required = False
                 if "pdf" in url:
                     doc_extension = "pdf"
@@ -533,7 +567,11 @@ class BrickSetSpider(scrapy.Spider):
                     doc_num = doc_title
                     doc_type = "SAMM"
                     doc_name = doc_type + ' ' + doc_num
-                    url = base_url + url2[i]
+                    if url2[i].startswith("http"):
+                        url = url2[i]
+                    else:
+                        url = base_url + url2[i]
+                    url = url.replace(" ", "%20")
                     cac_login_required = False
                     if "pdf" in url:
                         doc_extension = "pdf"
@@ -581,7 +619,11 @@ class BrickSetSpider(scrapy.Spider):
                 doc_num = doc_title.replace("SAMM", "")
                 doc_type = "SAMM"
                 doc_name = doc_type + ' ' + doc_num
-                url = base_url + url[-1]
+                if url[-1].startswith("http"):
+                    url = url[-1]
+                else:
+                    url = base_url + url[-1]
+                url = url.replace(" ","%20")
                 if "pdf" not in url:
                     continue
                 cac_login_required = False
