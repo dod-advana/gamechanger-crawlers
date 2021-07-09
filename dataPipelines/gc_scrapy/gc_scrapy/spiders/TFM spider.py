@@ -6,8 +6,8 @@ import time
 from dataPipelines.gc_scrapy.gc_scrapy.utils import abs_url
 import re
 
-class BrickSetSpider(scrapy.Spider):
-    name = 'brick_spider'
+class TFMSpider(GCSpider):
+    name = 'TFMSpider'
     allowed_domains = ["treasury.gov"]
     start_urls = [
         "https://tfm.fiscal.treasury.gov/v1.html",
