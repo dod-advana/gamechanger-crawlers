@@ -8,6 +8,7 @@ import re
 
 
 class SammSpider(GCSpider):
+    download_warnsize=0
     name = 'samm'
     allowed_domains = ["samm.dsca.mil/"]
     start_urls = [
