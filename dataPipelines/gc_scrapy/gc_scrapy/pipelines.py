@@ -125,7 +125,10 @@ class FileDownloadPipeline(MediaPipeline):
             output_file_name = f"{doc_name}.{extension}"
 
             try:
-                yield scrapy.Request(url, meta={"output_file_name": output_file_name})
+                if info.spider.download_request_headers:
+                    yield scrapy.Request(url, headers=info.spider.download_request_headers, meta={"output_file_name": output_file_name})
+                else:
+                    yield scrapy.Request(url, meta={"output_file_name": output_file_name})
             except Exception as probably_url_error:
                 print('~~~~ REQUEST ERR', probably_url_error)
         else:
@@ -210,12 +213,16 @@ class FileDownloadPipeline(MediaPipeline):
 
                 with open(file_download_path, 'wb') as f:
                     try:
-                        f.write(response.body)
+
+                        to_write = info.spider.download_response_handler(
+                            response)
+                        f.write(to_write)
                         print('downloaded', file_download_path)
                         file_downloads.append(file_download_path)
 
                     except Exception as e:
-                        print('Failed to write file', file_download_path, e)
+                        print('Failed to write file to',
+                              file_download_path, 'Error:', e)
 
                 with open(metadata_download_path, 'w') as f:
                     try:
@@ -290,7 +297,7 @@ class AdditionalFieldsPipeline:
             item['cac_login_required'] = spider.cac_login_required
 
         if item.get('doc_type') is None:
-            item['doc_type'] = spider.doc_type
+            item['doc_type'] = getattr(spider, 'doc_type', '')
 
         if item.get('doc_num') is None:
             item['doc_num'] = ""

@@ -20,8 +20,8 @@ class GCSeleniumSpider(GCSpider):
     custom_settings: dict = {**general_settings, **selenium_settings}
     selenium_request_overrides: dict = {}
 
-    selenium_spider_start_request_retries_allowed: int
-    selenium_spider_start_request_retry_wait: int
+    selenium_spider_start_request_retries_allowed: int = 5
+    selenium_spider_start_request_retry_wait: int = 30
 
     def start_requests(self):
         """

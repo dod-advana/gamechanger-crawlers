@@ -115,7 +115,7 @@ class SeleniumMiddleware:
 
         if request.wait_until:
             retries = getattr(
-                spider, 'selenium_spider_start_request_retries_allowed', 0)
+                spider, 'selenium_spider_start_request_retries_allowed', 5)
             retry_wait = getattr(
                 spider, 'selenium_spider_start_request_retry_wait', 30)
 
@@ -201,4 +201,6 @@ class BanEvasionMiddleware:
         if dr and not request.meta.get("skip_delay"):
             delay_opts = dr if isinstance(dr, (range, list)) else self.delays
             delay = choice(delay_opts)
-            sleep(delay)
+            # makes sleep more interruptable
+            for _ in range(delay):
+                sleep(1)

@@ -1,106 +1,141 @@
 # -- coding: utf-8 --
+import scrapy
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
-from dataPipelines.gc_scrapy.gc_scrapy.GCSeleniumSpider import GCSeleniumSpider
+from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
-from selenium.webdriver import Chrome
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-import bs4
-import re
-
-re_1 = re.compile("^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$")
-re_2 = re.compile("^\d$")
+import json
+import copy
+import base64
 
 
-class NatoSpider(GCSeleniumSpider):
+class NatoSpider(GCSpider):
     name = "nato_stanag"
 
+    source_page_url = "https://nso.nato.int/nso/nsdd/ListPromulg.html"
     start_urls = [
-        "https://nso.nato.int/nso/nsdd/ListPromulg.html"
+        "https://nso.nato.int/nso/nsdd/webapi/api/application"
     ]
+    data_url = "https://nso.nato.int/nso/nsdd/webapi/api/current-nato-standards/list"
 
-    selenium_request_overrides = {
-        "wait_until": EC.presence_of_element_located((By.XPATH, "//*[@id='headerSO']"))
+    # nato site seems ban happy, slow requests a lot
+    # randomly_delay_request = range(10, 20)
+
+    headers = {
+        "accept": "application/json",
+        "accept-language": "en-US,en;q=0.9",
+        "cache-control": "no-cache",
+        "content-type": "application/json",
+        "pragma": "no-cache",
+        "requestverificationtoken": "undefined",
+        "sec-ch-ua": "\" Not;A Brand\";v=\"99\", \"Google Chrome\";v=\"91\", \"Chromium\";v=\"91\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
+        "x-requested-with": "XMLHttpRequest"
     }
 
-    pdf_prefix = 'https://nso.nato.int/nso/'
+    @staticmethod
+    def download_response_handler(response):
+        data = json.loads(response.body)
+        content = data['content']
+        return base64.b64decode(content)
+
+    def start_requests(self):
+        yield scrapy.Request(url=self.start_urls[0], method='GET', headers=self.headers)
+
+    def create_data_headers(self, response):
+        data = json.loads(response.body)
+        token = data.get('token', None)
+        if not token:
+            raise('No requestverificationtoken, cannot request data')
+
+        self.headers['requestverificationtoken'] = token
+        self.download_request_headers = copy.deepcopy(self.headers)
+
+        return self.headers
 
     def parse(self, response):
-        driver: Chrome = response.meta["driver"]
-        page_url = response.url
-        html = driver.execute_script(
-            "return document.documentElement.outerHTML")
-        soup = bs4.BeautifulSoup(html, features="html.parser")
+        headers = self.create_data_headers(response)
+        yield scrapy.Request(url=self.data_url, callback=self.parse_data, headers=headers, method="POST", body="")
 
-        table = soup.find('table', attrs={'id': 'dataSearchResult'})
-        rows = table.find_all('tr')
+    def parse_data(self, response):
+        data = json.loads(response.body)
 
-        for row in rows[1:]:
-            data = row.find_all('td')
-            if "No" not in data[1].text:
-                doc_title = data[4].text.splitlines()[1].strip()
-                doc_helper = data[2].text.split("Ed:")[0].strip()
+        for listing in data:
+            # items are stacked in children, unpack them then yield
+            to_yield = []
+            queue = [listing]
+            while queue:
+                current = queue.pop(0)
+                children = current.get('children', [])
+                to_yield.append(current)
+                for child in children:
+                    queue.append(child)
 
-                if "STANAG" in doc_helper or "STANREC" in doc_helper:
-                    doc_num = doc_helper.split(
-                        "\n")[1].strip().replace(" ", "_")
-                    doc_type = doc_helper.split(
-                        "\n")[0].strip().replace(" ", "_")
+            for item in to_yield:
+                iden = item['id']
+                is_classified = item['isClassifiedEn']
 
-                else:
-                    doc_ = doc_helper.split("\n")[0].strip()
-                    doc_num = doc_.split('-', 1)[1].strip().replace(" ", "_")
-                    doc_type = doc_.split('-', 1)[0].strip().replace(" ", "_")
-                    if len(doc_helper.split()) > 1:
-                        if re_1.match(doc_helper.split()[1].strip()):
-                            doc_num = doc_num + "_VOL" + \
-                                doc_helper.split()[1].strip()
-                        if re_2.match(doc_helper.split()[1].strip()):
-                            doc_num = doc_num + "_PART" + \
-                                doc_helper.split()[1].strip()
+                # These use `or ''` b/c they exist as None instead of being undefined so the .get(<name>, default) returns None
 
-                if len(data[2].text.split("VOL")) > 1:
-                    volume = data[2].text.split("VOL")[1].split()[0].strip()
-                    doc_num = doc_num + "_VOL" + volume
+                item_type = item.get('type') or ''
+                doc_type = item.get('documentType') or ''
+                doc_num = item.get('number') or ''
+                doc_title_raw = item.get('longTitle') or ''
+                doc_title = self.ascii_clean(doc_title_raw)
+                short_title_raw = item.get('shortTitle') or ''
+                short_title = self.ascii_clean(short_title_raw)
+                promulgation_date_raw = item.get('promulgationDate') or ''
 
-                if len(data[2].text.split("PART")) > 1:
-                    volume = data[2].text.split("PART")[1].split()[0].strip()
-                    doc_num = doc_num + "_PART" + volume
-                doc_name = doc_type + " " + doc_num
-
-                if len(data[2].text.split("Ed:")) > 1:
-                    edition = data[2].text.split("Ed:")[1].strip()
-                else:
-                    edition = ""
-
-                publication_date = data[5].text.splitlines()[1].strip()
-                pdf_suffix = data[4].find('a')
-                if pdf_suffix is None:
+                if iden == 0 and not item_type:
                     continue
-                if "../classDoc.htm" in pdf_suffix['href']:
-                    cac_login_required = True
-                else:
-                    cac_login_required = False
 
-                di = {
-                    'compression_type': None,
-                    'doc_type': 'pdf',
-                    'web_url': self.pdf_prefix + pdf_suffix['href'].replace('../', '').replace(" ", "%20")
-                }
+                if promulgation_date_raw:
+                    publication_date, *_ = promulgation_date_raw.partition('T')
+                else:
+                    publication_date = None
+
+                edition = item['edition'] or ''
+                volume = item['volume'] or ''
+                version = item['version'] or ''
+
+                if is_classified:
+                    continue
+
+                cac_login_required = is_classified
+
+                doc_name_list = [
+                    doc_type, item_type, doc_num, short_title, f"Ed: {edition}" if edition else "", f"Ver. {version}" if version else "", f"Vol. {volume}" if volume else ""
+                ]
+
+                doc_name = " ".join([name for name in doc_name_list if name])
 
                 version_hash_fields = {
-                    "editions_and_volume": edition,
-                    "type": data[1].text
+                    "edition": edition,
+                    "volume": volume,
+                    "version": version,
+                    "publication_date": publication_date
                 }
+
+                web_url = f"https://nso.nato.int/nso/nsdd/webapi/api/download-manager/download?id={iden}&type={item_type}&language=EN&subType=None"
+
+                downloadable_items = [
+                    {
+                        "compression_type": None,
+                        "doc_type": "pdf",
+                        "web_url": web_url
+                    }
+                ]
 
                 yield DocItem(
                     doc_name=doc_name,
                     doc_title=doc_title,
                     doc_num=doc_num,
                     doc_type=doc_type,
-                    publication_date=publication_date,
                     cac_login_required=cac_login_required,
-                    source_page_url=page_url.strip(),
+                    publication_date=publication_date,
                     version_hash_raw_data=version_hash_fields,
-                    downloadable_items=[di]
+                    downloadable_items=downloadable_items,
+                    source_fqdn="nso.nato.int"
                 )
