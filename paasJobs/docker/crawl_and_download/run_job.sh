@@ -19,7 +19,7 @@ source "$SETTINGS_CONF_PATH"
 #####
 
 function setup_local_vars_and_dirs() {
-
+  LOCAL_SPIDER_LIST_FILE="$LOCAL_SPIDER_LIST_FILE"
   LOCAL_CRAWLER_OUTPUT_FILE_PATH="$LOCAL_DOWNLOAD_DIRECTORY_PATH/crawler_output.json"
   LOCAL_JOB_LOG_PATH="$LOCAL_DOWNLOAD_DIRECTORY_PATH/job.log"
   LOCAL_PREVIOUS_MANIFEST_LOCATION="${LOCAL_PREVIOUS_MANIFEST_LOCATION:-$SCRIPT_PARENT_DIR/previous-manifest.json}"
@@ -32,7 +32,7 @@ function setup_local_vars_and_dirs() {
   touch "$LOCAL_JOB_LOG_PATH"
 
   echo LOCAL_DOWNLOAD_DIRECTORY_PATH is "$LOCAL_DOWNLOAD_DIRECTORY_PATH"
-
+  echo LOCAL_SPIDER_LIST_FILE is "$LOCAL_SPIDER_LIST_FILE"
 }
 
 #####
@@ -40,169 +40,20 @@ function setup_local_vars_and_dirs() {
 #####
 
 function run_crawler() {
-
   if [[ "${TEST_RUN:-no}" == "yes" ]]; then
     echo -e "\n RUNNING SCRAPY SPIDER: us_code_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/us_code_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION"  -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
+  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/us_code_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
    || echo "^^^ CRAWLER ERROR ^^^"
     return 0
   fi
 
   set +o pipefail
 
-    echo -e "\n RUNNING SCRAPY SPIDER: far_subpart_regs_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/far_subpart_regs_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: army_pubs_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/army_pubs_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: marine_corp_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/marine_corp_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: jcs_pubs_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/jcs_pubs_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: army_reserve_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/army_reserve_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: sorn_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/sorn_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: fasab_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/fasab_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: dfar_subpart_regs_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/dfar_subpart_regs_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: milpersman_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/milpersman_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: cfr_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/cfr_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: us_code_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/us_code_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: legislation_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/legislation_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: air_force_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/air_force_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: dod_issuances_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/dod_issuances_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: jumbo_dfar_far_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/jumbo_dfar_far_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: fmr_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/fmr_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: opm_pubs_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/opm_pubs_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: nato_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/nato_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: navy_reserve_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/navy_reserve_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: chief_national_guard_bureau_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/chief_national_guard_bureau_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: coast_guard_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/coast_guard_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: bupers_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/bupers_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: secnav_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/secnav_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: dod_coronavirus_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/dod_coronavirus_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: ic_policies_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/ic_policies_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
-    echo -e "\n RUNNING SCRAPY SPIDER: executive_orders_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/executive_orders_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
+  "$PYTHON_CMD" -m dataPipelines.gc_scrapy crawl --download-output-dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" --previous-manifest-location=$LOCAL_PREVIOUS_MANIFEST_LOCATION --new-manifest-location=$LOCAL_CRAWLER_OUTPUT_FILE_PATH --spiders-file-location=$LOCAL_SPIDER_LIST_FILE
 
   set -o pipefail
+
 }
-
-# function run_downloader() {
-#   echo -e "\nRUNNING DOWNLOADER\n"
-
-#   if [[ "${TEST_RUN:-no}" == "yes" ]]; then
-
-#     "$PYTHON_CMD" -m dataPipelines.gc_downloader download \
-#       --input-json "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" \
-#       --output-dir "$LOCAL_DOWNLOAD_DIRECTORY_PATH" \
-#       --new-manifest "$LOCAL_NEW_MANIFEST_PATH"
-
-#   else
-
-#     "$PYTHON_CMD" -m dataPipelines.gc_downloader download \
-#       --input-json "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" \
-#       --output-dir "$LOCAL_DOWNLOAD_DIRECTORY_PATH" \
-#       --new-manifest "$LOCAL_NEW_MANIFEST_PATH" \
-#       --previous-manifest "$LOCAL_PREVIOUS_MANIFEST_LOCATION"
-#   fi
-
-#   echo -e "\nDOWNLOADED FILES LOCATED AT: $LOCAL_DOWNLOAD_DIRECTORY_PATH \n"
-# }
 
 function create_cumulative_manifest() {
   local cumulative_manifest="$LOCAL_DOWNLOAD_DIRECTORY_PATH/cumulative-manifest.json"

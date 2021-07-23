@@ -40,6 +40,8 @@ class FileDownloadPipeline(MediaPipeline):
 
     def open_spider(self, spider):
         super().open_spider(spider)
+        print("++ Initiating downloader for", spider.name)
+
         self.output_dir = Path(spider.download_output_dir).resolve()
         self.job_manifest_path = Path(
             self.output_dir, 'manifest.json').resolve()
@@ -151,7 +153,11 @@ class FileDownloadPipeline(MediaPipeline):
         return (False, failure, "Pipeline Media Request Failed")
 
     def add_to_dead_queue(self, item, reason):
-        path = f'{self.output_dir}dead_queue.json'
+        path = (
+            Path(self.output_dir, 'dead_queue.json').resolve()
+            if self.output_dir
+            else None
+        )
         if isinstance(reason, int):
             reason_text = f"HTTP Response Code {reason}"
         elif isinstance(reason, str):
