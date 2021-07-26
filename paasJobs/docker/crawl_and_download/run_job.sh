@@ -75,9 +75,9 @@ function register_crawl_log_in_manifest() {
 ## ## ## ## ## ## ACTUAL EXEC FLOW
 ##### ##### #####
 
-echo "ENTIRE ENVIRONMENT\n\n"
-echo env
-echo "\n\n"
+echo -e "ENTIRE ENVIRONMENT\n\n"
+echo $env
+echo -e "\n\n"
 # setup
 setup_local_vars_and_dirs
 
