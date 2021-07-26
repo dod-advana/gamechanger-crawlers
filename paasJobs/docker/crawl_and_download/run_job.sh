@@ -19,7 +19,6 @@ source "$SETTINGS_CONF_PATH"
 #####
 
 function setup_local_vars_and_dirs() {
-  LOCAL_SPIDER_LIST_FILE="$LOCAL_SPIDER_LIST_FILE"
   LOCAL_CRAWLER_OUTPUT_FILE_PATH="$LOCAL_DOWNLOAD_DIRECTORY_PATH/crawler_output.json"
   LOCAL_JOB_LOG_PATH="$LOCAL_DOWNLOAD_DIRECTORY_PATH/job.log"
   LOCAL_PREVIOUS_MANIFEST_LOCATION="${LOCAL_PREVIOUS_MANIFEST_LOCATION:-$SCRIPT_PARENT_DIR/previous-manifest.json}"
@@ -76,6 +75,9 @@ function register_crawl_log_in_manifest() {
 ## ## ## ## ## ## ACTUAL EXEC FLOW
 ##### ##### #####
 
+echo "ENTIRE ENVIRONMENT\n\n"
+echo env
+echo "\n\n"
 # setup
 setup_local_vars_and_dirs
 
