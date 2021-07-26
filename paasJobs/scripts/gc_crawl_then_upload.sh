@@ -25,6 +25,7 @@ dev)
   ;;
 esac
 
+>&2 echo -e "\n[INFO] CORE_DOWNLOADER_IMAGE NAME: $CORE_DOWNLOADER_IMAGE\n"
 # Set job vars
 JOB_TS="$(date +%FT%T)"
 JOB_TS_SIMPLE="$(date --date="$JOB_TS" +%Y%m%d_%H%M%S)"
