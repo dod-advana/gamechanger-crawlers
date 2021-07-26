@@ -89,6 +89,7 @@ def crawl(download_output_dir, previous_manifest_location, new_manifest_dir, spi
             for line in f.readlines():
                 spiders_to_run.append(line)
     else:
+        print('No spider file location specified, running everything in gc_scrapy/spiders')
         _, _, filenames = next(os.walk(
             f'{current_dir}/gc_scrapy/spiders'))
         spiders_to_run = filenames
