@@ -83,11 +83,12 @@ def crawl(download_output_dir, crawler_output_location, previous_manifest_locati
     if spiders_file_location:
         with open(spiders_file_location) as f:
             for line in f.readlines():
-                spiders_to_run.append(line)
+                if line.strip():
+                    spiders_to_run.append(line.strip())
     else:
         print('No spider file location specified, running everything in')
         spiders_to_run = [
-            f for f in Path(current_dir).iterdir()
+            f.name for f in Path(f'{current_dir}/gc_scrapy/spiders').iterdir()
             if f.is_file() and not f.name.startswith("_")
         ]
 
@@ -98,9 +99,8 @@ def crawl(download_output_dir, crawler_output_location, previous_manifest_locati
         else:
             raise RuntimeError('NO SPIDERS FOUND IN SPIDERS DIR... EXITING')
 
-    cleaned_spiders_to_run = [s.strip() for s in spiders_to_run if s.strip()]
-    print('Done resolving spiders, will run', len(cleaned_spiders_to_run))
-    for s in cleaned_spiders_to_run:
+    print('Done resolving spiders, will run', len(spiders_to_run))
+    for s in spiders_to_run:
         print(' - ', s)
     print()
 
@@ -109,9 +109,8 @@ def crawl(download_output_dir, crawler_output_location, previous_manifest_locati
     runner = CrawlerRunner(settings)
 
     spider_class_refs = []
-    for spider_file in cleaned_spiders_to_run:
+    for spider_module_name in spiders_to_run:
         try:
-            spider_module_name = spider_file.strip()
             spider_path = f'dataPipelines.gc_scrapy.gc_scrapy.spiders.{spider_module_name}'
             spider_class = resolve_spider(spider_path)
             if not spider_class:

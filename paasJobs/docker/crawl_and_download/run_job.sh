@@ -52,7 +52,7 @@ function run_crawler() {
   --download-output-dir=$LOCAL_DOWNLOAD_DIRECTORY_PATH \
   --crawler-output-location=$LOCAL_CRAWLER_OUTPUT_FILE_PATH \
   --previous-manifest-location=$LOCAL_PREVIOUS_MANIFEST_LOCATION \
-  ${LOCAL_SPIDER_LIST_FILE:+ --spiders-file-location=LOCAL_SPIDER_LIST_FILE}
+  ${LOCAL_SPIDER_LIST_FILE:+ "--spiders-file-location=$LOCAL_SPIDER_LIST_FILE"}
 
   set -o pipefail
 
