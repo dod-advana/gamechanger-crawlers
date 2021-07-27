@@ -4,8 +4,7 @@ from textwrap import dedent
 from scrapy.crawler import CrawlerRunner
 import importlib
 import os
-from twisted.internet import reactor, defer
-
+from pathlib import Path
 from scrapy.utils.project import get_project_settings
 from scrapy.utils.spider import iter_spider_classes
 from twisted.internet import reactor, defer
@@ -87,9 +86,10 @@ def crawl(download_output_dir, crawler_output_location, previous_manifest_locati
                 spiders_to_run.append(line)
     else:
         print('No spider file location specified, running everything in')
-        _, _, filenames = next(os.walk(
-            f'{current_dir}/gc_scrapy/spiders'))
-        spiders_to_run = filenames
+        spiders_to_run = [
+            f for f in Path(current_dir).iterdir()
+            if f.is_file() and not f.name.startswith("_")
+        ]
 
     if not spiders_to_run:
         if spiders_file_location:
