@@ -34,10 +34,10 @@ def cli():
     required=True
 )
 @click.option(
-    '--previous-manifest-location',
-    help='File location of previous manifest',
+    '--crawler-output-location',
+    help='File location for crawler output to go',
     type=click.Path(
-        exists=True,
+        exists=False,
         file_okay=True,
         dir_okay=False,
         resolve_path=True
@@ -45,12 +45,12 @@ def cli():
     required=True
 )
 @click.option(
-    '--new-manifest-dir',
-    help='Directory to put the new manifest file',
+    '--previous-manifest-location',
+    help='File location of previous manifest',
     type=click.Path(
         exists=True,
-        file_okay=False,
-        dir_okay=True,
+        file_okay=True,
+        dir_okay=False,
         resolve_path=True
     ),
     required=True
@@ -67,19 +67,16 @@ def cli():
     default=None,
     required=False
 )
-def crawl(download_output_dir, previous_manifest_location, new_manifest_dir, spiders_file_location):
-
-    output_file = f"{new_manifest_dir}/output.json"
+def crawl(download_output_dir, crawler_output_location, previous_manifest_location, spiders_file_location):
 
     print(dedent(f"""
     CRAWLING INITIATED
 
     -- ARGS/VARS --
     download_output_dir={download_output_dir}
+    crawler_output_location={crawler_output_location}
     previous_manifest_location={previous_manifest_location}
-    new_manifest_dir={new_manifest_dir}
     spiders_file_location={spiders_file_location}
-    output_file={output_file}
     """))
 
     current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -89,7 +86,7 @@ def crawl(download_output_dir, previous_manifest_location, new_manifest_dir, spi
             for line in f.readlines():
                 spiders_to_run.append(line)
     else:
-        print('No spider file location specified, running everything in gc_scrapy/spiders')
+        print('No spider file location specified, running everything in')
         _, _, filenames = next(os.walk(
             f'{current_dir}/gc_scrapy/spiders'))
         spiders_to_run = filenames
@@ -108,7 +105,7 @@ def crawl(download_output_dir, previous_manifest_location, new_manifest_dir, spi
     print()
 
     settings = get_project_settings()
-    settings.set('FEED_URI', output_file)
+    settings.set('FEED_URI', crawler_output_location)
     runner = CrawlerRunner(settings)
 
     spider_class_refs = []
@@ -129,8 +126,7 @@ def crawl(download_output_dir, previous_manifest_location, new_manifest_dir, spi
     crawl_kwargs = {
         'download_output_dir': download_output_dir,
         'previous_manifest_location': previous_manifest_location,
-        'new_manifest_dir': new_manifest_dir,
-        'output': output_file
+        'output': crawler_output_location
     }
 
     try:

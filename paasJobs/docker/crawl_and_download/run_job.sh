@@ -48,7 +48,11 @@ function run_crawler() {
 
   set +o pipefail
 
-  "$PYTHON_CMD" -m dataPipelines.gc_scrapy crawl --download-output-dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" --previous-manifest-location=$LOCAL_PREVIOUS_MANIFEST_LOCATION --new-manifest-location=$LOCAL_CRAWLER_OUTPUT_FILE_PATH --spiders-file-location=$LOCAL_SPIDER_LIST_FILE
+  "$PYTHON_CMD" -m dataPipelines.gc_scrapy crawl \
+  --download-output-dir=$LOCAL_DOWNLOAD_DIRECTORY_PATH \
+  --crawler-output-location=$LOCAL_CRAWLER_OUTPUT_FILE_PATH \
+  --previous-manifest-location=$LOCAL_PREVIOUS_MANIFEST_LOCATION \
+  --spiders-file-location=$LOCAL_SPIDER_LIST_FILE
 
   set -o pipefail
 
