@@ -31,7 +31,7 @@ function setup_local_vars_and_dirs() {
   touch "$LOCAL_JOB_LOG_PATH"
 
   echo LOCAL_DOWNLOAD_DIRECTORY_PATH is "$LOCAL_DOWNLOAD_DIRECTORY_PATH"
-  echo LOCAL_SPIDER_LIST_FILE is "$LOCAL_SPIDER_LIST_FILE"
+  echo LOCAL_SPIDER_LIST_FILE is "${LOCAL_SPIDER_LIST_FILE:-'No file defined, running all'}"
 }
 
 #####
@@ -52,7 +52,7 @@ function run_crawler() {
   --download-output-dir=$LOCAL_DOWNLOAD_DIRECTORY_PATH \
   --crawler-output-location=$LOCAL_CRAWLER_OUTPUT_FILE_PATH \
   --previous-manifest-location=$LOCAL_PREVIOUS_MANIFEST_LOCATION \
-  --spiders-file-location=$LOCAL_SPIDER_LIST_FILE
+  ${LOCAL_SPIDER_LIST_FILE:+ --spiders-file-location=LOCAL_SPIDER_LIST_FILE}
 
   set -o pipefail
 
