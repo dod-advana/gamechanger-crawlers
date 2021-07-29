@@ -120,11 +120,6 @@ function run_crawler() {
    || echo "^^^ CRAWLER ERROR ^^^"
 
 
-    echo -e "\n RUNNING SCRAPY SPIDER: jumbo_dfar_far_spider.py \n"
-  ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/jumbo_dfar_far_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
-   || echo "^^^ CRAWLER ERROR ^^^"
-
-
     echo -e "\n RUNNING SCRAPY SPIDER: fmr_spider.py \n"
   ( scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/fmr_spider.py -a download_output_dir="$LOCAL_DOWNLOAD_DIRECTORY_PATH/" -a previous_manifest_location="$LOCAL_PREVIOUS_MANIFEST_LOCATION" -o $LOCAL_CRAWLER_OUTPUT_FILE_PATH ) \
    || echo "^^^ CRAWLER ERROR ^^^"
