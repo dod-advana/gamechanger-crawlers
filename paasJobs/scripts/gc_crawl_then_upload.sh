@@ -25,6 +25,7 @@ dev)
   ;;
 esac
 
+>&2 echo -e "\n[INFO] CORE_DOWNLOADER_IMAGE NAME: $CORE_DOWNLOADER_IMAGE\n"
 # Set job vars
 JOB_TS="$(date +%FT%T)"
 JOB_TS_SIMPLE="$(date --date="$JOB_TS" +%Y%m%d_%H%M%S)"
@@ -70,6 +71,7 @@ S3FULLPATH_MANIFEST="s3://${SCANNER_UPLOADER_BUCKET}/${SCANNER_UPLOADER_S3PATH_M
 LOCAL_PREVIOUS_MANIFEST_LOCATION="$HOST_JOB_TMP_DIR/previous-manifest.json"
 # previous manifest location - in container
 CRAWLER_CONTAINER_MANIFEST_LOCATION="/tmp/previous-manifest.json"
+CRAWLER_CONTAINER_SPIDER_LIST_FILE="/tmp/spiders_to_run.txt"
 
 #####
 ## ## Main Procedures
@@ -124,6 +126,8 @@ function run_crawler_downloader() {
     -e "LOCAL_DOWNLOAD_DIRECTORY_PATH=${CRAWLER_CONTAINER_DL_DIR}" \
     -e "LOCAL_PREVIOUS_MANIFEST_LOCATION=${CRAWLER_CONTAINER_MANIFEST_LOCATION}" \
     -e "TEST_RUN=${TEST_RUN:-no}" \
+	${LOCAL_SPIDER_LIST_FILE:+ -e "LOCAL_SPIDER_LIST_FILE=$CRAWLER_CONTAINER_SPIDER_LIST_FILE"} \
+	${LOCAL_SPIDER_LIST_FILE:+ -v "${LOCAL_SPIDER_LIST_FILE}:${CRAWLER_CONTAINER_SPIDER_LIST_FILE}:z"} \
     "${CRAWLER_CONTAINER_IMAGE}"
 
   local docker_run_status=$?
