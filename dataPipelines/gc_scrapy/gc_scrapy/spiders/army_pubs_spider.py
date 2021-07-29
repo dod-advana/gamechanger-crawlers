@@ -25,14 +25,15 @@ class ArmySpider(GCSpider):
         do_not_process = ["/ProductMaps/PubForm/PB.aspx",
                           "/Publications/Administrative/POG/AllPogs.aspx"]
 
-        all_hrefs = response.css('li.nav-item')[2].css('a.dropdown-item::attr(href)').getall()
+        all_hrefs = response.css(
+            'li.usa-nav__primary-item')[2].css('a::attr(href)').getall()
 
         links = [link for link in all_hrefs if link not in do_not_process]
 
         yield from response.follow_all(links, self.parse_source_page)
 
     def parse_source_page(self, response):
-        table_links = response.css('table.gridview a::attr(href)').extract()
+        table_links = response.css('table td a::attr(href)').extract()
         yield from response.follow_all([self.pub_url+link for link in table_links], self.parse_detail_page)
 
     def parse_detail_page(self, response):
@@ -41,7 +42,8 @@ class ArmySpider(GCSpider):
         doc_title = rows.css('span#MainContent_PubForm_Title::text').get()
         doc_num_raw = doc_name_raw.split()[-1]
         doc_type_raw = doc_name_raw.split()[0]
-        publication_date = rows.css("span#MainContent_PubForm_Date::text").get()
+        publication_date = rows.css(
+            "span#MainContent_PubForm_Date::text").get()
         dist_stm = rows.css("span#MainContent_PubForm_Dist_Rest::text").get()
         if dist_stm and (dist_stm.startswith("A") or dist_stm.startswith("N")):
             # the distribution statement is distribution A or says Not Applicable so anyone can access the information

@@ -75,6 +75,10 @@ class BupersSpider(GCSpider):
                 if titles is not None:
                     dates_raw += dates
 
+            print('DOC NUMS', doc_nums_raw)
+            print('DOC TITLES', doc_titles_raw)
+            print("DATES RAW", dates_raw)
+
             # clean unicode and filter empty strings after
             doc_nums_cleaned = self.filter_empty(
                 [self.clean(text) for text in doc_nums_raw])
@@ -151,19 +155,20 @@ class BupersSpider(GCSpider):
                 doc_name = self.match_old_doc_name(
                     f"{self.doc_type} {doc_num}")
 
+                publication_date = next(iter(dates_cleaned or []), None)
+
                 yield DocItem(
                     doc_name=doc_name,
                     doc_title=doc_title,
                     doc_num=doc_num,
-                    publication_date=dates_cleaned[0],
+                    publication_date=publication_date,
                     downloadable_items=downloadable_items,
                     version_hash_raw_data=version_hash_fields,
                 )
 
             # there are supplemental downloadable items
             elif len(links_cleaned) > len(dates_cleaned):
-                doc_num = doc_nums_cleaned[0]
-
+                doc_num = next(iter(doc_nums_cleaned or []), None)
                 downloadable_items = []
 
                 for href in links_cleaned:
@@ -178,8 +183,10 @@ class BupersSpider(GCSpider):
                         }
                     )
 
+                item_currency = next(iter(links_cleaned or []), None)
+
                 version_hash_fields = {
-                    "item_currency": links_cleaned[0],
+                    "item_currency": item_currency,
                     "document_title": doc_title,
                     "document_number": doc_num
                 }
@@ -187,11 +194,13 @@ class BupersSpider(GCSpider):
                 doc_name = self.match_old_doc_name(
                     f"{self.doc_type} {doc_num}")
 
+                publication_date = next(iter(dates_cleaned or []), None)
+
                 yield DocItem(
                     doc_name=doc_name,
                     doc_title=doc_title,
                     doc_num=doc_num,
-                    publication_date=dates_cleaned[0],
+                    publication_date=publication_date,
                     downloadable_items=downloadable_items,
                     version_hash_raw_data=version_hash_fields,
                 )
