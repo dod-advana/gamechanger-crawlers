@@ -66,7 +66,19 @@ def cli():
     default=None,
     required=False
 )
-def crawl(download_output_dir, crawler_output_location, previous_manifest_location, spiders_file_location):
+@click.option(
+    '--dont-filter-previous-hashes',
+    help='Flag to skip filtering of downloads',
+    default=False,
+    required=False
+)
+def crawl(
+    download_output_dir,
+    crawler_output_location,
+    previous_manifest_location,
+    spiders_file_location,
+    dont_filter_previous_hashes,
+):
 
     print(dedent(f"""
     CRAWLING INITIATED
@@ -76,6 +88,7 @@ def crawl(download_output_dir, crawler_output_location, previous_manifest_locati
     crawler_output_location={crawler_output_location}
     previous_manifest_location={previous_manifest_location}
     spiders_file_location={spiders_file_location}
+    dont_filter_previous_hashes={dont_filter_previous_hashes}
     """))
 
     current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -125,6 +138,7 @@ def crawl(download_output_dir, crawler_output_location, previous_manifest_locati
     crawl_kwargs = {
         'download_output_dir': download_output_dir,
         'previous_manifest_location': previous_manifest_location,
+        'dont_filter_previous_hashes': dont_filter_previous_hashes,
         'output': crawler_output_location
     }
 
