@@ -16,7 +16,7 @@ from jsonschema.exceptions import ValidationError
 from .validators import DefaultOutputSchemaValidator, SchemaValidator
 from . import OUTPUT_FOLDER_NAME
 
-from dataPipelines.gc_crawler.utils import dict_to_sha256_hex_digest, get_fqdn_from_web_url
+from .utils import dict_to_sha256_hex_digest, get_fqdn_from_web_url
 
 import scrapy
 from scrapy.pipelines.media import MediaPipeline

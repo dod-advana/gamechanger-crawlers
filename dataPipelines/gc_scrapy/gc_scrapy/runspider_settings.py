@@ -1,16 +1,16 @@
 
 general_settings = {
     'ITEM_PIPELINES': {
-        'dataPipelines.gc_scrapy.gc_scrapy.pipelines.DeduplicaterPipeline': 1,
-        'dataPipelines.gc_scrapy.gc_scrapy.pipelines.AdditionalFieldsPipeline': 2,
-        'dataPipelines.gc_scrapy.gc_scrapy.pipelines.ValidateJsonPipeline': 1000,
-        'dataPipelines.gc_scrapy.gc_scrapy.pipelines.FileDownloadPipeline': 1001
+        'dataPipelines.gc_scrapy.gc_scrapy.pipelines.DeduplicaterPipeline': 100,
+        'dataPipelines.gc_scrapy.gc_scrapy.pipelines.AdditionalFieldsPipeline': 200,
+        'dataPipelines.gc_scrapy.gc_scrapy.pipelines.ValidateJsonPipeline': 300,
+        'dataPipelines.gc_scrapy.gc_scrapy.pipelines.FileDownloadPipeline': 400
     },
     'FEED_EXPORTERS': {
         'json': 'dataPipelines.gc_scrapy.gc_scrapy.exporters.JsonLinesAsJsonItemExporter',
     },
     'DOWNLOADER_MIDDLEWARES': {
-        'dataPipelines.gc_scrapy.gc_scrapy.downloader_middlewares.BanEvasionMiddleware': 1,
+        'dataPipelines.gc_scrapy.gc_scrapy.downloader_middlewares.BanEvasionMiddleware': 100,
     },
     "ROBOTSTXT_OBEY": False,
     'LOG_LEVEL': 'INFO',
