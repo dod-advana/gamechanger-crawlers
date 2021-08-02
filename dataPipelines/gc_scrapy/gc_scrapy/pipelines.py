@@ -16,7 +16,7 @@ from jsonschema.exceptions import ValidationError
 from .validators import DefaultOutputSchemaValidator, SchemaValidator
 from . import OUTPUT_FOLDER_NAME
 
-from dataPipelines.gc_crawler.utils import dict_to_sha256_hex_digest, get_fqdn_from_web_url
+from .utils import dict_to_sha256_hex_digest, get_fqdn_from_web_url
 
 import scrapy
 from scrapy.pipelines.media import MediaPipeline
@@ -40,6 +40,8 @@ class FileDownloadPipeline(MediaPipeline):
 
     def open_spider(self, spider):
         super().open_spider(spider)
+        print("++ Initiating downloader for", spider.name)
+
         self.output_dir = Path(spider.download_output_dir).resolve()
         self.job_manifest_path = Path(
             self.output_dir, 'manifest.json').resolve()
@@ -125,7 +127,10 @@ class FileDownloadPipeline(MediaPipeline):
             output_file_name = f"{doc_name}.{extension}"
 
             try:
-                yield scrapy.Request(url, meta={"output_file_name": output_file_name})
+                if info.spider.download_request_headers:
+                    yield scrapy.Request(url, headers=info.spider.download_request_headers, meta={"output_file_name": output_file_name})
+                else:
+                    yield scrapy.Request(url, meta={"output_file_name": output_file_name})
             except Exception as probably_url_error:
                 print('~~~~ REQUEST ERR', probably_url_error)
         else:
@@ -151,7 +156,11 @@ class FileDownloadPipeline(MediaPipeline):
         return (False, failure, "Pipeline Media Request Failed")
 
     def add_to_dead_queue(self, item, reason):
-        path = f'{self.output_dir}dead_queue.json'
+        path = (
+            Path(self.output_dir, 'dead_queue.json').resolve()
+            if self.output_dir
+            else None
+        )
         if isinstance(reason, int):
             reason_text = f"HTTP Response Code {reason}"
         elif isinstance(reason, str):
@@ -210,12 +219,16 @@ class FileDownloadPipeline(MediaPipeline):
 
                 with open(file_download_path, 'wb') as f:
                     try:
-                        f.write(response.body)
+
+                        to_write = info.spider.download_response_handler(
+                            response)
+                        f.write(to_write)
                         print('downloaded', file_download_path)
                         file_downloads.append(file_download_path)
 
                     except Exception as e:
-                        print('Failed to write file', file_download_path, e)
+                        print('Failed to write file to',
+                              file_download_path, 'Error:', e)
 
                 with open(metadata_download_path, 'w') as f:
                     try:
@@ -290,7 +303,7 @@ class AdditionalFieldsPipeline:
             item['cac_login_required'] = spider.cac_login_required
 
         if item.get('doc_type') is None:
-            item['doc_type'] = spider.doc_type
+            item['doc_type'] = getattr(spider, 'doc_type', '')
 
         if item.get('doc_num') is None:
             item['doc_num'] = ""

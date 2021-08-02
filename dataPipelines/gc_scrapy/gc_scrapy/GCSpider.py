@@ -47,6 +47,11 @@ class GCSpider(scrapy.Spider):
 
     source_page_url = None
     dont_filter_previous_hashes = False
+    download_request_headers = {}
+
+    @staticmethod
+    def download_response_handler(response):
+        return response.body
 
     @staticmethod
     def get_href_file_extension(url: str) -> str:

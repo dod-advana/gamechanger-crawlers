@@ -6,11 +6,6 @@
 import scrapy
 
 
-class DocumentItem(scrapy.Item):
-    document = scrapy.Field()
-    pass
-
-
 class DocItem(scrapy.Item):
     doc_name = scrapy.Field()
     doc_title = scrapy.Field()
