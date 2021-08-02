@@ -1,4 +1,3 @@
 legislation_spider.py
 chief_national_guard_bureau_spider.py
 ic_policies_spider.py
-jumbo_dfar_far_spider.py
