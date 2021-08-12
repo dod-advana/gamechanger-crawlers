@@ -28,6 +28,7 @@ class TfmSpider(GCSpider):
         "https://tfm.fiscal.treasury.gov/v3/tl.html",
         "https://tfm.fiscal.treasury.gov/v4/tl.html"
     ]
+    cac_login_required = False
 
     def parse(self, response):
         base_url = "https://tfm.fiscal.treasury.gov"
@@ -76,7 +77,7 @@ class TfmSpider(GCSpider):
                 url = base_url+url[-1]
                 if "pdf" not in url:
                     continue
-                cac_login_required = False
+
                 if "pdf" in url:
                     doc_extension = "pdf"
                 else:
@@ -99,15 +100,11 @@ class TfmSpider(GCSpider):
                     doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
                     doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
                     doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                    publication_date="N/A",
-                    cac_login_required=cac_login_required,
                     downloadable_items=downloadable_items,
                     version_hash_raw_data=version_hash_fields,
-                    access_timestamp=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
-                    crawler_used="TFM Crawler",
                     source_page_url=response.url,
-                    display_doc_type="TFM",
-                    display_org="Bureau of the Financial Service",
+                    display_doc_type="Manual",
+                    display_org="Dept. of Treasury",
                     display_source="https://tfm.fiscal.treasury.gov/"
                 )
 
@@ -132,7 +129,7 @@ class TfmSpider(GCSpider):
                     url = base_url+url2[i]
                     if "pdf" not in url:
                         continue
-                    cac_login_required = False
+
                     if "pdf" in url:
                         doc_extension = "pdf"
                     else:
@@ -155,15 +152,11 @@ class TfmSpider(GCSpider):
                     doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
                     doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
                     doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                    publication_date="N/A",
-                    cac_login_required=cac_login_required,
                     downloadable_items=downloadable_items,
                     version_hash_raw_data=version_hash_fields,
-                    access_timestamp=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
-                    crawler_used="TFM Crawler",
                     source_page_url=response.url,
-                    display_doc_type="TFM",
-                    display_org="Bureau of the Financial Service",
+                    display_doc_type="Manual",
+                    display_org="Dept. of Treasury",
                     display_source="https://tfm.fiscal.treasury.gov/"
                 )
 
@@ -189,7 +182,7 @@ class TfmSpider(GCSpider):
                     url = base_url+url2[i]
                     if "pdf" not in url:
                         continue
-                    cac_login_required = False
+
                     if "pdf" in url:
                         doc_extension = "pdf"
                     else:
@@ -212,15 +205,11 @@ class TfmSpider(GCSpider):
                         doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
                         doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
                         doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                        publication_date="N/A",
-                        cac_login_required=cac_login_required,
                         downloadable_items=downloadable_items,
                         version_hash_raw_data=version_hash_fields,
-                        access_timestamp=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
-                        crawler_used="TFM Crawler",
                         source_page_url=response.url,
-                        display_doc_type="TFM",
-                        display_org="Bureau of the Financial Service",
+                        display_doc_type="Manual",
+                        display_org="Dept. of Treasury",
                         display_source="https://tfm.fiscal.treasury.gov/"
                     )
             elif SET_SELECTOR == 'dl':
@@ -241,7 +230,7 @@ class TfmSpider(GCSpider):
                     url = base_url+url2[i]
                     if "pdf" not in url:
                         continue
-                    cac_login_required = False
+
                     if "pdf" in url:
                         doc_extension = "pdf"
                     else:
@@ -264,15 +253,11 @@ class TfmSpider(GCSpider):
                         doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
                         doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
                         doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                        publication_date="N/A",
-                        cac_login_required=cac_login_required,
                         downloadable_items=downloadable_items,
                         version_hash_raw_data=version_hash_fields,
-                        access_timestamp=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
-                        crawler_used="TFM Crawler",
                         source_page_url=response.url,
-                        display_doc_type="TFM",
-                        display_org="Bureau of the Financial Service",
+                        display_doc_type="Manual",
+                        display_org="Dept. of Treasury",
                         display_source="https://tfm.fiscal.treasury.gov/"
                     )
             elif SET_SELECTOR == "h2":
@@ -295,7 +280,7 @@ class TfmSpider(GCSpider):
                 url = base_url+url[-1]
                 if "pdf" not in url:
                     continue
-                cac_login_required = False
+
                 if "pdf" in url:
                     doc_extension = "pdf"
                 else:
@@ -318,15 +303,11 @@ class TfmSpider(GCSpider):
                     doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
                     doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
                     doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                    publication_date="N/A",
-                    cac_login_required=cac_login_required,
                     downloadable_items=downloadable_items,
                     version_hash_raw_data=version_hash_fields,
-                    access_timestamp=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
-                    crawler_used="TFM Crawler",
                     source_page_url=response.url,
-                    display_doc_type="TFM",
-                    display_org="Bureau of the Financial Service",
+                    display_doc_type="Manual",
+                    display_org="Dept. of Treasury",
                     display_source="https://tfm.fiscal.treasury.gov/"
                 )
             elif response.url.endswith("fast-book/"):
@@ -344,7 +325,7 @@ class TfmSpider(GCSpider):
                 url = base_url2+url[-1]
                 if "pdf" not in url:
                     continue
-                cac_login_required = False
+
                 if "pdf" in url:
                     doc_extension = "pdf"
                 else:
@@ -367,15 +348,11 @@ class TfmSpider(GCSpider):
                     doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
                     doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
                     doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                    publication_date="N/A",
-                    cac_login_required=cac_login_required,
                     downloadable_items=downloadable_items,
                     version_hash_raw_data=version_hash_fields,
-                    access_timestamp=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
-                    crawler_used="TFM Crawler",
                     source_page_url=response.url,
-                    display_doc_type="TFM",
-                    display_org="Bureau of the Financial Service",
+                    display_doc_type="Manual",
+                    display_org="Dept. of Treasury",
                     display_source="https://tfm.fiscal.treasury.gov/"
                 )
 
@@ -396,7 +373,7 @@ class TfmSpider(GCSpider):
                 url = base_url2+url2[0]
                 if "pdf" not in url:
                     continue
-                cac_login_required = False
+
                 if "pdf" in url:
                     doc_extension = "pdf"
                 else:
@@ -419,15 +396,11 @@ class TfmSpider(GCSpider):
                     doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
                     doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
                     doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                    publication_date="N/A",
-                    cac_login_required=cac_login_required,
                     downloadable_items=downloadable_items,
                     version_hash_raw_data=version_hash_fields,
-                    access_timestamp=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
-                    crawler_used="TFM Crawler",
                     source_page_url=response.url,
-                    display_doc_type="TFM",
-                    display_org="Bureau of the Financial Service",
+                    display_doc_type="Manual",
+                    display_org="Dept. of Treasury",
                     display_source="https://tfm.fiscal.treasury.gov/"
                 )
 
@@ -447,7 +420,7 @@ class TfmSpider(GCSpider):
                 url = base_url2+url[-1]
                 if "html" not in url:
                     continue
-                cac_login_required = False
+
                 if "pdf" in url:
                     doc_extension = "pdf"
                 else:
@@ -470,15 +443,11 @@ class TfmSpider(GCSpider):
                     doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
                     doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
                     doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                    publication_date="N/A",
-                    cac_login_required=cac_login_required,
                     downloadable_items=downloadable_items,
                     version_hash_raw_data=version_hash_fields,
-                    access_timestamp=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
-                    crawler_used="TFM Crawler",
                     source_page_url=response.url,
-                    display_doc_type="TFM",
-                    display_org="Bureau of the Financial Service",
+                    display_doc_type="Manual",
+                    display_org="Dept. of Treasury",
                     display_source="https://tfm.fiscal.treasury.gov/"
                 )
 
@@ -502,7 +471,7 @@ class TfmSpider(GCSpider):
                 url = base_url2+url[-1]
                 if "pdf" not in url:
                     continue
-                cac_login_required = False
+
                 if "pdf" in url:
                     doc_extension = "pdf"
                 else:
@@ -525,15 +494,11 @@ class TfmSpider(GCSpider):
                     doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
                     doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
                     doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                    publication_date="N/A",
-                    cac_login_required=cac_login_required,
                     downloadable_items=downloadable_items,
                     version_hash_raw_data=version_hash_fields,
-                    access_timestamp=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
-                    crawler_used="TFM Crawler",
                     source_page_url=response.url,
-                    display_doc_type="TFM",
-                    display_org="Bureau of the Financial Service",
+                    display_doc_type="Manual",
+                    display_org="Dept. of Treasury",
                     display_source="https://tfm.fiscal.treasury.gov/"
                 )
 
@@ -553,7 +518,7 @@ class TfmSpider(GCSpider):
                 url = url[-1]
                 if "pdf" not in url:
                     continue
-                cac_login_required = False
+
                 if "pdf" in url:
                     doc_extension = "pdf"
                 else:
@@ -576,14 +541,10 @@ class TfmSpider(GCSpider):
                     doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
                     doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
                     doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                    publication_date="N/A",
-                    cac_login_required=cac_login_required,
                     downloadable_items=downloadable_items,
                     version_hash_raw_data=version_hash_fields,
-                    access_timestamp=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
-                    crawler_used="TFM Crawler",
                     source_page_url=response.url,
-                    display_doc_type="TFM",
-                    display_org="Bureau of the Financial Service",
+                    display_doc_type="Manual",
+                    display_org="Dept. of Treasury",
                     display_source="https://tfm.fiscal.treasury.gov/"
                 )
