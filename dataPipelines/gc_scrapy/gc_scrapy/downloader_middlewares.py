@@ -1,3 +1,6 @@
+from random import choice
+from time import sleep
+
 from scrapy import signals, Request
 from scrapy.exceptions import NotConfigured
 from scrapy.http import HtmlResponse
@@ -6,6 +9,7 @@ from itemadapter import is_item, ItemAdapter
 from importlib import import_module
 
 from dataPipelines.gc_scrapy.gc_scrapy.middleware_utils.selenium_request import SeleniumRequest
+from selenium.common.exceptions import TimeoutException
 
 
 class SeleniumMiddleware:
@@ -101,8 +105,6 @@ class SeleniumMiddleware:
         if not isinstance(request, SeleniumRequest):
             return None
 
-        self.driver.get(request.url)
-
         for cookie_name, cookie_value in request.cookies.items():
             self.driver.add_cookie(
                 {
@@ -112,9 +114,27 @@ class SeleniumMiddleware:
             )
 
         if request.wait_until:
-            WebDriverWait(self.driver, request.wait_time).until(
-                request.wait_until
-            )
+            retries = getattr(
+                spider, 'selenium_spider_start_request_retries_allowed', 5)
+            retry_wait = getattr(
+                spider, 'selenium_spider_start_request_retry_wait', 30)
+
+            reqs_remaining = retries + 1
+            while reqs_remaining:
+                try:
+                    self.driver.get(request.url)
+                    WebDriverWait(self.driver, request.wait_time).until(
+                        request.wait_until
+                    )
+                    reqs_remaining = 0
+                except TimeoutException:
+                    reqs_remaining -= 1
+                    print(
+                        f"{spider.name} : Selenium request timeout, retries remaining = {reqs_remaining}")
+                    print(f"Waiting {retry_wait} seconds...")
+                    sleep(retry_wait)
+        else:
+            self.driver.get(request.url)
 
         if request.screenshot:
             request.meta['screenshot'] = self.driver.get_screenshot_as_png()
@@ -138,3 +158,49 @@ class SeleniumMiddleware:
         """Shutdown the driver when spider is closed"""
 
         self.driver.quit()
+
+
+class BanEvasionMiddleware:
+    user_agent_list = (
+        # Chrome
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 5.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
+        # Firefox
+        'Mozilla/4.0 (compatible; MSIE 9.0; Windows NT 6.1)',
+        'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
+        'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)',
+        'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko',
+        'Mozilla/5.0 (Windows NT 6.2; WOW64; Trident/7.0; rv:11.0) like Gecko',
+        'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko',
+        'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.0; Trident/5.0)',
+        'Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko',
+        'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)',
+        'Mozilla/5.0 (Windows NT 6.1; Win64; x64; Trident/7.0; rv:11.0) like Gecko',
+        'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0)',
+        'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)',
+        'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)'
+    )
+
+    delays = range(0, 3)
+
+    def process_request(self, request, spider):
+
+        if spider.rotate_user_agent:
+            agent = choice(self.user_agent_list)
+            request.headers["User-Agent"] = agent
+
+        dr = spider.randomly_delay_request
+        if dr and not request.meta.get("skip_delay"):
+            delay_opts = dr if isinstance(dr, (range, list)) else self.delays
+            delay = choice(delay_opts)
+            # makes sleep more interruptable
+            for _ in range(delay):
+                sleep(1)

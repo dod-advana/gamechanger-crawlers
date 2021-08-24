@@ -130,6 +130,10 @@ def download_file(
             print(e)
             print(f"Timed out fetching: {url}")
             continue
+        except requests.exceptions.InvalidURL as e:
+            print(e)
+            print(f"Invalid URL: {url}")
+            continue
         except requests.ConnectionError as e:
             print(e)
             print(f"Connection error while fetching: {url}")
