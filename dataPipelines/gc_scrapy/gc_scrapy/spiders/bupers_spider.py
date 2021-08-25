@@ -75,10 +75,6 @@ class BupersSpider(GCSpider):
                 if titles is not None:
                     dates_raw += dates
 
-            print('DOC NUMS', doc_nums_raw)
-            print('DOC TITLES', doc_titles_raw)
-            print("DATES RAW", dates_raw)
-
             # clean unicode and filter empty strings after
             doc_nums_cleaned = self.filter_empty(
                 [self.clean(text) for text in doc_nums_raw])
