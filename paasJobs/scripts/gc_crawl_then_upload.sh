@@ -33,12 +33,12 @@ case "${1:?ERROR: Missing job name arg}" in
 gc_crawl_and_download)
   JOB_NAME="gc_crawl_and_download"
   CRAWLER_CONTAINER_IMAGE="$CORE_DOWNLOADER_IMAGE"
-  SCANNER_UPLOADER_S3PATH="/gamechanger/external-uploads/crawler-downloader/$JOB_TS"
+  SCANNER_UPLOADER_S3PATH="/bronze/gamechanger/external-uploads/crawler-downloader/$JOB_TS"
   ;;
 gc_crawl_and_download_covid)
   JOB_NAME="gc_crawl_and_download_covid"
   CRAWLER_CONTAINER_IMAGE="$COVID_DOWNLOADER_IMAGE"
-  SCANNER_UPLOADER_S3PATH="/gamechanger/external-uploads/covid-crawler-downloader/$JOB_TS"
+  SCANNER_UPLOADER_S3PATH="/bronze/gamechanger/external-uploads/covid-crawler-downloader/$JOB_TS"
   ;;
 *)
   echo >&2 "ERROR: Pass valid job name to the script."
@@ -60,11 +60,11 @@ CRAWLER_CONTAINER_DL_DIR="/var/tmp/output"
 # where files to be scanned are mounted inside scanner container
 SCANNER_SCAN_DIR="$CRAWLER_CONTAINER_DL_DIR"
 # general S3 bucket settings
-SCANNER_UPLOADER_BUCKET="advana-raw-zone"
+SCANNER_UPLOADER_BUCKET="advana-data-zone"
 
 ## MANIFEST VARS
 # path to the manifest to download in s3
-SCANNER_UPLOADER_S3PATH_MANIFEST="/gamechanger/data-pipelines/orchestration/crawlers/cumulative-manifest.json"
+SCANNER_UPLOADER_S3PATH_MANIFEST="/bronze/gamechanger/data-pipelines/orchestration/crawlers/cumulative-manifest.json"
 # full path for S3 manifest
 S3FULLPATH_MANIFEST="s3://${SCANNER_UPLOADER_BUCKET}/${SCANNER_UPLOADER_S3PATH_MANIFEST#/}"
 # previous manifest location - local
