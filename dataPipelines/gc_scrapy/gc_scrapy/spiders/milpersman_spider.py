@@ -1,10 +1,4 @@
-import scrapy
-from scrapy import Selector
 import re
-import bs4
-from dataPipelines.gc_scrapy.gc_scrapy.items import DocumentItem
-from dataPipelines.gc_scrapy.gc_scrapy.data_model import Document, DownloadableItem
-from dataPipelines.gc_scrapy.gc_scrapy.utils import abs_url
 
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
