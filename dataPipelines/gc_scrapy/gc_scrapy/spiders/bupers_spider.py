@@ -62,7 +62,7 @@ class BupersSpider(GCSpider):
                 nums = row.css(f'td:nth-child(1) {selector}').getall()
                 if nums is not None:
                     doc_nums_raw += nums
-
+            #print(doc_nums_raw)
             doc_titles_raw = []
             for selector in ['strong::text', 'span::text', 'font::text']:
                 titles = row.css(f'td:nth-child(2) {selector}').getall()
@@ -78,6 +78,7 @@ class BupersSpider(GCSpider):
             # clean unicode and filter empty strings after
             doc_nums_cleaned = self.filter_empty(
                 [self.clean(text) for text in doc_nums_raw])
+            #print(doc_nums_cleaned)
             doc_title = " ".join(self.filter_empty(
                 [self.clean(text) for text in doc_titles_raw]))
             dates_cleaned = self.filter_empty(
@@ -85,6 +86,7 @@ class BupersSpider(GCSpider):
             links_cleaned = self.filter_empty(links_raw)
 
             # happy path, equal num of docs, links, dates
+            print(doc_nums_cleaned, links_cleaned, dates_cleaned)
             if ((len(doc_nums_cleaned) == len(links_cleaned) == len(dates_cleaned))
                     or (len(dates_cleaned) > len(doc_nums_cleaned))) \
                     and (not 'CH-1' in doc_nums_cleaned):
@@ -124,9 +126,10 @@ class BupersSpider(GCSpider):
                         version_hash_raw_data=version_hash_fields,
                     )
 
+
             # doc num was split, combine them into one string
             elif (len(doc_nums_cleaned) > len(dates_cleaned) and len(links_cleaned) == len(dates_cleaned)) \
-                    or (any(item in ['Vol 1', 'Vol 2', 'CH-1'] for item in doc_nums_cleaned)):
+                    or (any(item in ['Vol 1', 'Vol 2', 'CH-1', 'w/CH-1'] for item in doc_nums_cleaned)):
                 # special cases for spit names of same doc
 
                 doc_num = " ".join(doc_nums_cleaned)
