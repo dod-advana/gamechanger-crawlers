@@ -41,6 +41,10 @@ class CNGBISpider(GCSpider):
             ]
 
             doc_name_raw = row.css('td:nth-child(1) a span::text').get()
+
+            if not doc_name_raw:
+                continue
+
             doc_num_raw = doc_name_raw.replace('CNGBI ', '')
 
             publication_date = row.css('td:nth-child(2) span::text').get()
