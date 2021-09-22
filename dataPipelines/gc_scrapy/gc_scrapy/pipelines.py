@@ -126,11 +126,16 @@ class FileDownloadPipeline(MediaPipeline):
             extension = file_item['doc_type']
             output_file_name = f"{doc_name}.{extension}"
 
+            meta = {
+                "output_file_name": output_file_name,
+                "compression_type": file_item['compression_type']
+            }
+
             try:
                 if info.spider.download_request_headers:
-                    yield scrapy.Request(url, headers=info.spider.download_request_headers, meta={"output_file_name": output_file_name})
+                    yield scrapy.Request(url, headers=info.spider.download_request_headers, meta=meta)
                 else:
-                    yield scrapy.Request(url, meta={"output_file_name": output_file_name})
+                    yield scrapy.Request(url, meta=meta)
             except Exception as probably_url_error:
                 print('~~~~ REQUEST ERR', probably_url_error)
         else:
@@ -213,6 +218,7 @@ class FileDownloadPipeline(MediaPipeline):
                     item, reason if reason else int(response.status))
             else:
                 output_file_name = response.meta["output_file_name"]
+                compression_type = response.meta["compression_type"]
 
                 file_download_path = Path(self.output_dir, output_file_name)
                 metadata_download_path = f"{file_download_path}.metadata"
