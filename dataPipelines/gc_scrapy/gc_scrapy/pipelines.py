@@ -12,6 +12,7 @@ import os
 import json
 from scrapy.exceptions import DropItem
 from jsonschema.exceptions import ValidationError
+from dataPipelines.gc_scrapy.gc_scrapy.utils import unzip_docs_as_needed
 
 from .validators import DefaultOutputSchemaValidator, SchemaValidator
 from . import OUTPUT_FOLDER_NAME
@@ -219,16 +220,26 @@ class FileDownloadPipeline(MediaPipeline):
             else:
                 output_file_name = response.meta["output_file_name"]
                 compression_type = response.meta["compression_type"]
-
-                file_download_path = Path(self.output_dir, output_file_name)
-                metadata_download_path = f"{file_download_path}.metadata"
+                if compression_type:
+                    file_download_path = Path(self.output_dir, output_file_name).with_suffix(f".{compression_type}")
+                    file_unzipped_path = Path(self.output_dir, output_file_name)
+                    metadata_download_path = f"{file_unzipped_path}.metadata"
+                else:
+                    file_download_path = Path(self.output_dir, output_file_name)
+                    metadata_download_path = f"{file_download_path}.metadata"
 
                 with open(file_download_path, 'wb') as f:
                     try:
-
                         to_write = info.spider.download_response_handler(
                             response)
                         f.write(to_write)
+
+                        # TODO: Add functionality for zips to handle multiple files/doc types
+                        if compression_type:
+                            if compression_type.lower() == "zip":
+                                unzip_docs_as_needed(file_download_path, file_unzipped_path)
+                            os.remove(file_download_path)
+
                         print('downloaded', file_download_path)
                         file_downloads.append(file_download_path)
 
