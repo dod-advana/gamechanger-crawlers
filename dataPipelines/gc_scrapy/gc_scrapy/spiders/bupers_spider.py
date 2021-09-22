@@ -62,6 +62,7 @@ class BupersSpider(GCSpider):
                 nums = row.css(f'td:nth-child(1) {selector}').getall()
                 if nums is not None:
                     doc_nums_raw += nums
+
             doc_titles_raw = []
             for selector in ['strong::text', 'span::text', 'font::text']:
                 titles = row.css(f'td:nth-child(2) {selector}').getall()
@@ -122,7 +123,6 @@ class BupersSpider(GCSpider):
                         downloadable_items=downloadable_items,
                         version_hash_raw_data=version_hash_fields,
                     )
-
 
             # doc num was split, combine them into one string
             elif (len(doc_nums_cleaned) > len(dates_cleaned) and len(links_cleaned) == len(dates_cleaned)) \
