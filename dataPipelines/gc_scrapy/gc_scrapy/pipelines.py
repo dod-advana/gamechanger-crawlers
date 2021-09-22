@@ -233,6 +233,7 @@ class FileDownloadPipeline(MediaPipeline):
                         to_write = info.spider.download_response_handler(
                             response)
                         f.write(to_write)
+                        f.close()
 
                         # TODO: Add functionality for zips to handle multiple files/doc types
                         if compression_type:
