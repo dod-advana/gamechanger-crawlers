@@ -156,9 +156,7 @@ def unzip_all(zip_file: Union[Path, str], output_dir: str) -> List[Path]:
     def unzip_nested(zip_path: Path, dir_path: Path) -> None:
         with zipfile.ZipFile(Path(zip_path).absolute()) as zip_ref:
             zip_ref.extractall(dir_path)
-        # TODO: Add capibility to unzip multiple zips and add corresponding metadata for each
-        # do just the first iteration to unzip only the first file
-        for path in iter_all_files(dir_path)[0]:
+        for path in iter_all_files(dir_path):
             if path.suffix == ".zip":
                 new_output_dir = Path(get_available_path(Path(dir_path, "tmp_unzip")))
                 new_output_dir.mkdir()
@@ -215,7 +213,10 @@ def unzip_docs_as_needed(input_dir: Union[Path, str], output_dir: Union[Path, st
         if not unzipped_pdf_files:
             raise RuntimeError(f"Tried to unzip {input_dir}, but could not find any expected files inside")
         final_ddocs = []
-        for pdf_file in unzipped_pdf_files:
+
+        # TODO: Add capibility to unzip multiple zips and add corresponding metadata for each
+        # do just the first iteration to unzip only the first file
+        for pdf_file in [unzipped_pdf_files[0]]:
             new_ddoc = copy.deepcopy(input_dir)
             safe_move_file(file_path=pdf_file, output_path=output_dir)
             final_ddocs.append(new_ddoc)
