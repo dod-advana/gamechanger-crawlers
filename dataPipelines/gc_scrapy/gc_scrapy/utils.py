@@ -14,6 +14,7 @@ from hashlib import sha256
 from functools import reduce
 from urllib.parse import urljoin, urlparse
 import re
+import os
 
 
 def str_to_sha256_hex_digest(_str: str) -> str:
@@ -155,8 +156,9 @@ def unzip_all(zip_file: Union[Path, str], output_dir: str) -> List[Path]:
     def unzip_nested(zip_path: Path, dir_path: Path) -> None:
         with zipfile.ZipFile(Path(zip_path).absolute()) as zip_ref:
             zip_ref.extractall(dir_path)
-
-        for path in iter_all_files(dir_path):
+        # TODO: Add capibility to unzip multiple zips and add corresponding metadata for each
+        # do just the first iteration to unzip only the first file
+        for path in iter_all_files(dir_path)[0]:
             if path.suffix == ".zip":
                 new_output_dir = Path(get_available_path(Path(dir_path, "tmp_unzip")))
                 new_output_dir.mkdir()
@@ -198,7 +200,7 @@ def safe_move_file(file_path: Union[Path, str], output_path: Union[Path, str], c
 def unzip_docs_as_needed(input_dir: Union[Path, str], output_dir: Union[Path, str]) -> List[Path]:
     """Handles zipped/packaged download artifacts by expanding them into their individual components
 
-    :param ddoc: DownloadedDocument obj
+    :param input_dir: Path of the zip file
     :param output_dir: Directory where files, unzipped or not, should be placed
     :return: iterable of Downloaded documents, len > 1 for bundles
     """
@@ -208,19 +210,20 @@ def unzip_docs_as_needed(input_dir: Union[Path, str], output_dir: Union[Path, st
         # unzip & move
         temp_dir = tempfile.TemporaryDirectory()
         unzipped_files = unzip_all(zip_file=input_dir, output_dir=temp_dir.name)
-
         # TODO: Extend for non-pdf docs (trickier than it seems, there can be junk/manifest files)
         unzipped_pdf_files = [f for f in unzipped_files if f.suffix.lower() == ".pdf"]
         if not unzipped_pdf_files:
             raise RuntimeError(f"Tried to unzip {input_dir}, but could not find any expected files inside")
-
         final_ddocs = []
         for pdf_file in unzipped_pdf_files:
             new_ddoc = copy.deepcopy(input_dir)
             safe_move_file(file_path=pdf_file, output_path=output_dir)
-
             final_ddocs.append(new_ddoc)
     finally:
         temp_dir.cleanup()
+
+        # remove zip. check in case a bad input was put in
+        if input_dir.is_file() and input_dir.suffix.lower() == ".zip":
+            os.remove(input_dir)
 
     return final_ddocs

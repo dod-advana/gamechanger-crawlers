@@ -239,7 +239,6 @@ class FileDownloadPipeline(MediaPipeline):
                         if compression_type:
                             if compression_type.lower() == "zip":
                                 unzip_docs_as_needed(file_download_path, file_unzipped_path)
-                            os.remove(file_download_path)
 
                         print('downloaded', file_download_path)
                         file_downloads.append(file_download_path)
