@@ -216,6 +216,7 @@ def unzip_docs_as_needed(input_dir: Union[Path, str], output_dir: Union[Path, st
 
         # TODO: Add capibility to unzip multiple zips and add corresponding metadata for each
         # do just the first iteration to unzip only the first file
+        unzipped_pdf_files.sort()   # messy solution. sorting to make sure we grab the first in us_code
         for pdf_file in [unzipped_pdf_files[0]]:
             new_ddoc = copy.deepcopy(input_dir)
             safe_move_file(file_path=pdf_file, output_path=output_dir)
