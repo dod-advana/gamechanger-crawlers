@@ -126,7 +126,7 @@ class BupersSpider(GCSpider):
 
             # doc num was split, combine them into one string
             elif (len(doc_nums_cleaned) > len(dates_cleaned) and len(links_cleaned) == len(dates_cleaned)) \
-                    or (any(item in ['Vol 1', 'Vol 2', 'CH-1'] for item in doc_nums_cleaned)):
+                    or (any(item in ['Vol 1', 'Vol 2', 'CH-1', 'w/CH-1'] for item in doc_nums_cleaned)):
                 # special cases for spit names of same doc
 
                 doc_num = " ".join(doc_nums_cleaned)
