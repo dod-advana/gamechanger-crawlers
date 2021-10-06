@@ -27,6 +27,7 @@ class SammSpider(GCSpider):
         "https://samm.dsca.mil/samm-archive/1970-masm-archive"
     ]
     cac_login_required = False
+    randomly_delay_request = True
 
     def parse(self, response):
         base_url = "https://samm.dsca.mil"
@@ -81,6 +82,11 @@ class SammSpider(GCSpider):
                     doc_extension = "pdf"
                 else:
                     doc_extension = "html"
+
+                doc_name = self.ascii_clean(doc_name)
+                doc_title = self.ascii_clean(doc_title)
+                doc_num = self.ascii_clean(doc_num)
+
                 downloadable_items = [
                     {
                         "doc_type": doc_extension,
@@ -138,6 +144,11 @@ class SammSpider(GCSpider):
                     doc_extension = "pdf"
                 else:
                     doc_extension = "html"
+
+                doc_name = self.ascii_clean(doc_name)
+                doc_title = self.ascii_clean(doc_title)
+                doc_num = self.ascii_clean(doc_num)
+
                 downloadable_items = [
                     {
                         "doc_type": doc_extension,
@@ -191,6 +202,11 @@ class SammSpider(GCSpider):
                     doc_extension = "pdf"
                 else:
                     doc_extension = "html"
+
+                doc_name = self.ascii_clean(doc_name)
+                doc_title = self.ascii_clean(doc_title)
+                doc_num = self.ascii_clean(doc_num)
+
                 downloadable_items = [
                     {
                         "doc_type": doc_extension,
@@ -241,6 +257,11 @@ class SammSpider(GCSpider):
                     doc_extension = "pdf"
                 else:
                     doc_extension = "html"
+
+                doc_name = self.ascii_clean(doc_name)
+                doc_title = self.ascii_clean(doc_title)
+                doc_num = self.ascii_clean(doc_num)
+
                 downloadable_items = [
                     {
                         "doc_type": doc_extension,
@@ -294,6 +315,11 @@ class SammSpider(GCSpider):
                         doc_extension = "pdf"
                     else:
                         doc_extension = "html"
+
+                    doc_name = self.ascii_clean(doc_name)
+                    doc_title = self.ascii_clean(doc_title)
+                    doc_num = self.ascii_clean(doc_num)
+
                     downloadable_items = [
                         {
                             "doc_type": doc_extension,
@@ -336,6 +362,11 @@ class SammSpider(GCSpider):
                             doc_extension = "pdf"
                         else:
                             doc_extension = "html"
+
+                        doc_name2 = self.ascii_clean(doc_name2)
+                        doc_title2 = self.ascii_clean(doc_title2)
+                        doc_num = self.ascii_clean(doc_num)
+
                         downloadable_items = [
                             {
                                 "doc_type": doc_extension,
@@ -390,6 +421,11 @@ class SammSpider(GCSpider):
                     doc_extension = "pdf"
                 else:
                     doc_extension = "html"
+
+                doc_name = self.ascii_clean(doc_name)
+                doc_title = self.ascii_clean(doc_title)
+                doc_num = self.ascii_clean(doc_num)
+
                 downloadable_items = [
                     {
                         "doc_type": doc_extension,
@@ -442,6 +478,11 @@ class SammSpider(GCSpider):
                     doc_extension = "pdf"
                 else:
                     doc_extension = "html"
+
+                doc_name = self.ascii_clean(doc_name)
+                doc_title = self.ascii_clean(doc_title)
+                doc_num = self.ascii_clean(doc_num)
+
                 downloadable_items = [
                     {
                         "doc_type": doc_extension,
@@ -494,6 +535,11 @@ class SammSpider(GCSpider):
                     doc_extension = "pdf"
                 else:
                     doc_extension = "html"
+
+                doc_name = self.ascii_clean(doc_name)
+                doc_title = self.ascii_clean(doc_title)
+                doc_num = self.ascii_clean(doc_num)
+
                 downloadable_items = [
                     {
                         "doc_type": doc_extension,
@@ -543,6 +589,11 @@ class SammSpider(GCSpider):
                         doc_extension = "pdf"
                     else:
                         doc_extension = "html"
+
+                    doc_name = self.ascii_clean(doc_name)
+                    doc_title = self.ascii_clean(doc_title)
+                    doc_num = self.ascii_clean(doc_num)
+
                     downloadable_items = [
                         {
                             "doc_type": doc_extension,
@@ -593,6 +644,11 @@ class SammSpider(GCSpider):
                     doc_extension = "pdf"
                 else:
                     doc_extension = "html"
+
+                doc_name = self.ascii_clean(doc_name)
+                doc_title = self.ascii_clean(doc_title)
+                doc_num = self.ascii_clean(doc_num)
+
                 downloadable_items = [
                     {
                         "doc_type": doc_extension,
