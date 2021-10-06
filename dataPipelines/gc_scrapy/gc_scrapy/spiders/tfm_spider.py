@@ -28,6 +28,7 @@ class TfmSpider(GCSpider):
         "https://tfm.fiscal.treasury.gov/v3/tl.html",
         "https://tfm.fiscal.treasury.gov/v4/tl.html"
     ]
+    display_source = "Dept of Treasury Financial Manual"
     cac_login_required = False
 
     def parse(self, response):
@@ -105,7 +106,7 @@ class TfmSpider(GCSpider):
                     source_page_url=response.url,
                     display_doc_type="Manual",
                     display_org="Dept. of Treasury",
-                    display_source="https://tfm.fiscal.treasury.gov/"
+                    display_source=self.display_source
                 )
 
             elif SET_SELECTOR == 'dl.TFMDocument-Announcement':
@@ -157,7 +158,7 @@ class TfmSpider(GCSpider):
                     source_page_url=response.url,
                     display_doc_type="Manual",
                     display_org="Dept. of Treasury",
-                    display_source="https://tfm.fiscal.treasury.gov/"
+                    display_source=self.display_source
                 )
 
             elif SET_SELECTOR == 'dl.TFMDocument-Bulletin':
@@ -210,7 +211,7 @@ class TfmSpider(GCSpider):
                         source_page_url=response.url,
                         display_doc_type="Manual",
                         display_org="Dept. of Treasury",
-                        display_source="https://tfm.fiscal.treasury.gov/"
+                        display_source=self.display_source
                     )
             elif SET_SELECTOR == 'dl':
 
@@ -258,7 +259,7 @@ class TfmSpider(GCSpider):
                         source_page_url=response.url,
                         display_doc_type="Manual",
                         display_org="Dept. of Treasury",
-                        display_source="https://tfm.fiscal.treasury.gov/"
+                        display_source=self.display_source
                     )
             elif SET_SELECTOR == "h2":
                 URL_SELECTOR = 'a::attr(href)'
@@ -308,7 +309,7 @@ class TfmSpider(GCSpider):
                     source_page_url=response.url,
                     display_doc_type="Manual",
                     display_org="Dept. of Treasury",
-                    display_source="https://tfm.fiscal.treasury.gov/"
+                    display_source=self.display_source
                 )
             elif response.url.endswith("fast-book/"):
                 URL_SELECTOR = 'a::attr(href)'
@@ -353,7 +354,7 @@ class TfmSpider(GCSpider):
                     source_page_url=response.url,
                     display_doc_type="Manual",
                     display_org="Dept. of Treasury",
-                    display_source="https://tfm.fiscal.treasury.gov/"
+                    display_source=self.display_source
                 )
 
             elif response.url.endswith("managing-federal-receivables.html"):
@@ -401,7 +402,7 @@ class TfmSpider(GCSpider):
                     source_page_url=response.url,
                     display_doc_type="Manual",
                     display_org="Dept. of Treasury",
-                    display_source="https://tfm.fiscal.treasury.gov/"
+                    display_source=self.display_source
                 )
 
             elif response.url.endswith("gold-book/"):
@@ -448,7 +449,7 @@ class TfmSpider(GCSpider):
                     source_page_url=response.url,
                     display_doc_type="Manual",
                     display_org="Dept. of Treasury",
-                    display_source="https://tfm.fiscal.treasury.gov/"
+                    display_source=self.display_source
                 )
 
             elif response.url.endswith("green-book/downloads.html"):
@@ -499,7 +500,7 @@ class TfmSpider(GCSpider):
                     source_page_url=response.url,
                     display_doc_type="Manual",
                     display_org="Dept. of Treasury",
-                    display_source="https://tfm.fiscal.treasury.gov/"
+                    display_source=self.display_source
                 )
 
             elif response.url.endswith("/v1/supplements.html"):
@@ -546,5 +547,5 @@ class TfmSpider(GCSpider):
                     source_page_url=response.url,
                     display_doc_type="Manual",
                     display_org="Dept. of Treasury",
-                    display_source="https://tfm.fiscal.treasury.gov/"
+                    display_source=self.display_source
                 )
