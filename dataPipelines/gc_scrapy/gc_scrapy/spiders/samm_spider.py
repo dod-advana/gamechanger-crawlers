@@ -26,6 +26,7 @@ class SammSpider(GCSpider):
         "https://samm.dsca.mil/samm-archive/1973-masm-archive",
         "https://samm.dsca.mil/samm-archive/1970-masm-archive"
     ]
+    display_source="Defense Security Cooperation Agency Distribution Portal"
     cac_login_required = False
     randomly_delay_request = True
 
@@ -109,7 +110,7 @@ class SammSpider(GCSpider):
                     source_page_url=response.url,
                     display_doc_type="Manual",
                     display_org="Defense Security Cooperation Agency",
-                    display_source="https://samm.dsca.mil/"
+                    display_source=self.display_source
                 )
             elif response.url.endswith('PolicyMemoList-All'):
                 NAME_SELECTOR = 'a ::text'
@@ -173,7 +174,7 @@ class SammSpider(GCSpider):
                     source_page_url=response.url,
                     display_doc_type="Memo",
                     display_org="Defense Security Cooperation Agency",
-                    display_source="https://samm.dsca.mil/"
+                    display_source=self.display_source
                 )
             elif response.url.endswith('rcg-toc'):
                 TITLE_SELECTOR = 'a ::text'
@@ -230,7 +231,7 @@ class SammSpider(GCSpider):
                     source_page_url=response.url,
                     display_doc_type="Manual",
                     display_org="Defense Security Cooperation Agency",
-                    display_source="https://samm.dsca.mil/"
+                    display_source=self.display_source
                 )
             elif response.url.endswith('appendix-1'):
                 TITLE_SELECTOR = 'a.ChapterTitle ::text'
@@ -285,7 +286,7 @@ class SammSpider(GCSpider):
                     source_page_url=response.url,
                     display_doc_type="Manual",
                     display_org="Defense Security Cooperation Agency",
-                    display_source="https://samm.dsca.mil/"
+                    display_source=self.display_source
                 )
             elif response.url.endswith('appendix-2'):
                 NUM_SELECTOR = 'td.AlignCenter::text'
@@ -344,7 +345,7 @@ class SammSpider(GCSpider):
                         source_page_url=response.url,
                         display_doc_type="Manual",
                         display_org="Defense Security Cooperation Agency",
-                        display_source="https://samm.dsca.mil/"
+                        display_source=self.display_source
                     )
                 else:
                     for i in range(len(doc_title)):
@@ -393,7 +394,7 @@ class SammSpider(GCSpider):
                             source_page_url=response.url,
                             display_doc_type="Manual",
                             display_org="Defense Security Cooperation Agency",
-                            display_source="https://samm.dsca.mil/"
+                            display_source=self.display_source
                         )
             elif response.url.endswith('appendix-3'):
                 TITLE_SELECTOR = 'a ::text'
@@ -449,7 +450,7 @@ class SammSpider(GCSpider):
                     source_page_url=response.url,
                     display_doc_type="Manual",
                     display_org="Defense Security Cooperation Agency",
-                    display_source="https://samm.dsca.mil/"
+                    display_source=self.display_source
                 )
             elif response.url.endswith('appendix-4'):
                 TITLE_SELECTOR = 'a ::text'
@@ -506,7 +507,7 @@ class SammSpider(GCSpider):
                     source_page_url=response.url,
                     display_doc_type="Manual",
                     display_org="Defense Security Cooperation Agency",
-                    display_source="https://samm.dsca.mil/"
+                    display_source=self.display_source
                 )
             elif response.url.endswith('appendix-5'):
                 TITLE_SELECTOR = 'a ::text'
@@ -563,7 +564,7 @@ class SammSpider(GCSpider):
                     source_page_url=response.url,
                     display_doc_type="Manual",
                     display_org="Defense Security Cooperation Agency",
-                    display_source="https://samm.dsca.mil/"
+                    display_source=self.display_source
                 )
             elif response.url.endswith('appendix-6'):
                 TITLE_SELECTOR = 'a ::text'
@@ -617,7 +618,7 @@ class SammSpider(GCSpider):
                     source_page_url=response.url,
                     display_doc_type="Manual",
                     display_org="Defense Security Cooperation Agency",
-                    display_source="https://samm.dsca.mil/"
+                    display_source=self.display_source
                 )
             elif response.url.endswith('archive') or response.url.endswith('1983-masm-b-3'):
                 TITLE_SELECTOR = 'a ::text'
@@ -672,5 +673,5 @@ class SammSpider(GCSpider):
                     source_page_url=response.url,
                     display_doc_type="Manual",
                     display_org="Defense Security Cooperation Agency",
-                    display_source="https://samm.dsca.mil/"
+                    display_source=self.display_source
                 )
