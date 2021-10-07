@@ -46,7 +46,7 @@ class StigSpider(GCSpider):
         for row in rows:
             href_raw = row.css('a::attr(href)').get()
             doc_title_text, publication_date_raw = row.css('span[style="display:none;"] ::text').getall()
-            doc_title = self.ascii_clean(doc_title_text)
+            doc_title = self.ascii_clean(doc_title_text).replace("/", "\\")
             publication_date = self.ascii_clean(publication_date_raw)
             doc_title, doc_num = StigSpider.extract_doc_number(doc_title)
             doc_name = f"{self.doc_type} {doc_num} {doc_title}"
