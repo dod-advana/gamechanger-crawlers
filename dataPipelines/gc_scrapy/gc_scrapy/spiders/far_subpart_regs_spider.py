@@ -2,8 +2,8 @@ from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
 
-class DfarsSubpartSpider(GCSpider):
-    name = "dfar_subpart_regs"
+class FarSubpartSpider(GCSpider):
+    name = "far_subpart_regs"
 
     start_urls = [
         'https://www.acquisition.gov/far'

@@ -23,3 +23,5 @@ class DocItem(scrapy.Item):
     display_doc_type = scrapy.Field()
     display_org = scrapy.Field()
     display_source = scrapy.Field()
+    data_source = scrapy.Field()
+    source_title = scrapy.Field()
