@@ -2,4 +2,3 @@ sorn_spider.py
 secnav_spider.py
 coast_guard_spider.py
 opm_pubs_spider.py
-samm_spider
