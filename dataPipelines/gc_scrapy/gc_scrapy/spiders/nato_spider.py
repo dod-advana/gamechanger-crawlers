@@ -111,13 +111,6 @@ class NatoSpider(GCSpider):
 
                 doc_name = " ".join([name for name in doc_name_list if name])
 
-                version_hash_fields = {
-                    "edition": edition,
-                    "volume": volume,
-                    "version": version,
-                    "publication_date": publication_date
-                }
-
                 web_url = f"https://nso.nato.int/nso/nsdd/webapi/api/download-manager/download?id={iden}&type={item_type}&language=EN&subType=None"
 
                 downloadable_items = [
@@ -127,6 +120,14 @@ class NatoSpider(GCSpider):
                         "web_url": web_url
                     }
                 ]
+
+                version_hash_fields = {
+                    "edition": edition,
+                    "volume": volume,
+                    "version": version,
+                    "publication_date": publication_date,
+                    "web_url": web_url
+                }
 
                 yield DocItem(
                     doc_name=doc_name,
