@@ -32,7 +32,11 @@ SUPPORTED_FILE_EXTENSIONS = [
 
 
 class FileDownloadPipeline(MediaPipeline):
-    MEDIA_ALLOW_REDIRECTS = True
+    def __init__(self, download_func=None, settings=None):
+        settings = dict(settings) if settings else {}
+        settings.setdefault('MEDIA_ALLOW_REDIRECTS', True)
+        super().__init__(download_func, settings)
+
     previous_hashes = set()
     output_dir: Path
     previous_manifest_path: Path
@@ -221,11 +225,14 @@ class FileDownloadPipeline(MediaPipeline):
                 output_file_name = response.meta["output_file_name"]
                 compression_type = response.meta["compression_type"]
                 if compression_type:
-                    file_download_path = Path(self.output_dir, output_file_name).with_suffix(f".{compression_type}")
-                    file_unzipped_path = Path(self.output_dir, output_file_name)
+                    file_download_path = Path(self.output_dir, output_file_name).with_suffix(
+                        f".{compression_type}")
+                    file_unzipped_path = Path(
+                        self.output_dir, output_file_name)
                     metadata_download_path = f"{file_unzipped_path}.metadata"
                 else:
-                    file_download_path = Path(self.output_dir, output_file_name)
+                    file_download_path = Path(
+                        self.output_dir, output_file_name)
                     metadata_download_path = f"{file_download_path}.metadata"
 
                 with open(file_download_path, 'wb') as f:
@@ -238,7 +245,8 @@ class FileDownloadPipeline(MediaPipeline):
                         # TODO: Add functionality for zips to handle multiple files/doc types
                         if compression_type:
                             if compression_type.lower() == "zip":
-                                unzip_docs_as_needed(file_download_path, file_unzipped_path)
+                                unzip_docs_as_needed(
+                                    file_download_path, file_unzipped_path)
 
                         print('downloaded', file_download_path)
                         file_downloads.append(file_download_path)
