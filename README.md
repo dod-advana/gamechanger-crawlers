@@ -23,3 +23,33 @@ GAMECHANGER aspires to be the Department’s trusted solution for evidence-based
 ## License & Contributions
 See LICENSE.md (including licensing intent - INTENT.md) and CONTRIBUTING.md
 
+## How to Setup Local Env for Development
+> The following should be done in a MacOS or Linux environment (including WSL on Windows)
+1. Install Google Chrome and ChromeDriver
+    - https://chromedriver.chromium.org/getting-started
+    - after a successful installation you should be able to run the following from the shell:
+         ```shell
+         chromedriver --version
+         ```
+2. Install Miniconda or Anaconda (Miniconda is much smaller)
+    - https://docs.conda.io/en/latest/miniconda.html
+    - after a successful installation you should be able to run the following from the shell:
+         ```shell
+         conda --version
+         ```
+3. Create a gamechanger crawlers python3.6 environment:
+     ```shell
+     conda create -n gc-crawlers python=3.6
+     ```
+4. Clone the repo and change into that dir:
+     ```shell
+     git clone https://github.com/dod-advana/gamechanger-crawlers.git
+     cd gamechanger-crawlers
+     ```
+5. Activate the conda environment and install requirements:
+     ```shell
+     conda activate gc-crawlers
+     pip install --upgrade pip setuptools wheel
+     pip install -r ./docker/minimal-requirements.txt
+     ```
+6. That's it.
