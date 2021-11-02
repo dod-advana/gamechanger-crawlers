@@ -8,6 +8,9 @@ from pathlib import Path
 from scrapy.utils.project import get_project_settings
 from scrapy.utils.spider import iter_spider_classes
 from twisted.internet import reactor, defer
+from notification import slack
+import copy
+from pathlib import Path
 
 ####
 # CLI to run scrapy crawlers
@@ -70,7 +73,8 @@ def cli():
     '--dont-filter-previous-hashes',
     help='Flag to skip filtering of downloads',
     default=False,
-    required=False
+    required=False,
+    type=click.BOOL
 )
 def crawl(
     download_output_dir,
@@ -132,7 +136,7 @@ def crawl(
             spider_class_refs.append(spider_class)
         except Exception as e:
             print(e)
-            print('Error running spider', spider_path)
+            print('Error running spider at path', spider_path)
             raise e
 
     crawl_kwargs = {
@@ -145,8 +149,46 @@ def crawl(
     try:
         queue_spiders_sequentially(runner, spider_class_refs, crawl_kwargs)
         reactor.run()
+        all_stats = copy.deepcopy(spider_class_refs[0].stats)
+        send_stats(all_stats)
     except Exception as e:
         print("ERROR RUNNING SPIDERS SEQUENTIALLY", e)
+
+
+def get_git_branch() -> str:
+    """
+    Get the git branch to be logged.
+    Returns:
+        str: The git branch name.
+    """
+    import subprocess
+
+    try:
+        branch_list = subprocess.check_output(['git', 'branch']).splitlines()
+    except (subprocess.CalledProcessError, OSError) as e:
+        print("git error: ", e)
+        return 'ERROR GETTING BRANCH NAME'
+
+    for branch_name in branch_list:
+        if '*' in branch_name.decode():
+            return branch_name.decode()[2:]
+    else:
+        return 'NOT FOUND'
+
+
+def send_stats(all_stats: dict) -> None:
+    branch = get_git_branch()
+    msg = f"[STATS] Crawler ran on branch: {branch}"
+
+    for spider_name, stats in all_stats.items():
+        msg += f"\n {spider_name}"
+        for k, v in stats.items():
+            msg += f"\n        {k}: {v}"
+
+    try:
+        slack.send_notification(message=msg)
+    except Exception as e:
+        print('Slack send error', e)
 
 
 @defer.inlineCallbacks
@@ -157,15 +199,24 @@ def queue_spiders_sequentially(runner: CrawlerRunner, spiders: list, crawl_kwarg
         spiders: list of spider class references to run
         crawl_kwards: dict of args to pass CrawlerRunner
     """
+
     try:
         for spider in spiders:
-            yield runner.crawl(
-                spider,
-                **crawl_kwargs
-            )
+            try:
+                yield runner.crawl(
+                    spider,
+                    **crawl_kwargs
+                )
+            except Exception as e:
+                print(f'ERROR RUNNING SPIDER CLASS: {spider}')
+                print(e)
     finally:
-        print("Done running spiders, stopping twisted.reactor")
-        reactor.stop()
+        print("Done running spiders, stopping twisted.reactor and sending stats")
+        try:
+            reactor.stop()
+        except Exception as e:
+            print(e)
+            exit(1)
 
 
 def resolve_spider(spider_path):
