@@ -1,5 +1,5 @@
 import click
-from rpa.edl_zip_mover import move_from_edl
+from rpa.edl_zip_mover import move_zips
 
 
 @click.group()
@@ -9,4 +9,4 @@ def cli():
 
 @cli.command()
 def move_from_edl():
-    move_from_edl()
+    move_zips()

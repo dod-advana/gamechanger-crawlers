@@ -17,7 +17,8 @@ source_path = f"{source_bucket}edl/sorted/gamechanger_rpa/"
 destination_path = f"{destination_bucket}bronze/gamechanger/rpa-landing-zone/"
 
 
-def move_from_edl():
+def move_zips():
+    print('move_from_edl')
     if not allowed_ids:
         print(
             'ALLOWED_IDS_CSV_STRING not set, exiting because nothing would be let through')
@@ -55,4 +56,4 @@ def move_from_edl():
 
 
 if __name__ == "__main__":
-    move_from_edl()
+    move_zips()
