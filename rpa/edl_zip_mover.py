@@ -18,7 +18,6 @@ destination_path = f"{destination_bucket}bronze/gamechanger/rpa-landing-zone/"
 
 
 def move_zips():
-    print('move_from_edl')
     if not allowed_ids:
         print(
             'ALLOWED_IDS_CSV_STRING not set, exiting because nothing would be let through')
