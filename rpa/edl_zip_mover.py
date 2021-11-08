@@ -4,7 +4,7 @@ import re
 
 allowed_ids = [
     allowed_id.strip() for allowed_id in
-    os.environ.get('ALLOWED_IDS_CSV_STRING', None).split(',')
+    os.environ.get('ALLOWED_IDS_CSV_STRING', '').split(',')
 ]
 
 idens = "|".join(allowed_ids)
