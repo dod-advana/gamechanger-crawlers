@@ -17,11 +17,15 @@ from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 class AssistQuicksearchSpider(GCSeleniumSpider):
     name = 'assist_quicksearch'
 
+    display_org = 'Defense Logistics Agency'
+    data_source = 'ASSIST'
+    source_title = 'Acquisition Streamlining and Standardization Information System'
+
     start_urls = ['https://quicksearch.dla.mil/qsSearch.aspx']
     allowed_domains = ['quicksearch.dla.mil']
 
     cac_login_required = False
-    doc_type='???'  # XXX:
+    doc_type = ''  # XXX: ???
 
     def parse(self, response: TextResponse):
         driver: Chrome = response.meta["driver"]
