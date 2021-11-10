@@ -96,7 +96,7 @@ class GCSpider(scrapy.Spider):
         """
             checks if href is relative and adds to base if needed
         """
-        if href_raw.startswith(('/', '.')):
+        if href_raw.startswith('/'):
             web_url = urljoin(url_base, href_raw)
         else:
             web_url = href_raw

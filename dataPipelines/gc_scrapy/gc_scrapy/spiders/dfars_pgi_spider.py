@@ -1,6 +1,7 @@
 import re
+from urllib.parse import urljoin
 
-from scrapy.http import TextResponse, Request
+from scrapy.http import TextResponse
 from scrapy.selector import Selector
 
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
@@ -33,7 +34,7 @@ class DoDSpider(GCSpider):
         rows = table.css('tr')
         prev_num = 'CHAPTER 2'  # ?
         prev_title = 'DEFENSE FEDERAL ACQUISITION REGULATION SUPPLEMENT'
-        row: Selector                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+        row: Selector
         for row in rows:
             if row.attrib['class'] == 'rule':
                 part_and_title_raw: str = row.css('td:nth-child(1)::text').get()
@@ -71,7 +72,7 @@ class DoDSpider(GCSpider):
 
                 # DFARS
                 if dfars_pdf_href_raw:
-                    dfars_pdf_href = self.ensure_full_href_url(dfars_pdf_href_raw, self.start_urls[0])
+                    dfars_pdf_href = urljoin(self.start_urls[0], dfars_pdf_href_raw)
 
                     doc_name = f'DFARS {doc_num} - {doc_title}'
 
@@ -103,7 +104,7 @@ class DoDSpider(GCSpider):
 
                 # PGI
                 if pgi_pdf_href_raw:
-                    pgi_pdf_href = self.ensure_full_href_url(pgi_pdf_href_raw, self.start_urls[0])
+                    pgi_pdf_href = urljoin(self.start_urls[0], pgi_pdf_href_raw)
 
                     doc_num = self.derive_pgi_num(doc_num)
 
