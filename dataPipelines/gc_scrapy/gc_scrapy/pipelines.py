@@ -12,6 +12,7 @@ import os
 import json
 from scrapy.exceptions import DropItem
 from jsonschema.exceptions import ValidationError
+from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.utils import unzip_docs_as_needed
 
 from .validators import DefaultOutputSchemaValidator, SchemaValidator
@@ -281,23 +282,21 @@ class DeduplicaterPipeline():
 
 class AdditionalFieldsPipeline:
     def process_item(self, item, spider):
-
-        if getattr(spider, 'display_org', None):
-            item["display_org"] = spider.display_org
-
-        if getattr(spider, 'display_source', None):
-            item["display_source"] = spider.display_source
+        # allow setting any field on the spider
+        for field_name in DocItem.fields.keys():
+            if field_name in item:  # value set on item takes priority
+                continue
+            field_value = getattr(spider, field_name, None)
+            if field_value is not None:
+                item[field_name] = field_value
 
         if item.get('crawler_used') is None:
             item['crawler_used'] = spider.name
 
         source_page_url = item.get('source_page_url')
         if source_page_url is None:
-            if getattr(spider, 'source_page_url', None):
-                item["source_page_url"] = spider.source_page_url
-            else:
-                source_page_url = spider.start_urls[0]
-                item['source_page_url'] = source_page_url
+            source_page_url = spider.start_urls[0]
+            item['source_page_url'] = source_page_url
 
         if item.get('source_fqdn') is None:
             item['source_fqdn'] = get_fqdn_from_web_url(source_page_url)
@@ -317,13 +316,13 @@ class AdditionalFieldsPipeline:
             item['publication_date'] = "N/A"
 
         if item.get('cac_login_required') is None:
-            item['cac_login_required'] = spider.cac_login_required
+            raise ValueError('"cac_login_required" field must not be empty')
 
         if item.get('doc_type') is None:
-            item['doc_type'] = getattr(spider, 'doc_type', '')
+            item['doc_type'] = ''
 
         if item.get('doc_num') is None:
-            item['doc_num'] = ""
+            item['doc_num'] = ''
 
         return item
 
