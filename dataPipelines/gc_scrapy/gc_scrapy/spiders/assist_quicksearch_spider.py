@@ -106,6 +106,9 @@ class AssistQuicksearchSpider(GCSeleniumSpider):
             doc_title=self.ascii_clean(doc_title),
             publication_date=publication_date,
             source_page_url=response.url,
+            display_org=self.display_org,
+            data_source=self.data_source,
+            source_title=self.source_title,
             downloadable_items=downloadable_items,
             version_hash_raw_data=version_hash_fields,
         )
