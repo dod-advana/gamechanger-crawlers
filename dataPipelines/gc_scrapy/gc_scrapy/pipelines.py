@@ -46,15 +46,21 @@ class FileDownloadPipeline(MediaPipeline):
         self.output_dir = Path(spider.download_output_dir).resolve()
         self.job_manifest_path = Path(
             self.output_dir, 'manifest.json').resolve()
+        self.dont_filter_previous_hashes = spider.dont_filter_previous_hashes
 
         self.previous_manifest_path = Path(
             spider.previous_manifest_location).resolve()
 
-        if not spider.dont_filter_previous_hashes:
+        if not self.dont_filter_previous_hashes:
             self.load_hashes_from_cumulative_manifest(
                 self.previous_manifest_path, spider.name)
 
     def load_hashes_from_cumulative_manifest(self, previous_manifest_path, spider_name):
+        if self.dont_filter_previous_hashes:
+            print(
+                'Dont filter previous hashes flag is set, skipping load of previous hashes')
+            return
+
         file_location = (
             Path(previous_manifest_path).resolve()
             if previous_manifest_path
@@ -64,10 +70,7 @@ class FileDownloadPipeline(MediaPipeline):
         if not file_location or not os.path.isfile(file_location):
             print(
                 f"\n\nPrevious manifest at {file_location} is not a file! Nothing will be filtered!\n\n")
-            if self.dont_filter_previous_hashes:
-                return
-            else:
-                exit(1)
+            exit(1)
 
         print('Reading in previous manifest')
         count = 0
@@ -221,11 +224,14 @@ class FileDownloadPipeline(MediaPipeline):
                 output_file_name = response.meta["output_file_name"]
                 compression_type = response.meta["compression_type"]
                 if compression_type:
-                    file_download_path = Path(self.output_dir, output_file_name).with_suffix(f".{compression_type}")
-                    file_unzipped_path = Path(self.output_dir, output_file_name)
+                    file_download_path = Path(self.output_dir, output_file_name).with_suffix(
+                        f".{compression_type}")
+                    file_unzipped_path = Path(
+                        self.output_dir, output_file_name)
                     metadata_download_path = f"{file_unzipped_path}.metadata"
                 else:
-                    file_download_path = Path(self.output_dir, output_file_name)
+                    file_download_path = Path(
+                        self.output_dir, output_file_name)
                     metadata_download_path = f"{file_download_path}.metadata"
 
                 with open(file_download_path, 'wb') as f:
@@ -238,7 +244,8 @@ class FileDownloadPipeline(MediaPipeline):
                         # TODO: Add functionality for zips to handle multiple files/doc types
                         if compression_type:
                             if compression_type.lower() == "zip":
-                                unzip_docs_as_needed(file_download_path, file_unzipped_path)
+                                unzip_docs_as_needed(
+                                    file_download_path, file_unzipped_path)
 
                         print('downloaded', file_download_path)
                         file_downloads.append(file_download_path)

@@ -70,7 +70,8 @@ def cli():
     '--dont-filter-previous-hashes',
     help='Flag to skip filtering of downloads',
     default=False,
-    required=False
+    required=False,
+    type=click.BOOL
 )
 def crawl(
     download_output_dir,
