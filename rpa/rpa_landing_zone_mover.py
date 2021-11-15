@@ -6,6 +6,7 @@ from io import BytesIO
 import json
 import typing
 import datetime
+from time import sleep
 
 
 class slack:
@@ -30,55 +31,7 @@ destination_path = f"{destination_bucket}/{destination_prefix_dt}"
 
 
 def filter_and_move():
-    TODO = """
-        # for each zip in rpa landing zone
-        # get file and unzip, read in any metadata file
-        # set clone name from it
-        # fetch cumulative manifest for that crawler_used if it exists
-            # otherwise create an emtpy one
-        # load previous_hashes into a set
-        # create to_keep dict
-        # for each metadata file
-            # read in and compare hash to previous_hashes
-            # if new, put its hash into to_keep with value of tuple of metadata and pdf file locations
-
-        # !! have this part changed in crawling instead... rename manifest file to total_manifest
-        # create empty manifest file
-        # load total_manifest file
-            # compare each line hash to to_keep.keys()
-            # if in to_keep, add line to manifest
-
-        # upload all files in to_keep
-        # upload manifest
-
-        # rename old cumulative manifest and upload new cumulative manifest to its location
-
-        # if no errors
-            # delete zip
-        # otherwise try again?
-
-
-
-
-        # update crawler_info if crawler used doesnt exist there
-        # Done by ingest
-        # Update crawler status postgres table
-        # Crawler download completed - means its sitting in the external-uploads folder
-        # Parse in progress
-        # Complete
-        """
-
-    # initiate s3 client
-    # s3 = boto3.resource('s3')
-
-    # s3 = boto3.resource('s3')
-    # bucket = s3.Bucket('test-bucket')
-    # # Iterates through all the objects, doing the pagination for you. Each obj
-    # # is an ObjectSummary, so it doesn't contain the body. You'll need to call
-    # # get to get the whole body.
-    # for obj in bucket.objects.filter(Prefix=source_path):
-    #     key = obj.key
-    #     body = obj.get()['Body'].read()
+    print('destination path will be', destination_path)
 
     zip_s3_objs = get_filename_s3_obj_map()
     for zip_filename, s3_obj in zip_s3_objs.items():
@@ -97,12 +50,13 @@ def filter_and_move():
                 # get crawler name from manifest file
                 try:
                     with zf.open(f'{base_dir}manifest.json') as manifest:
-                        # read through all of the manifest to get the metadata lines... :/
+
                         for line in manifest.readlines():
                             jdoc = json.loads(line)
                             if not crawler_used:
                                 crawler_used = jdoc['crawler_used']
                             if jdoc.get('entry_type', None):
+                                # reading through all of the manifest to get the metadata lines... :/
                                 corrected_manifest_jdocs.append(jdoc)
 
                 except Exception as e:
@@ -114,7 +68,7 @@ def filter_and_move():
                     slack.send_notification(msg)
                     exit(1)
 
-                previous_hashes, cmltv_manifest_s3_obj = get_previous_manifest_for_crawler(
+                previous_hashes, cmltv_manifest_s3_obj, cmltv_manifest_lines = get_previous_manifest_for_crawler(
                     crawler_used)
 
                 # read metadata files and transfer them and main file to the external-uploads bucket if new
@@ -146,13 +100,14 @@ def filter_and_move():
                         print('upload', zip_filename)
 
                         if zip_filename in zip_names:
-                            upload_new_file(zf, zip_filename)
-                            upload_new_file(zf, to_move_meta)
+                            upload_file_from_zip(zf, zip_filename)
+                            upload_file_from_zip(zf, to_move_meta)
 
                 except Exception as e:
-                    print('upload new file err', e)
+                    print('upload new file err', type(e), e)
 
-                upload_new_file(zf, f'{base_dir}crawler_output.json')
+                upload_file_from_zip(zf, f'{base_dir}crawler_output.json')
+                upload_jsonlines(corrected_manifest_jdocs, 'manifest.json')
 
                 print('after uploading files')
 
@@ -160,48 +115,75 @@ def filter_and_move():
                 # need to make a corrected one from filtered hashes
                 # dont copy the existing one like this:: upload_new_file(zf, f'{base_dir}manifest.json')
 
-                with tempfile.TemporaryFile() as new_manifest:
-
-                    for jdoc in corrected_manifest_jdocs:
+                with tempfile.TemporaryFile(mode='r+') as new_manifest:
+                    if cmltv_manifest_s3_obj:
                         try:
-                            # new_manifest.write(json.dump(jdoc))
-                            # json.dumps(jdoc, new_manifest)
-                            line = json.dumps(jdoc).encode() + b'\n'
-                            new_manifest.write(line)
+                            # copy old cumulative manifest lines into new manifest file
+                            for jdoc in cmltv_manifest_lines:
+                                line = json.dumps(jdoc) + '\n'
+                                new_manifest.write(line)
                         except Exception as e:
-                            print('err in json dump or write newline', e)
+                            print(
+                                'error writing jdocs from cmltv_manifest_lines to new_manifest', type(e), e)
 
-                    print('after writing new manifest', new_manifest)
-                    print('was there a cumulative manifest?',
-                          cmltv_manifest_s3_obj)
-
-                    try:
-                        if cmltv_manifest_s3_obj:
+                        try:
                             # copy old cumulative manifest to a new name before overwriting
                             ts = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
                             backup_filename = f'cumulative-manifest.{ts}.json'
                             print('backup filename', backup_filename)
+                            sleep(5)
+                        except Exception as e:
+                            print('backup_filename e', type(e), e)
+
+                        try:
                             backup_prefix = get_cumulative_manifest_prefix(crawler_used).replace(
                                 'cumulative-manifest.json', backup_filename)
                             # copy old with timestamped name
                             print('cmltv_manifest_s3_obj copy obj', 'Key', cmltv_manifest_s3_obj.key,
                                   'Bucket', cmltv_manifest_s3_obj.bucket_name)
+                            sleep(5)
+                        except Exception as e:
+                            print('backup_prefix e', type(e), e)
+
+                        try:
                             s3.Object(destination_bucket, backup_prefix).copy_from(
                                 CopySource={'Key': cmltv_manifest_s3_obj.key,
                                             'Bucket': cmltv_manifest_s3_obj.bucket_name}
                             )
+                        except Exception as e:
+                            print('upload new cumulative manifest error', type(e), e)
+                            # TODO: fix this error
+                            # upload new cumulative manifest error <class 'TypeError'> Unicode-objects must be encoded before hashing
+
+                    try:
+                        for jdoc in corrected_manifest_jdocs:
+                            line = json.dumps(jdoc) + '\n'
+                            new_manifest.write(line)
                     except Exception as e:
-                        print('upload new cumulative manifest error', e)
+                        print('err in json dump corrected_manifest_jdocs', type(e), e)
+
+                    print('after writing new manifest', new_manifest)
+                    print('was there a cumulative manifest?',
+                          cmltv_manifest_s3_obj)
+
+                    # rewind file to top so there is data to put
+                    new_manifest.seek(0)
 
                     try:
                         # upload new
+                        key = get_cumulative_manifest_prefix(crawler_used)
+                        print('upload new cumulative manifest',
+                              destination_bucket, key)
                         s3_client.put_object(
                             Body=new_manifest,
                             Bucket=destination_bucket,
-                            Key=get_cumulative_manifest_prefix(crawler_used)
+                            Key=key
                         )
                     except Exception as e:
-                        print('upload new cumulative manifest error', e)
+                        # TODO: fix error
+                        # upload new cumulative manifest error <class 'TypeError'> Unicode-objects must be encoded before hashing
+                        print('upload new cumulative manifest error', type(e), e)
+
                 # # namelist retains root structure so files.zip -> files/ , files/thing.txt, files/thing2.txt etc
                 # for name in zf.namelist():
                 #     # get crawler name from manifest file
@@ -227,6 +209,7 @@ def get_cumulative_manifest_prefix(crawler_used):
 def get_previous_manifest_for_crawler(crawler_used) -> typing.Tuple[set, typing.Union[None, object]]:
     previous_hashes = set()
     manifest_s3_obj = None
+    lines = None
     try:
         key = get_cumulative_manifest_prefix(crawler_used)
         s3_obj = s3.Object(source_bucket, key)
@@ -248,7 +231,7 @@ def get_previous_manifest_for_crawler(crawler_used) -> typing.Tuple[set, typing.
         slack.send_notification(msg)
 
     finally:
-        return (previous_hashes, manifest_s3_obj)
+        return (previous_hashes, manifest_s3_obj, lines)
 
 
 def get_filename_s3_obj_map() -> list:
@@ -269,7 +252,7 @@ def create_zip_obj(s3_obj) -> ZipFile:
     return zf
 
 
-def upload_new_file(zf_ref, zip_filename, bucket=destination_bucket, prefix=destination_prefix_dt):
+def upload_file_from_zip(zf_ref, zip_filename, bucket=destination_bucket, prefix=destination_prefix_dt):
     try:
         with zf_ref.open(zip_filename, "r") as f:
             _, __, filename = zip_filename.rpartition('/')
@@ -277,8 +260,17 @@ def upload_new_file(zf_ref, zip_filename, bucket=destination_bucket, prefix=dest
             s3_client.upload_fileobj(
                 f, bucket, f"{prefix}/{filename}")
     except Exception as e:
-        print('Error upload_new_file', e)
+        print('Error upload_file_from_zip', type(e), e)
         pass
+
+
+def upload_jsonlines(lines, filename, bucket=destination_bucket, prefix=destination_prefix_dt):
+    with tempfile.TemporaryFile(mode='r+') as new_file:
+        for line in lines:
+            jdoc = json.dumps(line) + '\n'
+            new_file.write(jdoc)
+
+        s3_client.upload_fileobj(new_file, bucket, f"{prefix}/{filename}")
 
 
 if __name__ == '__main__':
