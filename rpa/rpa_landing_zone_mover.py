@@ -2,16 +2,11 @@ import boto3
 import tempfile
 from zipfile import ZipFile
 from io import BytesIO
-# from notification import slack
+from notification import slack
 import json
 import typing
 import datetime
 import traceback
-
-
-class slack:
-    def send_notification(msg):
-        print(msg)
 
 
 def notify_with_tb(msg, tb):
