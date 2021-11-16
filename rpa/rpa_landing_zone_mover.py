@@ -6,12 +6,17 @@ from io import BytesIO
 import json
 import typing
 import datetime
-from time import sleep
+import traceback
 
 
 class slack:
     def send_notification(msg):
         print(msg)
+
+
+def notify_with_tb(msg, tb):
+    full = msg + '\n' + tb
+    slack.send_notification(full)
 
 
 s3 = boto3.resource('s3')
@@ -21,185 +26,156 @@ source_bucket = "advana-data-zone"
 source_prefix = "bronze/gamechanger/rpa-landing-zone/"
 
 destination_bucket = "advana-data-zone"
-destination_prefix = "bronze/gamechanger/external-uploads/crawler-downloader"
-
-source_path = f"{source_bucket}/{source_prefix}"
-
-external_uploads_dt = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-destination_prefix_dt = f"{destination_prefix}/{external_uploads_dt}"
-destination_path = f"{destination_bucket}/{destination_prefix_dt}"
 
 
 def filter_and_move():
-    print('destination path will be', destination_path)
+    """
+        Ingest zip files from rpa landing zone
+        Filter them based on cumulative manifest
+        Place in external uploads
 
-    zip_s3_objs = get_filename_s3_obj_map()
-    for zip_filename, s3_obj in zip_s3_objs.items():
+        Things that happen in this function...
+            retrieve zips from s3
+        for each zip, without downloading file, create zip obj ->
+            read manifest.json for crawler used, metadata lines and version hashes
+            get cumulative manifest for crawler used
+            read through zip obj for metadata files, filter previous hashes from cumulative manifest (like scrapy does)
+            create corrected manifest (matching what a scrapy crawler wouldve downloaded)
+            upload all new files, metadata, and corrected manifest
+            copy old cumulative manifest if exists, add new lines to new manifest
+            rename old cumulative manifest with datetime
+            upload new manifest
+            delete zip from rpa landing zone
+
+        any error - delete the created external-uploads/crawler-downloader/{external_uploads_dt} bucket and dont delete the zip from rpa landing zone
+    """
+
+    zips_as_s3_objs = get_filename_s3_obj_map()
+    for zip_filename, s3_obj in zips_as_s3_objs.items():
+        print('checking', zip_filename)
+        # archive keeps the original filename so zip_filename irrelevant when searching in the zip but it is useful for identifying the zip name
+
+        external_uploads_dt = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+        destination_prefix_dt = f"bronze/gamechanger/external-uploads/crawler-downloader/{external_uploads_dt}"
+        # set prefix dt per zip so multiple zips dont end up in the same timestamped output
+
         crawler_used = None
         try:
-
             # create in memory zip file object
             with create_zip_obj(s3_obj) as zf:
                 zip_names = zf.namelist()
+                # in archive base name (ie the original folder name when zipped)
                 base_dir = zip_names[0]
 
-                print('base dir', base_dir)
-
-                corrected_manifest_jdocs = []
+                corrected_manifest_jdocs: typing.List[dict] = []
+                # immediately try to upload this so it will error if not in the archive
+                upload_file_from_zip(
+                    zf_ref=zf, zip_filename=f'{base_dir}crawler_output.json', prefix=destination_prefix_dt)
 
                 # get crawler name from manifest file
                 try:
                     with zf.open(f'{base_dir}manifest.json') as manifest:
 
                         for line in manifest.readlines():
-                            jdoc = json.loads(line)
+                            jsondoc = json.loads(line)
                             if not crawler_used:
-                                crawler_used = jdoc['crawler_used']
-                            if jdoc.get('entry_type', None):
+                                crawler_used = jsondoc['crawler_used']
+                            if jsondoc.get('entry_type', None):
                                 # reading through all of the manifest to get the metadata lines... :/
-                                corrected_manifest_jdocs.append(jdoc)
+                                corrected_manifest_jdocs.append(jsondoc)
 
-                except Exception as e:
-                    msg = f"[ERROR] RPA Landing Zone mover failed to handle manifest file: {source_bucket}/{s3_obj.key} > {zip_filename} \n{e}"
-                    slack.send_notification(msg)
+                except:
+                    msg = f"[ERROR] RPA Landing Zone Mover failed to handle manifest file, skipping:\n {source_bucket}/{s3_obj.key} > {zip_filename}"
+                    notify_with_tb(msg, traceback.format_exc())
+                    # skip to next zip
+                    continue
 
                 if not crawler_used:
-                    msg = f"[ERROR] RPA Landing Zone mover failed to discover crawler_used: {source_bucket}/{s3_obj.key} > {zip_filename}"
+                    msg = f"[ERROR] RPA Landing Zone Mover failed to discover crawler_used, skipping:\n {source_bucket}/{s3_obj.key} > {zip_filename} \n(check manifest.json)"
                     slack.send_notification(msg)
-                    exit(1)
+                    # skip to next zip
+                    continue
 
                 previous_hashes, cmltv_manifest_s3_obj, cmltv_manifest_lines = get_previous_manifest_for_crawler(
                     crawler_used)
 
-                # read metadata files and transfer them and main file to the external-uploads bucket if new
                 not_in_previous_hashes = set()
-                errors = []
-
-                print('len prev hashes', len(previous_hashes))
 
                 for name in zip_names:
                     if name.endswith('.metadata'):
-                        try:
-                            with zf.open(name) as metadata:
-                                jdoc = json.loads(metadata.readline())
+                        with zf.open(name) as metadata:
+                            jsondoc = json.loads(metadata.readline())
 
-                                version_hash = jdoc.get('version_hash', None)
-                                if version_hash and not version_hash in previous_hashes:
-                                    not_in_previous_hashes.add(name)
-                                    corrected_manifest_jdocs.append(jdoc)
-                        except Exception as e:
-                            errors.append(name)
-
-                print('len errors', len(errors))
-                print('len not_in_previous_hashes',
-                      len(not_in_previous_hashes))
-                try:
+                            version_hash = jsondoc.get('version_hash', None)
+                            if version_hash and not version_hash in previous_hashes:
+                                not_in_previous_hashes.add(name)
+                                corrected_manifest_jdocs.append(jsondoc)
 
                     for to_move_meta in not_in_previous_hashes:
                         zip_filename = to_move_meta.replace('.metadata', '')
-                        print('upload', zip_filename)
 
                         if zip_filename in zip_names:
-                            upload_file_from_zip(zf, zip_filename)
-                            upload_file_from_zip(zf, to_move_meta)
+                            upload_file_from_zip(
+                                zf_ref=zf, zip_filename=zip_filename, prefix=destination_prefix_dt)
+                            upload_file_from_zip(
+                                zf_ref=zf, zip_filename=to_move_meta, prefix=destination_prefix_dt)
 
-                except Exception as e:
-                    print('upload new file err', type(e), e)
-
-                upload_file_from_zip(zf, f'{base_dir}crawler_output.json')
-                upload_jsonlines(corrected_manifest_jdocs, 'manifest.json')
-
-                print('after uploading files')
+                upload_jsonlines(
+                    lines=corrected_manifest_jdocs, filename='manifest.json', prefix=destination_prefix_dt)
 
                 # the manifest from rpa is everything because it can't determine previous hashes before downloading
-                # need to make a corrected one from filtered hashes
-                # dont copy the existing one like this:: upload_new_file(zf, f'{base_dir}manifest.json')
-
-                with tempfile.TemporaryFile(mode='r+') as new_manifest:
+                # need to make a corrected one from filtered hashes (like scrapy does)
+                with tempfile.TemporaryFile(mode='r+', encoding="UTF-8") as new_manifest:
+                    # new crawlers wont have existing cumulative manifest
                     if cmltv_manifest_s3_obj:
-                        try:
-                            # copy old cumulative manifest lines into new manifest file
-                            for jdoc in cmltv_manifest_lines:
-                                line = json.dumps(jdoc) + '\n'
-                                new_manifest.write(line)
-                        except Exception as e:
-                            print(
-                                'error writing jdocs from cmltv_manifest_lines to new_manifest', type(e), e)
 
-                        try:
-                            # copy old cumulative manifest to a new name before overwriting
-                            ts = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-                            backup_filename = f'cumulative-manifest.{ts}.json'
-                            print('backup filename', backup_filename)
-                            sleep(5)
-                        except Exception as e:
-                            print('backup_filename e', type(e), e)
-
-                        try:
-                            backup_prefix = get_cumulative_manifest_prefix(crawler_used).replace(
-                                'cumulative-manifest.json', backup_filename)
-                            # copy old with timestamped name
-                            print('cmltv_manifest_s3_obj copy obj', 'Key', cmltv_manifest_s3_obj.key,
-                                  'Bucket', cmltv_manifest_s3_obj.bucket_name)
-                            sleep(5)
-                        except Exception as e:
-                            print('backup_prefix e', type(e), e)
-
-                        try:
-                            s3.Object(destination_bucket, backup_prefix).copy_from(
-                                CopySource={'Key': cmltv_manifest_s3_obj.key,
-                                            'Bucket': cmltv_manifest_s3_obj.bucket_name}
-                            )
-                        except Exception as e:
-                            print('upload new cumulative manifest error', type(e), e)
-                            # TODO: fix this error
-                            # upload new cumulative manifest error <class 'TypeError'> Unicode-objects must be encoded before hashing
-
-                    try:
-                        for jdoc in corrected_manifest_jdocs:
-                            line = json.dumps(jdoc) + '\n'
+                        # copy old cumulative manifest lines into new manifest file
+                        for jsondoc in cmltv_manifest_lines:
+                            line = json.dumps(jsondoc) + '\n'
                             new_manifest.write(line)
-                    except Exception as e:
-                        print('err in json dump corrected_manifest_jdocs', type(e), e)
 
-                    print('after writing new manifest', new_manifest)
-                    print('was there a cumulative manifest?',
-                          cmltv_manifest_s3_obj)
+                        # s3 copy old cumulative manifest to a new name before overwriting
+                        ts = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+                        backup_filename = f'cumulative-manifest.{ts}.json'
+                        backup_prefix = get_cumulative_manifest_prefix(crawler_used).replace(
+                            'cumulative-manifest.json', backup_filename)
+                        s3.Object(destination_bucket, backup_prefix).copy_from(
+                            CopySource={'Key': cmltv_manifest_s3_obj.key,
+                                        'Bucket': cmltv_manifest_s3_obj.bucket_name}
+                        )
 
-                    # rewind file to top so there is data to put
+                    for jsondoc in corrected_manifest_jdocs:
+                        line = json.dumps(jsondoc) + '\n'
+                        new_manifest.write(line)
+
+                    # rewind file to top so there is data to read for put_object
                     new_manifest.seek(0)
 
-                    try:
-                        # upload new
-                        key = get_cumulative_manifest_prefix(crawler_used)
-                        print('upload new cumulative manifest',
-                              destination_bucket, key)
-                        s3_client.put_object(
-                            Body=new_manifest,
-                            Bucket=destination_bucket,
-                            Key=key
-                        )
-                    except Exception as e:
-                        # TODO: fix error
-                        # upload new cumulative manifest error <class 'TypeError'> Unicode-objects must be encoded before hashing
-                        print('upload new cumulative manifest error', type(e), e)
+                    key = get_cumulative_manifest_prefix(crawler_used)
+                    s3_client.put_object(
+                        Body=new_manifest.buffer,
+                        Bucket=destination_bucket,
+                        Key=key
+                    )
 
-                # # namelist retains root structure so files.zip -> files/ , files/thing.txt, files/thing2.txt etc
-                # for name in zf.namelist():
-                #     # get crawler name from manifest file
-                #     if name.endswith('manifest.json'):
-                #         try:
-                #             with open(name) as manifest:
-                #                 jdoc = json.load(manifest.readline())
-                #                 # direct check so it will raise error if it doesnt have that key
+        except:
+            msg = f"[ERROR] RPA Landing Zone mover failed while handling the following:\n {source_bucket}/{s3_obj.key}"
+            notify_with_tb(msg, traceback.format_exc())
 
-                # load_previous_manifest_hashes(crawler_used)
+            try:
+                undo_uploads(prefix=destination_prefix_dt)
+            except:
+                msg = '[ERROR] Failed undo_uploads'
+                notify_with_tb(msg, traceback.format_exc())
 
-        except Exception as e:
-            msg = f"[ERROR] RPA Landing Zone mover failed to handle zip file: {source_bucket}/{s3_obj.key} \n{e}"
-            slack.send_notification(msg)
+            continue
 
-        print("DONE DONE DONE")
+        # if no errors, go ahead and delete the zip so it won't be picked up again
+        s3_obj.delete()
+
+
+def undo_uploads(prefix):
+    s3.Bucket(destination_bucket).objects.filter(Prefix=prefix).delete()
 
 
 def get_cumulative_manifest_prefix(crawler_used):
@@ -215,33 +191,35 @@ def get_previous_manifest_for_crawler(crawler_used) -> typing.Tuple[set, typing.
         s3_obj = s3.Object(source_bucket, key)
         lines = s3_obj.get()['Body'].read().decode(
             'utf-8').splitlines()
-        print('lines in previous manifest obj', len(lines))
         if lines:
             for line in lines:
-                jdoc = json.loads(line)
-                version_hash = jdoc.get('version_hash', None)
+                jsondoc = json.loads(line)
+                version_hash = jsondoc.get('version_hash', None)
                 if version_hash:
                     previous_hashes.add(version_hash)
 
             # only set it if it has lines, would still be an Object otherwise
             manifest_s3_obj = s3_obj
 
-    except Exception as e:
-        msg = f"[WARN] No cumulative-manifest found for {crawler_used}, a new one will be created \n {e}"
+    except s3_client.exceptions.NoSuchKey:
+        msg = f"[WARN] No cumulative-manifest found for {crawler_used}, a new one will be created"
         slack.send_notification(msg)
+    except Exception as e:
+        msg = f"[ERROR] Unexpected error occurred getting previous manifest for crawler: {crawler_used}"
+        notify_with_tb(msg, traceback.format_exc())
+        raise e
 
     finally:
         return (previous_hashes, manifest_s3_obj, lines)
 
 
-def get_filename_s3_obj_map() -> list:
+def get_filename_s3_obj_map() -> typing.Dict[str, object]:
     out = {}
     for obj in s3.Bucket(source_bucket).objects.filter(Prefix=source_prefix):
         if obj.key.endswith('.zip'):
             _, __, name_with_ext = obj.key.rpartition('/')
-            filename, _, ext = name_with_ext.rpartition('.')
+            filename, *_ = name_with_ext.rpartition('.')
             out[filename] = obj
-    # I thought I could use filename here, but the archive keeps the original filename so this one is irrelevant when searching in the zip
     return out
 
 
@@ -252,25 +230,27 @@ def create_zip_obj(s3_obj) -> ZipFile:
     return zf
 
 
-def upload_file_from_zip(zf_ref, zip_filename, bucket=destination_bucket, prefix=destination_prefix_dt):
-    try:
-        with zf_ref.open(zip_filename, "r") as f:
-            _, __, filename = zip_filename.rpartition('/')
-            print('upload file obj', f, bucket, f"{prefix}/{filename}")
-            s3_client.upload_fileobj(
-                f, bucket, f"{prefix}/{filename}")
-    except Exception as e:
-        print('Error upload_file_from_zip', type(e), e)
-        pass
+def upload_file_from_zip(zf_ref, zip_filename, prefix, bucket=destination_bucket):
+    with zf_ref.open(zip_filename, "r") as f:
+        _, __, filename = zip_filename.rpartition('/')
+        s3_client.upload_fileobj(
+            f, bucket, f"{prefix}/{filename}")
 
 
-def upload_jsonlines(lines, filename, bucket=destination_bucket, prefix=destination_prefix_dt):
+def upload_jsonlines(lines, filename, prefix, bucket=destination_bucket):
     with tempfile.TemporaryFile(mode='r+') as new_file:
         for line in lines:
-            jdoc = json.dumps(line) + '\n'
-            new_file.write(jdoc)
+            jsondoc = json.dumps(line) + '\n'
+            new_file.write(jsondoc)
 
-        s3_client.upload_fileobj(new_file, bucket, f"{prefix}/{filename}")
+        new_file.seek(0)
+        key = f"{prefix}/{filename}"
+
+        s3_client.put_object(
+            Body=new_file.buffer,
+            Bucket=bucket,
+            Key=key
+        )
 
 
 if __name__ == '__main__':
