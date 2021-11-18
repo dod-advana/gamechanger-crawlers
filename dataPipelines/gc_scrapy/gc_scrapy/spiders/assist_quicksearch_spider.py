@@ -83,7 +83,7 @@ class AssistQuicksearchSpider(GCSeleniumSpider):
             doc_token = re.match(r"javascript:spawnPDFWindow\('\.\/ImageRedirector\.aspx\?token=.+,(?P<token>\d+)\);", href)['token']
             web_url = urljoin(response.url, f'../../WMX/Default.aspx?token={doc_token}')
 
-            doc_name = f'{doc_num} - {doc_general_title} {part_description}'
+            doc_name = f'{general_id}{f"/{spec_sheet}" if spec_sheet is not None else ""} {part_description}'
         
             version_hash_fields = {
                 "item_currency": web_url.split('/')[-1],
