@@ -8,7 +8,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import Chrome
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import Select, WebDriverWait
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 from dataPipelines.gc_scrapy.gc_scrapy.GCSeleniumSpider import GCSeleniumSpider
@@ -36,7 +36,7 @@ class AssistQuicksearchSpider(GCSeleniumSpider):
         # doc_id_text_box.send_keys(Keys.ENTER)  # XXX: delete
         # self.wait_until_css_located(driver, '#DocumentSearchFilters tr:nth-child(2)')  # XXX: delete
         
-        search_btn = driver.find_element_by_css_selector('#GetFilteredButton')
+        search_btn: WebElement = driver.find_element_by_css_selector('#GetFilteredButton')
         search_btn.click()
 
         while True:
@@ -60,6 +60,7 @@ class AssistQuicksearchSpider(GCSeleniumSpider):
                 break
 
             table: WebElement = driver.find_element_by_css_selector('#GV')
+            self.wait_until_css_clickable(driver, '#btnNextEx')
             next_btn.click()
             WebDriverWait(driver, 10).until(EC.staleness_of(table))
 
