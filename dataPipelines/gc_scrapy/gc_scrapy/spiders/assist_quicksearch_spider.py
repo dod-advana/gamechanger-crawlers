@@ -31,9 +31,10 @@ class AssistQuicksearchSpider(GCSeleniumSpider):
         driver: Chrome = response.meta["driver"]
 
         # doc_id_text_box: WebElement = driver.find_element_by_css_selector('#DocumentIDTextBox')  # XXX: delete
-        # doc_id_text_box.send_keys('MIL-DTL-17/92')  # XXX: delete
+        # doc_id_text_box.send_keys('MIL-DTL-10190')  # XXX: delete
+        # from selenium.webdriver.common.keys import Keys  # XXX: delete
         # doc_id_text_box.send_keys(Keys.ENTER)  # XXX: delete
-        # self.wait_until_css_located(driver, '#DocumentSearchFilters tr:nth-child(3)')  # XXX: delete
+        # self.wait_until_css_located(driver, '#DocumentSearchFilters tr:nth-child(2)')  # XXX: delete
         
         search_btn = driver.find_element_by_css_selector('#GetFilteredButton')
         search_btn.click()
@@ -71,9 +72,10 @@ class AssistQuicksearchSpider(GCSeleniumSpider):
         doc_row: Selector
         for doc_row in doc_rows:
             href = doc_row.css('td:nth-child(1) a::attr(href)').get()
-            if not href:  # no publicly available download
-                return
             part_description = doc_row.css('td:nth-child(2) *::text').get()
+            dist_stmt = doc_row.css('td:nth-child(3) *::text').get()
+            if dist_stmt != 'A':  # not approved for public release, no download
+                continue
             doc_date = doc_row.css('td:nth-child(4) *::text').get()
 
             publication_date = datetime.strptime(doc_date, '%d-%b-%Y').strftime('%m/%d/%Y')
