@@ -89,6 +89,7 @@ class AssistQuicksearchSpider(GCSeleniumSpider):
                 "item_currency": web_url.split('/')[-1],
                 "document_title": doc_general_title,
                 "document_number": doc_num,
+                "document_part_description": part_description,
                 "publication_date": publication_date,
             }
 
@@ -119,28 +120,28 @@ class AssistQuicksearchSpider(GCSeleniumSpider):
 
     def construct_doc_num(self, general_id, spec_sheet, part_description):
         part_description_regex = (r'^'
-            r'(?=.*Revision (?P<revision>[0-9A-Z]+))?'
-            r'(?=.*(?<!Interim )Amendment (?P<amendment>[0-9A-Z]+))?'
-            r'(?=.*Interim Amendment (?P<iamendment>[0-9A-Z]+))?'
-            r'(?=.*Supplement (?P<supplement>[0-9A-Z]+))?'
-            r'(?=.*Notice (?P<notice>[0-9A-Z]+))?')
+            r'(?=.*Revision ?(?P<revision>(?:[0-9A-Z]{1,3}\b)?))?'
+            r'(?=.*(?<!Interim )Amendment ?(?P<amendment>(?:[0-9A-Z]{1,3}\b)?))?'
+            r'(?=.*Interim Amendment ?(?P<iamendment>(?:[0-9A-Z]{1,3}\b)?))?'
+            r'(?=.*Supplement ?(?P<supplement>(?:[0-9A-Z]{1,3}\b)?))?'
+            r'(?=.*Notice ?(?P<notice>(?:[0-9A-Z]{1,3}\b)?))?')
         part_description_match = re.match(part_description_regex, part_description).groupdict()
         num = general_id
         if spec_sheet is not None:
-            num = f'{num}/{spec_sheet}'
+            num = f'{num}/{spec_sheet or 0}'
         revision = part_description_match.get('revision')
         if revision is not None:
-            num = f'{num}{revision}'
+            num = f'{num}{revision or 0}'
         amendment = part_description_match.get('amendment')
         if amendment is not None:
-            num = f'{num}({amendment})'
+            num = f'{num}({amendment or 0})'
         iamendment = part_description_match.get('iamendment')
         if iamendment is not None:
-            num = f'{num}(I{iamendment})'
+            num = f'{num}(I{iamendment or 0})'
         supplement = part_description_match.get('supplement')
         if supplement is not None:
-            num = f'{num} SUP {supplement}'
+            num = f'{num} SUP {supplement or 0}'
         notice = part_description_match.get('notice')
         if notice is not None:
-            num = f'{num} NOT {notice}'
+            num = f'{num} NOT {notice or 0}'
         return num
