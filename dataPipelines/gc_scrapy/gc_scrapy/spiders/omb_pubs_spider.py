@@ -5,8 +5,11 @@ from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
 
-class OpmSpider(GCSpider):
-    name = 'opm_pubs'
+class OmbSpider(GCSpider):
+    name = 'omb_pubs'
+    source_title = "Office of Management and Budget Memoranda"
+    display_org = "OMB"
+    data_source = "Executive Office of the President"
 
     start_urls = [
         'https://www.whitehouse.gov/omb/information-for-agencies/memoranda/'
@@ -70,15 +73,20 @@ class OpmSpider(GCSpider):
                         # version metadata found on pdf links
                         "item_currency": pdf_url.split('/')[-1],
                         "pub_date": publication_date.strip(),
+                        "display_org": self.display_org
                     }
-                    parsed_title = re.sub('\\"', '', doc_title)
+                    parsed_title = self.ascii_clean(re.sub('\\"', '', doc_title))
                     parsed_num = doc_num.strip()
                     if parsed_num not in parsed_nums:
                         yield DocItem(
                             doc_name=doc_name.strip(),
                             doc_title=parsed_title,
                             doc_num=parsed_num,
+                            data_source=self.data_source,
+                            source_title=self.source_title,
+                            display_org=self.display_org,
                             doc_type=doc_type.strip(),
+                            display_doc_type=doc_type.strip(),
                             publication_date=publication_date,
                             cac_login_required=cac_login_required,
                             source_page_url=page_url.strip(),
