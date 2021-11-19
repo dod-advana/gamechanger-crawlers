@@ -73,6 +73,7 @@ class OpmSpider(GCSpider):
                         # version metadata found on pdf links
                         "item_currency": pdf_url.split('/')[-1],
                         "pub_date": publication_date.strip(),
+                        "display_org": self.display_org
                     }
                     parsed_title = re.sub('\\"', '', doc_title)
                     parsed_num = doc_num.strip()
