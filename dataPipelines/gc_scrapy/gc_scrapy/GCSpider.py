@@ -22,9 +22,12 @@ mailto_re = re.compile(r'mailto\:', re.IGNORECASE)
 # if the link is updated, the hash will change and it will be downloadable later
 UNKNOWN_FILE_EXTENSION_PLACEHOLDER = "UNKNOWN"
 
+
+# creates names for incementable methods on each spider
+# eg In Previous Hashes creates spider.increment_in_previous_hashes()
 STATS_BASE = {
     "Required CAC": 0,
-    "In Prevoius Hashes": 0,
+    "In Previous Hashes": 0,
 }
 
 
