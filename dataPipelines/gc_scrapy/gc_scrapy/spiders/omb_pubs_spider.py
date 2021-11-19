@@ -5,8 +5,8 @@ from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
 
-class OpmSpider(GCSpider):
-    name = 'opm_pubs'
+class OmbSpider(GCSpider):
+    name = 'omb_pubs'
     source_title = "Office of Management and Budget Memoranda"
     display_org = "OMB"
     data_source = "Executive Office of the President"
