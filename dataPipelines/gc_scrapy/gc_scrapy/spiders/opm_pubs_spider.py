@@ -75,7 +75,7 @@ class OpmSpider(GCSpider):
                         "pub_date": publication_date.strip(),
                         "display_org": self.display_org
                     }
-                    parsed_title = re.sub('\\"', '', doc_title)
+                    parsed_title = self.ascii_clean(re.sub('\\"', '', doc_title))
                     parsed_num = doc_num.strip()
                     if parsed_num not in parsed_nums:
                         yield DocItem(
