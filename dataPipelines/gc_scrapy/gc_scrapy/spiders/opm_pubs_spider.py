@@ -7,6 +7,9 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
 class OpmSpider(GCSpider):
     name = 'opm_pubs'
+    source_title = "Office of Budget and Management Memoranda"
+    display_org = "OPM"
+    data_source = "Executive Office of the President"
 
     start_urls = [
         'https://www.whitehouse.gov/omb/information-for-agencies/memoranda/'
@@ -78,7 +81,11 @@ class OpmSpider(GCSpider):
                             doc_name=doc_name.strip(),
                             doc_title=parsed_title,
                             doc_num=parsed_num,
+                            data_source=self.data_source,
+                            source_title=self.source_title,
+                            display_org=self.display_org,
                             doc_type=doc_type.strip(),
+                            display_doc_type=doc_type.strip(),
                             publication_date=publication_date,
                             cac_login_required=cac_login_required,
                             source_page_url=page_url.strip(),
