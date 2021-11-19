@@ -7,8 +7,8 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
 class OpmSpider(GCSpider):
     name = 'opm_pubs'
-    source_title = "Office of Budget and Management Memoranda"
-    display_org = "OPM"
+    source_title = "Office of Management and Budget Memoranda"
+    display_org = "OMB"
     data_source = "Executive Office of the President"
 
     start_urls = [
