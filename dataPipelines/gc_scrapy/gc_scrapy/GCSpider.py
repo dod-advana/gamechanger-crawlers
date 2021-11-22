@@ -7,6 +7,7 @@ from os.path import splitext
 from time import perf_counter
 import urllib
 from dataPipelines.gc_scrapy.gc_scrapy.runspider_settings import general_settings
+import copy
 
 url_re = re.compile("((http|https)://)(www.)?" +
                     "[a-zA-Z0-9@:%._\\+~#?&//=]" +
@@ -22,6 +23,14 @@ mailto_re = re.compile(r'mailto\:', re.IGNORECASE)
 UNKNOWN_FILE_EXTENSION_PLACEHOLDER = "UNKNOWN"
 
 
+# creates names for incementable methods on each spider
+# eg In Previous Hashes creates spider.increment_in_previous_hashes()
+STATS_BASE = {
+    "Required CAC": 0,
+    "In Previous Hashes": 0,
+}
+
+
 class GCSpider(scrapy.Spider):
     """
         Base Spider with settings automatically applied and some utility methods
@@ -29,6 +38,8 @@ class GCSpider(scrapy.Spider):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.setup_stats()
         if self.time_lifespan:
             self.start_time = perf_counter()
 
@@ -37,9 +48,26 @@ class GCSpider(scrapy.Spider):
             alive = perf_counter() - self.start_time
             print(f"{self.name} lived for {alive}")
 
+    @staticmethod
+    def close(spider, reason):
+        # intercepting the default stats collector and adding to the composite spider one
+        from_default_stats = {
+            "elapsed_time_seconds": "Elapsed Time (sec)",
+            "item_scraped_count": "Item Scraped Count",
+        }
+
+        for k, v in spider.crawler.stats._stats.items():
+            if k in from_default_stats.keys():
+                readable_key = from_default_stats[k]
+                # spider.stats must be set here b/c there is a pointer to it tracking stats for all spiders in cli
+                spider.stats[spider.name][readable_key] = v
+
+        spider.stats[spider.name]['Close Reason'] = reason
+        super().close(spider, reason)
+
     # this class init/del timer
     time_lifespan: bool = False
-    # runspider settings
+    # runspider_settings.py
     custom_settings: dict = general_settings
     # for downloader_middlewares.py#BanEvasionMiddleware
     rotate_user_agent: bool = True
@@ -48,6 +76,26 @@ class GCSpider(scrapy.Spider):
     source_page_url = None
     dont_filter_previous_hashes = False
     download_request_headers = {}
+
+    stats: dict = {}
+
+    def create_stat_func(self, readable_name, method_name) -> typing.Callable:
+        def func():
+            self.stats[self.name][readable_name] += 1
+        setattr(self, f"increment_{method_name}", func)
+
+    def setup_stats(self):
+        try:
+            self.stats[self.name] = copy.deepcopy(STATS_BASE)
+            for readable_name in STATS_BASE:
+                methodized_name = readable_name.lower().replace(' ', '_')
+                if methodized_name.isidentifier():
+                    self.create_stat_func(readable_name, methodized_name)
+                else:
+                    print(f'{self.name}: Could not auto generate helper function for {readable_name}, generated {methodized_name} which is not usable as an identifier. Try changing the readable name in GCSpider STATS_BASE.')
+
+        except Exception as e:
+            print(e)
 
     @staticmethod
     def download_response_handler(response):

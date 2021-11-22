@@ -115,11 +115,13 @@ class FileDownloadPipeline(MediaPipeline):
             # dont download anything just send item to crawl output
             print(
                 f"Skipping download of {item.get('doc_name')} because it was in previous_hashes")
+            info.spider.increment_in_previous_hashes()
             return item
 
         if item["cac_login_required"]:
             print(
                 f"Skipping download of {item.get('doc_name')} because it requires cac login")
+            info.spider.increment_required_cac()
             return item
 
         # currently we only associate 1 file with each doc, this gets the first we know how to parse
