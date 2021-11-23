@@ -81,7 +81,10 @@ class AssistQuicksearchSpider(GCSeleniumSpider):
                 continue
             doc_date = doc_row.css('td:nth-child(4) *::text').get()
 
-            publication_date = datetime.strptime(doc_date, '%d-%b-%Y').strftime('%Y-%m-%d')
+            if not doc_date.strip():
+                publication_date = None
+            else:
+                publication_date = datetime.strptime(doc_date, '%d-%b-%Y').strftime('%Y-%m-%d')
 
             doc_num = self.construct_doc_num(general_id, spec_sheet, part_description)
 
