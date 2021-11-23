@@ -75,12 +75,15 @@ class AssistQuicksearchSpider(GCSeleniumSpider):
             href = doc_row.css('td:nth-child(1) a[title="Click here to view the Document Image"]::attr(href)').get()
             if href is None:  # no available download link
                 continue
+
             part_description = doc_row.css('td:nth-child(2) *::text').get()
+            part_description = part_description.strip()
+
             dist_stmt = doc_row.css('td:nth-child(3) *::text').get()
             if dist_stmt != 'A':  # not approved for public release, don't download
                 continue
-            doc_date = doc_row.css('td:nth-child(4) *::text').get()
 
+            doc_date = doc_row.css('td:nth-child(4) *::text').get()
             if not doc_date.strip():
                 publication_date = None
             else:
