@@ -72,10 +72,12 @@ class AssistQuicksearchSpider(GCSeleniumSpider):
         doc_rows = response.css('#GVRevisionHistory tr:not(:first-child)')
         doc_row: Selector
         for doc_row in doc_rows:
-            href = doc_row.css('td:nth-child(1) a::attr(href)').get()
+            href = doc_row.css('td:nth-child(1) a[title="Click here to view the Document Image"]::attr(href)').get()
+            if href is None:  # no available download link
+                continue
             part_description = doc_row.css('td:nth-child(2) *::text').get()
             dist_stmt = doc_row.css('td:nth-child(3) *::text').get()
-            if dist_stmt != 'A':  # not approved for public release, no download
+            if dist_stmt != 'A':  # not approved for public release, don't download
                 continue
             doc_date = doc_row.css('td:nth-child(4) *::text').get()
 
