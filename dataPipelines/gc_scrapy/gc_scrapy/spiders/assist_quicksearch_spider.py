@@ -10,7 +10,6 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-
 from dataPipelines.gc_scrapy.gc_scrapy.GCSeleniumSpider import GCSeleniumSpider
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 
@@ -29,12 +28,6 @@ class AssistQuicksearchSpider(GCSeleniumSpider):
     def parse(self, response: TextResponse):
         driver: Chrome = response.meta["driver"]
 
-        # doc_id_text_box: WebElement = driver.find_element_by_css_selector('#DocumentIDTextBox')  # XXX: delete
-        # doc_id_text_box.send_keys('MIL-DTL-10190')  # XXX: delete
-        # from selenium.webdriver.common.keys import Keys  # XXX: delete
-        # doc_id_text_box.send_keys(Keys.ENTER)  # XXX: delete
-        # self.wait_until_css_located(driver, '#DocumentSearchFilters tr:nth-child(2)')  # XXX: delete
-        
         search_btn: WebElement = driver.find_element_by_css_selector('#GetFilteredButton')
         search_btn.click()
 
