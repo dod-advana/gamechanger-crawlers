@@ -25,7 +25,6 @@ class AssistQuicksearchSpider(GCSeleniumSpider):
     allowed_domains = ['quicksearch.dla.mil']
 
     cac_login_required = False
-    doc_type = ''  # XXX: ???
 
     def parse(self, response: TextResponse):
         driver: Chrome = response.meta["driver"]
@@ -68,6 +67,7 @@ class AssistQuicksearchSpider(GCSeleniumSpider):
         general_id = response.css('#general_doc_idLabel::text').get()
         spec_sheet = response.css('#general_snLabel::text').get()
         doc_general_title = response.css('#general_titleLabel::text').get()
+        doc_category = response.css('#doc_categoryLabel::text').get()
 
         doc_rows = response.css('#GVRevisionHistory tr:not(:first-child)')
         doc_row: Selector
@@ -113,6 +113,7 @@ class AssistQuicksearchSpider(GCSeleniumSpider):
                 doc_name=self.clean_name(doc_name),
                 doc_num=self.ascii_clean(doc_num),
                 doc_title=self.ascii_clean(doc_general_title),
+                doc_type=self.ascii_clean(doc_category),
                 publication_date=publication_date,
                 source_page_url=response.url,
                 display_org=self.display_org,
