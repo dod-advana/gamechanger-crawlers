@@ -23,3 +23,58 @@ GAMECHANGER aspires to be the Department’s trusted solution for evidence-based
 ## License & Contributions
 See LICENSE.md (including licensing intent - INTENT.md) and CONTRIBUTING.md
 
+## How to Setup Local Env for Development
+> The following should be done in a MacOS or Linux environment (including WSL on Windows)
+1. Install Google Chrome and ChromeDriver
+    - https://chromedriver.chromium.org/getting-started
+    - after a successful installation you should be able to run the following from the shell:
+         ```shell
+         chromedriver --version
+         ```
+2. Install Miniconda or Anaconda (Miniconda is much smaller)
+    - https://docs.conda.io/en/latest/miniconda.html
+    - after a successful installation you should be able to run the following from the shell:
+         ```shell
+         conda --version
+         ```
+3. Create a gamechanger crawlers python3.6 environment:
+     ```shell
+     conda create -n gc-crawlers python=3.6
+     ```
+4. Clone the repo and change into that dir:
+     ```shell
+     git clone https://github.com/dod-advana/gamechanger-crawlers.git
+     cd gamechanger-crawlers
+     ```
+5. Activate the conda environment and install requirements:
+     ```shell
+     conda activate gc-crawlers
+     pip install --upgrade pip setuptools wheel
+     pip install -r ./docker/minimal-requirements.txt
+     ```
+6. That's it.
+
+## Quickstart Guide: Running a Crawler
+1. Follow the environment setup guide above if you have not already
+2. Change to the gamechanger crawlers directory and export the repository path to the PYTHONPATH environment variable:
+     ```shell
+     cd /path/to/gamechanger-crawlers
+     export PYTHONPATH="$(pwd)"
+     ```
+3. Create an empty directory for the crawler file outputs:
+     ```shell
+     CRAWLER_DATA_ROOT=/path/to/download/location
+     mkdir -p "$CRAWLER_DATA_ROOT"
+     ```
+4. Create an empty previous manifest file:
+     ```shell
+     touch "$CRAWLER_DATA_ROOT/prev-manifest.json"
+     ```
+5. Run the desired crawler spider from the `dataPipelines/gc_scrapy/gc_scrapy/spiders` directory (in this example we will use the `executive_orders_spider.py`):
+     ```shell
+     scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/executive_orders_spider.py \
+       -a download_output_dir="$CRAWLER_DATA_ROOT" \
+       -a previous_manifest_location="$CRAWLER_DATA_ROOT/prev-manifest.json" \
+       -o "$CRAWLER_DATA_ROOT/output.json"
+     ```
+6. After the crawler finishes running, you should have all files downloaded into the crawler output directory
