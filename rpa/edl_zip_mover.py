@@ -13,7 +13,7 @@ allowed_re = re.compile(f'.*({idens}).*')
 source_bucket = "advana-landing-zone/"
 destination_bucket = "advana-data-zone/"
 
-source_path = f"{source_bucket}edl/sorted/gamechanger_rpa/"
+source_path = f"{source_bucket}edl/non-sensitive/Gamechanger RPA/"
 destination_path = f"{destination_bucket}bronze/gamechanger/rpa-landing-zone/"
 
 
