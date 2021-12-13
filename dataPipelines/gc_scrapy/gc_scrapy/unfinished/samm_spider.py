@@ -80,7 +80,7 @@ class SammSpider(GCSpider):
                 url = url.replace(" ", "%20")
 
                 if "pdf" in url:
-                    doc_extension = "pdf"
+                    continue
                 else:
                     doc_extension = "html"
 
@@ -142,7 +142,7 @@ class SammSpider(GCSpider):
                 url = url.replace(" ", "%20")
 
                 if "pdf" in url:
-                    doc_extension = "pdf"
+                    continue
                 else:
                     doc_extension = "html"
 
@@ -200,7 +200,7 @@ class SammSpider(GCSpider):
                 url = url.replace(" ", "%20")
 
                 if "pdf" in url:
-                    doc_extension = "pdf"
+                    continue
                 else:
                     doc_extension = "html"
 
@@ -255,7 +255,7 @@ class SammSpider(GCSpider):
                 url = url.replace(" ", "%20")
 
                 if "pdf" in url:
-                    doc_extension = "pdf"
+                    continue
                 else:
                     doc_extension = "html"
 
@@ -313,7 +313,7 @@ class SammSpider(GCSpider):
                     url = url.replace(" ", "%20")
 
                     if "pdf" in url:
-                        doc_extension = "pdf"
+                        continue
                     else:
                         doc_extension = "html"
 
@@ -360,7 +360,7 @@ class SammSpider(GCSpider):
                         url2 = url2.replace(" ", "%20")
 
                         if "pdf" in url2:
-                            doc_extension = "pdf"
+                            continue
                         else:
                             doc_extension = "html"
 
@@ -419,7 +419,7 @@ class SammSpider(GCSpider):
                 url = url.replace(" ", "%20")
 
                 if "pdf" in url:
-                    doc_extension = "pdf"
+                    continue
                 else:
                     doc_extension = "html"
 
@@ -476,7 +476,7 @@ class SammSpider(GCSpider):
                 url = url.replace(" ", "%20")
 
                 if "pdf" in url:
-                    doc_extension = "pdf"
+                    continue
                 else:
                     doc_extension = "html"
 
@@ -533,7 +533,7 @@ class SammSpider(GCSpider):
                 url = url.replace(" ", "%20")
 
                 if "pdf" in url:
-                    doc_extension = "pdf"
+                    continue
                 else:
                     doc_extension = "html"
 
@@ -587,7 +587,7 @@ class SammSpider(GCSpider):
                     url = url.replace(" ", "%20")
 
                     if "pdf" in url:
-                        doc_extension = "pdf"
+                        continue
                     else:
                         doc_extension = "html"
 
