@@ -61,7 +61,10 @@ class AssistQuicksearchSpider(GCSeleniumSpider):
         spec_sheet = response.css('#general_snLabel::text').get()
         doc_general_title = response.css('#general_titleLabel::text').get()
         doc_category = response.css('#doc_categoryLabel::text').get()
+        doc_status = response.css('#general_statusLabel::text').get()
 
+        is_revoked = doc_status != 'Active'
+        
         doc_rows = response.css('#GVRevisionHistory tr:not(:first-child)')
         doc_row: Selector
         for doc_row in doc_rows:
@@ -117,6 +120,7 @@ class AssistQuicksearchSpider(GCSeleniumSpider):
                 source_title=self.source_title,
                 downloadable_items=downloadable_items,
                 version_hash_raw_data=version_hash_fields,
+                is_revoked=is_revoked,
             )
             yield pgi_doc_item
 
