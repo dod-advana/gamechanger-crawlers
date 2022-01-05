@@ -25,3 +25,4 @@ class DocItem(scrapy.Item):
     display_source = scrapy.Field()
     data_source = scrapy.Field()
     source_title = scrapy.Field()
+    is_revoked = scrapy.Field()
