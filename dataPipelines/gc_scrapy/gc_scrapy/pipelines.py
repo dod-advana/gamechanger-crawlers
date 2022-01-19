@@ -335,6 +335,10 @@ class AdditionalFieldsPipeline:
         if item.get('doc_num') is None:
             item['doc_num'] = ""
 
+        if item.get('is_revoked') is not None:
+            # ensure is_revoked is part of hash
+            item['version_hash_raw_data']['is_revoked'] = item['is_revoked']
+
         return item
 
 
