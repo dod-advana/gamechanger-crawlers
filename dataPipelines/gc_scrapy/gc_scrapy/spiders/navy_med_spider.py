@@ -5,7 +5,9 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSeleniumSpider import GCSeleniumSpider
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import Chrome
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import NoSuchElementException
+import time
 
 
 class NavyMedSpider(GCSeleniumSpider):
@@ -15,10 +17,11 @@ class NavyMedSpider(GCSeleniumSpider):
         "https://www.med.navy.mil/Directives/"
     ]
     tabs_ul_selector = 'ul.z-tabs-nav.z-tabs-desktop'
-    selenium_request_overrides = {
-        "wait_until": EC.element_to_be_clickable(
-            (By.CSS_SELECTOR, tabs_ul_selector))
-    }
+
+#    selenium_request_overrides = {
+#        "wait_until": EC.element_to_be_clickable(
+#            (By.CSS_SELECTOR, tabs_ul_selector))
+#    }
 
     tabs_parsed = set({})
     tabs_doc_type_dict = {
@@ -32,7 +35,7 @@ class NavyMedSpider(GCSeleniumSpider):
             f"{self.tabs_ul_selector} li a")
 
         tabs_to_click = [
-            el for el in tab_button_els if el.text in self.tabs_doc_type_dict.keys()
+            el for el in tab_button_els if el.get_attribute("textContent") in self.tabs_doc_type_dict.keys()
         ]
 
         return tabs_to_click
@@ -42,12 +45,23 @@ class NavyMedSpider(GCSeleniumSpider):
 
         for i, doc_type in enumerate(self.tabs_doc_type_dict.values()):
             # must re-grab button ref if page has changed (table paged etc)
-            button = self.get_tab_button_els(driver)[i]
-            button.click()
+            driver.get(self.tabs_ul_selector)    # navigating to the homepage again to reset the page (because refresh doesn't work)
+            time.sleep(5)   # waiting to be sure that it loaded
+            try:
+                button = self.get_tab_button_els(driver)[i]
+            except Exception as e:
+                print("Error when getting tab button: " + e)
+            try:
+                ActionChains(driver).move_to_element(button).click(button).perform()
+            except Exception as e:
+                print("Could not click tab: " + e)
 
             # self.parse_tab(driver, doc_type)
-            for item in self.parse_tab(driver, doc_type, i):
-                yield item
+            try:
+                for item in self.parse_tab(driver, doc_type, i):
+                    yield item
+            except Exception as e:
+                print("error when getting items: " + e)
 
     def get_next_page_anchor(self, driver):
         els = driver.find_elements_by_css_selector(
@@ -81,10 +95,12 @@ class NavyMedSpider(GCSeleniumSpider):
                 raise NoSuchElementException(
                     f"Failed to find table to scrape from using css selector: {self.table_selector}"
                 )
-
-            if has_next_page:
-                next_page_el.click()
-                page_num += 1
+            try:
+                if has_next_page:
+                    next_page_el.click()
+                    page_num += 1
+            except Exception as e:
+                print("Could not go to next page: " + e)
 
     def parse_table(self, driver: Chrome, doc_type, index):
         response = Selector(text=driver.page_source)
