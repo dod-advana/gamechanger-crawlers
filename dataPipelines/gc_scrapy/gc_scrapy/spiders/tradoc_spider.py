@@ -94,7 +94,7 @@ class TRADOCSpider(GCSpider):
                     "publication_date": publication_date,
                 }
 
-                doc_name = doc_num
+                doc_name = f'TRADOC {doc_num}'
 
                 pgi_doc_item = DocItem(
                     doc_name=self.clean_name(doc_name),
