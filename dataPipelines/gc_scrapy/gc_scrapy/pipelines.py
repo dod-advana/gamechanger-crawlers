@@ -27,7 +27,8 @@ from pathlib import Path
 SUPPORTED_FILE_EXTENSIONS = [
     "pdf",
     "html",
-    "zip"
+    "txt",
+    "zip",
 ]
 
 
