@@ -45,7 +45,7 @@ class NavyMedSpider(GCSeleniumSpider):
 
         for i, doc_type in enumerate(self.tabs_doc_type_dict.values()):
             # must re-grab button ref if page has changed (table paged etc)
-            driver.get(self.tabs_ul_selector)    # navigating to the homepage again to reset the page (because refresh doesn't work)
+            driver.get(self.start_urls[0])    # navigating to the homepage again to reset the page (because refresh doesn't work)
             time.sleep(5)   # waiting to be sure that it loaded
             try:
                 button = self.get_tab_button_els(driver)[i]

@@ -3,3 +3,4 @@ secnav_spider.py
 coast_guard_spider.py
 omb_pubs_spider.py
 sasc_spider
+dcma_spider
