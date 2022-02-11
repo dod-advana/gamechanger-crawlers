@@ -123,11 +123,12 @@ def download_doc_with_driver(doc: Document, output_dir: Union[Path, str], driver
         entrypoint=doc.source_page_url
     )
 
-def unzip_docs_as_needed(ddoc: DownloadedDocument, output_dir: Union[Path, str]) -> List[DownloadedDocument]:
+def unzip_docs_as_needed(ddoc: DownloadedDocument, output_dir: Union[Path, str], doc_type: str) -> List[DownloadedDocument]:
     """Handles zipped/packaged download artifacts by expanding them into their individual components
 
     :param ddoc: DownloadedDocument obj
     :param output_dir: Directory where files, unzipped or not, should be placed
+    :param doc_type: Document file type, e.g. "pdf", "html", "txt"
     :return: iterable of Downloaded documents, len > 1 for bundles
     """
 
@@ -145,13 +146,12 @@ def unzip_docs_as_needed(ddoc: DownloadedDocument, output_dir: Union[Path, str])
         temp_dir = tempfile.TemporaryDirectory()
         unzipped_files = unzip_all(zip_file=file.resolve(), output_dir=temp_dir.name)
 
-        # TODO: Extend for non-pdf docs (trickier than it seems, there can be junk/manifest files)
-        unzipped_pdf_files = [f for f in unzipped_files if f.suffix.lower() == ".pdf"]
-        if not unzipped_pdf_files:
+        unzipped_files = [f for f in unzipped_files if f.suffix.lower()[1:] == doc_type]
+        if not unzipped_files:
             raise RuntimeError(f"Tried to unzip {file.name}, but could not find any expected files inside")
 
         final_ddocs = []
-        for pdf_file in unzipped_pdf_files:
+        for pdf_file in unzipped_files:
             new_ddoc = copy.deepcopy(ddoc)
             new_path = safe_move_file(file_path=pdf_file, output_path=output_dir)
             new_ddoc.downloaded_file_path = new_path

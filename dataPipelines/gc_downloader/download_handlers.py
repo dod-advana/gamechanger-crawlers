@@ -108,7 +108,8 @@ class DefaultDownloadHandler(DownloadHandler):
 
         with tempfile.TemporaryDirectory() as temp_dir:
             unpacked_renamed_docs = []
-            ddocs = unzip_docs_as_needed(ddoc=ddoc, output_dir=temp_dir)
+            ddocs = unzip_docs_as_needed(ddoc=ddoc, output_dir=temp_dir,
+                                         doc_type=ddoc.document.downloadable_items[0]['doc_type'])
 
             for ddoc in ddocs:
                 desired_filename = cls.normalize_filename(ddoc)
