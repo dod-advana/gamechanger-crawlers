@@ -34,8 +34,6 @@ class HASCSpider(GCSpider):
 
     def recursive_parse_hearings(self, response):
 
-        print("PAGE RES", response)
-
         yield from self.parse_hearings_table_page(response)
 
         next_relative_url = self.get_next_relative_url(response)
@@ -53,10 +51,6 @@ class HASCSpider(GCSpider):
                 link = row.css("td:nth-child(2) a::attr(href)").get()
 
                 if not link:
-                    date = row.css("td:nth-child(1)::text").get(default="")
-                    title = row.css("td:nth-child(2) a::text").get(default="")
-
-                    print("NO LINK", date, title, response.url)
                     continue
 
                 follow_link = f"{self.base_url}{link}"
