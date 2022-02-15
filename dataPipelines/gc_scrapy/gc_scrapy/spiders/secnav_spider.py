@@ -17,6 +17,9 @@ class SecNavSpider(GCSeleniumSpider):
     start_urls = [
         "https://www.secnav.navy.mil/doni/default.aspx"
     ]
+
+    randomly_delay_request = True
+
     selenium_spider_start_request_retries_allowed = 5
     selenium_spider_start_request_retry_wait = 90
     selenium_request_overrides = {
@@ -33,14 +36,16 @@ class SecNavSpider(GCSeleniumSpider):
             link.get_attribute('href') for link in driver.find_elements_by_css_selector('a.dynamic')[0:2]
         ]
 
-        for href in hrefs:
-            for item in self.parse_table_page(href, driver):
-                yield item
+        print('all hrefs', hrefs)
 
+        for href in hrefs:
+            print('href', href)
+            yield from self.parse_table_page(href, driver)
+            print('after yield from parse_table_page')
             sleep(5)
 
     def parse_table_page(self, href: str, driver: Chrome):
-
+        print('getting table page', href)
         driver.get(href)
         self.wait_until_css_located(driver, self.table_selector, wait=20)
 
@@ -52,9 +57,11 @@ class SecNavSpider(GCSeleniumSpider):
 
             except NoSuchElementException:
                 # expected when on last page, set exit condition then parse table
+                print('has_next_page = False   did not find td#pagingWPQ3next > a')
                 has_next_page = False
 
             try:
+                print('would parse table')
                 for item in self.parse_table(driver):
                     yield item
 
@@ -64,18 +71,24 @@ class SecNavSpider(GCSeleniumSpider):
                 )
 
             if has_next_page:
+                print('has next page')
                 el.click()
+                print('clicked el')
                 WebDriverWait(driver, 90).until(
                     EC.presence_of_element_located(
                         (By.CSS_SELECTOR, self.table_selector)
                     )
                 )
+                print('table el located')
                 sleep(4)
+                print('after sleep 4')
+        print('while... table page parsed')
 
     def parse_table(self, driver: Chrome):
         webpage = Selector(text=driver.page_source)
         row_selector = f'{self.table_selector} tbody tr'
         url = driver.current_url
+        print('parsing table at', url)
         type_suffix = ""
         if "instruction" in url:
             type_suffix = "INST"
@@ -117,6 +130,7 @@ class SecNavSpider(GCSeleniumSpider):
             doc_type = f"{doc_type}{type_suffix}"
             doc_name = f"{doc_type} {doc_num}"
             cac_login_required = re.match('^[A-Za-z]', doc_num) != None
+            # print(doc_name)
             yield DocItem(
                 doc_name=doc_name,
                 doc_title=doc_title,
