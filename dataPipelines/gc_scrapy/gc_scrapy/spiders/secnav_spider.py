@@ -88,8 +88,9 @@ class SecNavSpider(GCSeleniumSpider):
                     current_url = driver.current_url
                     print('current url', current_url)
 
-                    el.send_keys(Keys.ENTER)
-                    print('clicked el, sent keys')
+                    # el.send_keys(Keys.ENTER)
+                    # print('clicked el, sent keys')
+                    el.click()
                     WebDriverWait(driver, 90).until(
                         EC.presence_of_element_located(
                             (By.CSS_SELECTOR, self.table_selector)
@@ -117,7 +118,11 @@ class SecNavSpider(GCSeleniumSpider):
         if "notice" in url:
             type_suffix = "NOTE"
 
-        for i, row in enumerate(webpage.css(row_selector)):
+        rows = webpage.css(row_selector)
+
+        print('table has', len(rows), 'rows')
+
+        for i, row in enumerate(rows):
 
             doc_type_raw = row.css('td:nth-child(1)::text').get()
             href_raw = row.css('td:nth-child(2) a::attr(href)').get()
