@@ -252,7 +252,7 @@ class FileDownloadPipeline(MediaPipeline):
                                 unzip_docs_as_needed(
                                     file_download_path, file_unzipped_path, doc_type)
 
-                        print('downloaded', file_download_path)
+                        # print('downloaded', file_download_path)
                         file_downloads.append(file_download_path)
 
                     except Exception as e:

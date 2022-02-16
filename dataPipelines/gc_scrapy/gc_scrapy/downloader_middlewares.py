@@ -79,9 +79,11 @@ class SeleniumMiddleware:
         for argument in driver_arguments:
             driver_options.add_argument(argument)
 
-        # add random user agent to driver to avoid reporting as headless
-        random_user_agent = choice(user_agent_list)
-        driver_options.add_argument(f'user-agent={random_user_agent}')
+        # # add random user agent to driver to avoid reporting as headless
+        # random_user_agent = choice(user_agent_list)
+        # set selenium to stable user agent
+        driver_options.add_argument(
+            f'user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.80 Safari/537.36')
 
         driver_kwargs = {
             'executable_path': driver_executable_path,
@@ -165,6 +167,7 @@ class SeleniumMiddleware:
                 except Exception as e:
                     print(
                         'SeleniumMiddleware.process_request - unexpected exception', e)
+                    return
 
         else:
             self.driver.get(request.url)
@@ -206,6 +209,7 @@ class BanEvasionMiddleware:
         if dr and not request.meta.get("skip_delay"):
             delay_opts = dr if isinstance(dr, (range, list)) else self.delays
             delay = choice(delay_opts)
+            print('delay of', delay)
             # makes sleep more interruptable
             for _ in range(delay):
                 sleep(1)

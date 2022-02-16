@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+from tabnanny import check
 from time import sleep
 from scrapy import Selector
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import Chrome
 from selenium.common.exceptions import NoSuchElementException
 import re
@@ -17,6 +19,10 @@ class SecNavSpider(GCSeleniumSpider):
     start_urls = [
         "https://www.secnav.navy.mil/doni/default.aspx"
     ]
+
+    # start_urls = [
+    #     "http://localhost:3000/"
+    # ]
 
     randomly_delay_request = True
 
@@ -42,7 +48,6 @@ class SecNavSpider(GCSeleniumSpider):
             print('href', href)
             yield from self.parse_table_page(href, driver)
             print('after yield from parse_table_page')
-            sleep(5)
 
     def parse_table_page(self, href: str, driver: Chrome):
         print('getting table page', href)
@@ -54,16 +59,23 @@ class SecNavSpider(GCSeleniumSpider):
             try:
                 el = driver.find_element_by_css_selector(
                     'td#pagingWPQ3next > a')
+                print(el)
 
             except NoSuchElementException:
                 # expected when on last page, set exit condition then parse table
                 print('has_next_page = False   did not find td#pagingWPQ3next > a')
                 has_next_page = False
+            except Exception as e:
+                print('NEXT PAGE EL unknown exception', e)
+                has_next_page = False
 
             try:
                 print('would parse table')
-                for item in self.parse_table(driver):
-                    yield item
+                for _ in range(10):
+                    sleep(1)
+                # for item in self.parse_table(driver):
+                #     # print('yielding item')
+                #     yield item
 
             except NoSuchElementException:
                 raise NoSuchElementException(
@@ -72,17 +84,28 @@ class SecNavSpider(GCSeleniumSpider):
 
             if has_next_page:
                 print('has next page')
-                el.click()
-                print('clicked el')
-                WebDriverWait(driver, 90).until(
-                    EC.presence_of_element_located(
-                        (By.CSS_SELECTOR, self.table_selector)
+                sleep(2)
+                try:
+                    current_url = driver.current_url
+                    print('current url', current_url)
+
+                    el.send_keys(Keys.ENTER)
+                    print('clicked el, sent keys')
+                    WebDriverWait(driver, 90).until(
+                        EC.presence_of_element_located(
+                            (By.CSS_SELECTOR, self.table_selector)
+                        )
                     )
-                )
-                print('table el located')
-                sleep(4)
-                print('after sleep 4')
-        print('while... table page parsed')
+
+                    print('WebDriverWait found element', self.table_selector)
+
+                except Exception as e:
+                    print(e)
+                    has_next_page = False
+
+            print(f"has next page? {has_next_page}")
+
+        print('after while loop... table page parsed')
 
     def parse_table(self, driver: Chrome):
         webpage = Selector(text=driver.page_source)
@@ -95,7 +118,8 @@ class SecNavSpider(GCSeleniumSpider):
         if "notice" in url:
             type_suffix = "NOTE"
 
-        for row in webpage.css(row_selector):
+        for i, row in enumerate(webpage.css(row_selector)):
+
             doc_type_raw = row.css('td:nth-child(1)::text').get()
             href_raw = row.css('td:nth-child(2) a::attr(href)').get()
             doc_num_raw = row.css('td:nth-child(2) a::text').get()
@@ -130,7 +154,10 @@ class SecNavSpider(GCSeleniumSpider):
             doc_type = f"{doc_type}{type_suffix}"
             doc_name = f"{doc_type} {doc_num}"
             cac_login_required = re.match('^[A-Za-z]', doc_num) != None
-            # print(doc_name)
+
+            if i % 100 == 0:
+                print('row', i, doc_name)
+
             yield DocItem(
                 doc_name=doc_name,
                 doc_title=doc_title,
@@ -138,6 +165,6 @@ class SecNavSpider(GCSeleniumSpider):
                 doc_type=doc_type,
                 publication_date=effective_date_raw,
                 cac_login_required=cac_login_required,
-                downloadable_items=downloadable_items,
+                downloadable_items=[],
                 version_hash_raw_data=version_hash_fields
             )

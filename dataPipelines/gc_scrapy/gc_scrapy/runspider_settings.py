@@ -12,6 +12,7 @@ general_settings = {
     'DOWNLOADER_MIDDLEWARES': {
         'dataPipelines.gc_scrapy.gc_scrapy.downloader_middlewares.BanEvasionMiddleware': 100,
     },
+    # 'STATS_DUMP': False,
     "ROBOTSTXT_OBEY": False,
     'LOG_LEVEL': 'INFO',
 }
@@ -20,7 +21,7 @@ selenium_settings = {
     'SELENIUM_DRIVER_NAME': 'chrome',
     'SELENIUM_DRIVER_EXECUTABLE_PATH': "/usr/local/bin/chromedriver",
     'SELENIUM_DRIVER_ARGUMENTS': [
-        "--headless",
+        # "--headless",
         "--no-sandbox",
         "--disable-gpu",
         "--start-maximized",
