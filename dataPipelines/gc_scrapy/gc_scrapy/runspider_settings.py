@@ -21,7 +21,7 @@ selenium_settings = {
     'SELENIUM_DRIVER_NAME': 'chrome',
     'SELENIUM_DRIVER_EXECUTABLE_PATH': "/usr/local/bin/chromedriver",
     'SELENIUM_DRIVER_ARGUMENTS': [
-        # "--headless",
+        "--headless",
         "--no-sandbox",
         "--disable-gpu",
         "--start-maximized",

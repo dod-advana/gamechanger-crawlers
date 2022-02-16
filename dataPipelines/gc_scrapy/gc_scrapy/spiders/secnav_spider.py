@@ -71,11 +71,10 @@ class SecNavSpider(GCSeleniumSpider):
 
             try:
                 print('would parse table')
-                for _ in range(10):
-                    sleep(1)
-                # for item in self.parse_table(driver):
-                #     # print('yielding item')
-                #     yield item
+                for item in self.parse_table(driver):
+                    pass
+                    # print('yielded item', item)
+                    # yield item
 
             except NoSuchElementException:
                 raise NoSuchElementException(
@@ -155,8 +154,10 @@ class SecNavSpider(GCSeleniumSpider):
             doc_name = f"{doc_type} {doc_num}"
             cac_login_required = re.match('^[A-Za-z]', doc_num) != None
 
-            if i % 100 == 0:
+            if i % 100 == 0 or i > 480:
                 print('row', i, doc_name)
+
+            return
 
             yield DocItem(
                 doc_name=doc_name,
