@@ -2,6 +2,7 @@ from datetime import datetime
 import re
 from urllib.parse import urljoin
 
+import time
 from scrapy.http import TextResponse
 from scrapy.selector import Selector
 from selenium.common.exceptions import NoSuchElementException
@@ -17,11 +18,11 @@ from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 class MARADMINSpider(GCSeleniumSpider):
     name = 'maradmin_pubs'
 
-    display_org = 'Defense Logistics Agency'
-    data_source = 'ASSIST'
-    source_title = 'Acquisition Streamlining and Standardization Information System'
+    display_org = 'US Marine Corps'
+    data_source = 'Marine Corps Publications Electronic Library'
+    source_title = 'Marine Administrative Message'
 
-    start_urls = ['https://www.marines.mil/News/Messages/MARADMINS/Customstatus/4000/']
+    start_urls = ['https://www.marines.mil/News/Messages/MARADMINS/Customstatus/4000/?Page=463']
     allowed_domains = ['marines.mil/']
 
     cac_login_required = False
@@ -29,135 +30,64 @@ class MARADMINSpider(GCSeleniumSpider):
     def parse(self, response: TextResponse):
         driver: Chrome = response.meta["driver"]
 
-        next_btn: WebElement = driver.find_element_by_css_selector('a.fas.fa.fa-angle-right.da_next_pager')
-        next_btn.click()
-        rows_selector = f'#dnn_ctr506_ListArticle_UpdatePanel1 > div > div.items.alist-more-here div a'
-        response = Selector(text=driver.page_source)
-
-        rows = response.css(rows_selector)
-
         while True:
-            self.wait_until_css_located(driver, '#GV')
-            selector = Selector(text=driver.page_source)
+            try:
+                self.wait_until_css_located(driver, '#Form')
+                doc_rows: list = driver.find_elements_by_class_name('items.alist-more-here > *')
+            except Exception as e:
+                print('error in grabbing table: ' + e)
+                return
 
-            doc_rows = driver.find_element_by_css_selector('#dnn_ctr506_ListArticle_UpdatePanel1 > div > div.items.alist-more-here')
-            doc_row: Selector
-            for doc_row in doc_rows:
-                has_img = doc_row.css('td:nth-child(1) > a::text').get()
-                if has_img == 'N':  # no available images
-                    continue
-                doc_link = doc_row.css('td:nth-child(2) > a[title="Go to the Document Details."]::attr(href)').get()
-                yield response.follow(doc_link, callback=self.parse_doc_details)
+            for doc_row in doc_rows[1:]:
+                try:
+                    time.sleep(0.1)
+                    doc_type = "MARADMIN"
+                    doc_title = doc_row.find_element_by_class_name('msg-title.msg-col a').get_attribute("textContent")
+                    doc_num = doc_row.find_element_by_class_name('msg-num.msg-col a').get_attribute("textContent")
+                    publication_date = doc_row.find_element_by_class_name('msg-pub-date.msg-col').get_attribute("textContent")
+                    web_url = doc_row.find_element_by_class_name('msg-title.msg-col a').get_attribute('href')
+                    doc_name = doc_type + " " + doc_num.replace("/", "-") + " " + doc_title
+
+                    version_hash_fields = {
+                        "document_number": doc_num,
+                        "publication_date": publication_date,
+                        "web_url": web_url
+                    }
+
+                    downloadable_items = [
+                        {
+                            "doc_type": "html",
+                            "web_url": web_url,
+                            "compression_type": None
+                        }
+                    ]
+
+                    doc_item = DocItem(
+                        doc_name=self.ascii_clean(doc_name),
+                        doc_num=self.ascii_clean(doc_num),
+                        doc_title=self.ascii_clean(doc_title),
+                        doc_type=doc_type,
+                        publication_date=publication_date,
+                        source_page_url=response.url,
+                        display_org=self.display_org,
+                        data_source=self.data_source,
+                        source_title=self.source_title,
+                        downloadable_items=downloadable_items,
+                        version_hash_raw_data=version_hash_fields,
+                    )
+                    yield doc_item
+                except Exception as e:
+                    print('error in processing row: ' + str(e))
 
             try:
-                next_btn: WebElement = driver.find_element_by_css_selector('a.fas:nth-child(3)')
-                if not next_btn.is_enabled():
+                table: WebElement = driver.find_element_by_css_selector('#Form')
+                next_btn: WebElement = driver.find_element_by_css_selector('a.fas.fa.fa-angle-right.da_next_pager')
+                try:
+                    next_btn.click()
+                    WebDriverWait(driver, 20).until(EC.staleness_of(table))
+                except Exception as e:
+                    print("Error with loading next page: " + str(e))
                     break
             except NoSuchElementException:
+                print("Last button encountered. Ending crawler")
                 break
-
-            table: WebElement = driver.find_element_by_css_selector('#GV')
-            self.wait_until_css_clickable(driver, '#btnNextEx')
-            next_btn.click()
-            WebDriverWait(driver, 10).until(EC.staleness_of(table))
-
-    def parse_doc_details(self, response: TextResponse):
-        general_id = response.css('#general_doc_idLabel::text').get()
-        spec_sheet = response.css('#general_snLabel::text').get()
-        doc_general_title = response.css('#general_titleLabel::text').get()
-        doc_category = response.css('#doc_categoryLabel::text').get()
-        doc_status = response.css('#general_statusLabel::text').get()
-
-        is_revoked = doc_status != 'Active'
-
-        doc_rows = response.css('#GVRevisionHistory tr:not(:first-child)')
-        doc_row: Selector
-        for doc_row in doc_rows:
-            href = doc_row.css('td:nth-child(1) a[title="Click here to view the Document Image"]::attr(href)').get()
-            if href is None:  # no available download link
-                continue
-
-            part_description = doc_row.css('td:nth-child(2) *::text').get()
-            part_description = part_description.strip()
-
-            dist_stmt = doc_row.css('td:nth-child(3) *::text').get()
-            if dist_stmt != 'A':  # not approved for public release, don't download
-                continue
-
-            doc_date = doc_row.css('td:nth-child(4) *::text').get()
-            if not doc_date.strip():
-                publication_date = None
-            else:
-                publication_date = datetime.strptime(doc_date, '%d-%b-%Y').strftime('%Y-%m-%d')
-
-            doc_num = self.construct_doc_num(general_id, spec_sheet, part_description)
-
-            doc_token = \
-            re.match(r"javascript:spawnPDFWindow\('\.\/ImageRedirector\.aspx\?token=.+,(?P<token>\d+)\);", href)[
-                'token']
-            web_url = urljoin(response.url, f'../../WMX/Default.aspx?token={doc_token}')
-
-            doc_name = f'{general_id}{f"/{spec_sheet}" if spec_sheet is not None else ""} {part_description} {publication_date}'
-
-            version_hash_fields = {
-                "item_currency": doc_token,
-                "document_title": doc_general_title,
-                "document_number": doc_num,
-                "document_part_description": part_description,
-                "publication_date": publication_date,
-            }
-
-            downloadable_items = [
-                {
-                    "doc_type": "pdf",
-                    "web_url": web_url,
-                    "compression_type": None
-                }
-            ]
-
-            pgi_doc_item = DocItem(
-                doc_name=self.clean_name(doc_name),
-                doc_num=self.ascii_clean(doc_num),
-                doc_title=self.ascii_clean(doc_general_title),
-                doc_type=self.ascii_clean(doc_category),
-                publication_date=publication_date,
-                source_page_url=response.url,
-                display_org=self.display_org,
-                data_source=self.data_source,
-                source_title=self.source_title,
-                downloadable_items=downloadable_items,
-                version_hash_raw_data=version_hash_fields,
-                is_revoked=is_revoked,
-            )
-            yield pgi_doc_item
-
-    def clean_name(self, name):
-        return ' '.join(re.sub(r'[^a-zA-Z0-9. ()-_]', '', self.ascii_clean(name).replace('/', '_')).split())
-
-    def construct_doc_num(self, general_id, spec_sheet, part_description):
-        part_description_regex = (r'^'
-                                  r'(?=.*Revision ?(?P<revision>(?:[0-9A-Z]{1,3}\b)?))?'
-                                  r'(?=.*(?<!Interim )Amendment ?(?P<amendment>(?:[0-9A-Z]{1,3}\b)?))?'
-                                  r'(?=.*Interim Amendment ?(?P<iamendment>(?:[0-9A-Z]{1,3}\b)?))?'
-                                  r'(?=.*Supplement ?(?P<supplement>(?:[0-9A-Z]{1,3}\b)?))?'
-                                  r'(?=.*Notice ?(?P<notice>(?:[0-9A-Z]{1,3}\b)?))?')
-        part_description_match = re.match(part_description_regex, part_description).groupdict()
-        num = general_id
-        if spec_sheet is not None:
-            num = f'{num}/{spec_sheet or 0}'
-        revision = part_description_match.get('revision')
-        if revision is not None:
-            num = f'{num}{revision or 0}'
-        amendment = part_description_match.get('amendment')
-        if amendment is not None:
-            num = f'{num}({amendment or 0})'
-        iamendment = part_description_match.get('iamendment')
-        if iamendment is not None:
-            num = f'{num}(I{iamendment or 0})'
-        supplement = part_description_match.get('supplement')
-        if supplement is not None:
-            num = f'{num} SUP {supplement or 0}'
-        notice = part_description_match.get('notice')
-        if notice is not None:
-            num = f'{num} NOT {notice or 0}'
-        return num
