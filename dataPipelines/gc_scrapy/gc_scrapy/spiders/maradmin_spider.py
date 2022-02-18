@@ -13,6 +13,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from dataPipelines.gc_scrapy.gc_scrapy.GCSeleniumSpider import GCSeleniumSpider
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
+from selenium.webdriver.common.keys import Keys
 
 
 class MARADMINSpider(GCSeleniumSpider):
@@ -63,7 +64,7 @@ class MARADMINSpider(GCSeleniumSpider):
                     ]
 
                     doc_item = DocItem(
-                        doc_name=self.ascii_clean(doc_name),
+                        doc_name=" ".join(self.ascii_clean(doc_name).split(" ")[:8]).replace("/", "-"),                       
                         doc_num=self.ascii_clean(doc_num),
                         doc_title=self.ascii_clean(doc_title),
                         doc_type=doc_type,
@@ -83,7 +84,7 @@ class MARADMINSpider(GCSeleniumSpider):
                 table: WebElement = driver.find_element_by_css_selector('#Form')
                 next_btn: WebElement = driver.find_element_by_css_selector('a.fas.fa.fa-angle-right.da_next_pager')
                 try:
-                    next_btn.click()
+                    next_btn.send_keys(Keys.ENTER)
                     WebDriverWait(driver, 20).until(EC.staleness_of(table))
                 except Exception as e:
                     print("Error with loading next page: " + str(e))
