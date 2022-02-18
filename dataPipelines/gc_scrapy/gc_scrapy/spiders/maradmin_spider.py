@@ -22,7 +22,7 @@ class MARADMINSpider(GCSeleniumSpider):
     data_source = 'Marine Corps Publications Electronic Library'
     source_title = 'Marine Administrative Message'
 
-    start_urls = ['https://www.marines.mil/News/Messages/MARADMINS/Customstatus/4000/?Page=463']
+    start_urls = ['https://www.marines.mil/News/Messages/MARADMINS/Customstatus/4000/']
     allowed_domains = ['marines.mil/']
 
     cac_login_required = False
