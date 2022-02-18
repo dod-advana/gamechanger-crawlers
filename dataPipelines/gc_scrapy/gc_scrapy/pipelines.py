@@ -135,6 +135,7 @@ class FileDownloadPipeline(MediaPipeline):
 
             meta = {
                 "output_file_name": output_file_name,
+                "doc_type": file_item['doc_type'],
                 "compression_type": file_item['compression_type']
             }
 
@@ -225,6 +226,7 @@ class FileDownloadPipeline(MediaPipeline):
                     item, reason if reason else int(response.status))
             else:
                 output_file_name = response.meta["output_file_name"]
+                doc_type = response.meta["doc_type"]
                 compression_type = response.meta["compression_type"]
                 if compression_type:
                     file_download_path = Path(self.output_dir, output_file_name).with_suffix(
@@ -248,7 +250,7 @@ class FileDownloadPipeline(MediaPipeline):
                         if compression_type:
                             if compression_type.lower() == "zip":
                                 unzip_docs_as_needed(
-                                    file_download_path, file_unzipped_path)
+                                    file_download_path, file_unzipped_path, doc_type)
 
                         print('downloaded', file_download_path)
                         file_downloads.append(file_download_path)
@@ -334,6 +336,10 @@ class AdditionalFieldsPipeline:
 
         if item.get('doc_num') is None:
             item['doc_num'] = ""
+
+        if item.get('is_revoked') is not None:
+            # ensure is_revoked is part of hash
+            item['version_hash_raw_data']['is_revoked'] = item['is_revoked']
 
         return item
 

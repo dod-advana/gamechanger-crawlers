@@ -2,3 +2,4 @@ legislation_spider.py
 chief_national_guard_bureau_spider.py
 ic_policies_spider.py
 stig_spider.py
+tradoc_spider.py

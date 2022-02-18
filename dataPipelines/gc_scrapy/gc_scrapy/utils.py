@@ -195,11 +195,12 @@ def safe_move_file(file_path: Union[Path, str], output_path: Union[Path, str], c
 
     return available_dest_path
 
-def unzip_docs_as_needed(input_dir: Union[Path, str], output_dir: Union[Path, str]) -> List[Path]:
+def unzip_docs_as_needed(input_dir: Union[Path, str], output_dir: Union[Path, str], doc_type: str) -> List[Path]:
     """Handles zipped/packaged download artifacts by expanding them into their individual components
 
     :param input_dir: Path of the zip file
     :param output_dir: Directory where files, unzipped or not, should be placed
+    :param doc_type: Document file type, e.g. "pdf", "html", "txt"
     :return: iterable of Downloaded documents, len > 1 for bundles
     """
 
@@ -208,16 +209,15 @@ def unzip_docs_as_needed(input_dir: Union[Path, str], output_dir: Union[Path, st
         # unzip & move
         temp_dir = tempfile.TemporaryDirectory()
         unzipped_files = unzip_all(zip_file=input_dir, output_dir=temp_dir.name)
-        # TODO: Extend for non-pdf docs (trickier than it seems, there can be junk/manifest files)
-        unzipped_pdf_files = [f for f in unzipped_files if f.suffix.lower() == ".pdf"]
-        if not unzipped_pdf_files:
+        unzipped_files = [f for f in unzipped_files if f.suffix.lower()[1:] == doc_type]
+        if not unzipped_files:
             raise RuntimeError(f"Tried to unzip {input_dir}, but could not find any expected files inside")
         final_ddocs = []
 
         # TODO: Add capibility to unzip multiple zips and add corresponding metadata for each
         # do just the first iteration to unzip only the first file
-        unzipped_pdf_files.sort()   # messy solution. sorting to make sure we grab the first in us_code
-        for pdf_file in [unzipped_pdf_files[0]]:
+        unzipped_files.sort()   # messy solution. sorting to make sure we grab the first in us_code
+        for pdf_file in [unzipped_files[0]]:
             new_ddoc = copy.deepcopy(input_dir)
             safe_move_file(file_path=pdf_file, output_path=output_dir)
             final_ddocs.append(new_ddoc)

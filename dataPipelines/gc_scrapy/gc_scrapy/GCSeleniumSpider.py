@@ -50,3 +50,10 @@ class GCSeleniumSpider(GCSpider):
             EC.presence_of_element_located(
                 (By.CSS_SELECTOR, css_selector)
             ))
+
+    @staticmethod
+    def wait_until_css_not_located(driver, css_selector: str, wait: typing.Union[int, float] = 5):
+        WebDriverWait(driver, wait).until_not(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, css_selector)
+            ))
