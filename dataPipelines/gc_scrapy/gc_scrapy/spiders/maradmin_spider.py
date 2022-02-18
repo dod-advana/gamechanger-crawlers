@@ -38,9 +38,9 @@ class MARADMINSpider(GCSeleniumSpider):
                 print('error in grabbing table: ' + e)
                 return
 
+            time.sleep(2)  # wait between pages to disencourage getting banned. adds ~16 minutes to runtime
             for doc_row in doc_rows[1:]:
                 try:
-                    time.sleep(0.1)
                     doc_type = "MARADMIN"
                     doc_title = doc_row.find_element_by_class_name('msg-title.msg-col a').get_attribute("textContent")
                     doc_num = doc_row.find_element_by_class_name('msg-num.msg-col a').get_attribute("textContent")
