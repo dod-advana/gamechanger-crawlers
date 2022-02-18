@@ -63,7 +63,7 @@ class MARADMINSpider(GCSeleniumSpider):
                     ]
 
                     doc_item = DocItem(
-                        doc_name=self.ascii_clean(doc_name),
+                        doc_name=" ".join(self.ascii_clean(doc_name).split(" ")[:8])                       
                         doc_num=self.ascii_clean(doc_num),
                         doc_title=self.ascii_clean(doc_title),
                         doc_type=doc_type,
