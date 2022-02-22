@@ -43,6 +43,9 @@ class TRADOCSpider(GCSpider):
             doc_num = f'{doc_num.split("/")[0]}/{doc_year[-2:]}'
 
             doc_title = self.join_text(table_row.css('td:nth-child(2) *::text').getall())
+
+            is_revoked = 'cancelled' in doc_title.lower()
+
             # there seem to be some dead hidden links to the BUPERS site so ignore
             doc_url = table_row.css('td:nth-child(2) a:not([href*="/bupers-npc/"])::attr(href)').get()
 
@@ -78,6 +81,7 @@ class TRADOCSpider(GCSpider):
                 source_title=self.source_title,
                 downloadable_items=downloadable_items,
                 version_hash_raw_data=version_hash_fields,
+                is_revoked=is_revoked,
             )
             yield doc_item
 
