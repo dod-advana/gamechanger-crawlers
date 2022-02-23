@@ -42,6 +42,8 @@ class SecNavSpider(GCSpider):
             return
 
         elif self.ready_to_process:
+            print(
+                f"ready to process: len of q: {len(self.q)}, done: {self.done}")
             while self.q:
                 doc = self.q.pop(0)
                 try:
@@ -64,8 +66,6 @@ class SecNavSpider(GCSpider):
                 "type_suffix": type_suffix
             }
             yield scrapy.Request(url=url, meta=meta)
-
-        self.rate_limited_yield()
 
     def parse(self, response):
         try:
