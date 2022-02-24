@@ -387,3 +387,11 @@ class JsonWriterPipeline(object):
         validator.validate(doc)
         self.file.write(doc + '\n')
         return doc
+
+
+class FileNameLengthPipeline():
+    def process_item(self, item, spider):
+        if not item['doc_name']:
+            raise DropItem("No doc_name")
+
+        item['doc_name'] = item['doc_name'][0:235]
