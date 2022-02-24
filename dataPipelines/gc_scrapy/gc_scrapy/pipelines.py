@@ -395,3 +395,4 @@ class FileNameLengthPipeline():
             raise DropItem("No doc_name")
 
         item['doc_name'] = item['doc_name'][0:235]
+        return item
