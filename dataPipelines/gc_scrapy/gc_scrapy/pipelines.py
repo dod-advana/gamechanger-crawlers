@@ -389,10 +389,11 @@ class JsonWriterPipeline(object):
         return doc
 
 
-class FileNameLengthPipeline():
+class FileNameFixerPipeline():
     def process_item(self, item, spider):
         if not item['doc_name']:
             raise DropItem("No doc_name")
 
-        item['doc_name'] = item['doc_name'][0:235]
+        # limit length for OS filename limitations, replace / for filename dir confusion
+        item['doc_name'] = item['doc_name'].replace('/', '_')[0:235]
         return item

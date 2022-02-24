@@ -1,7 +1,7 @@
 
 general_settings = {
     'ITEM_PIPELINES': {
-        'dataPipelines.gc_scrapy.gc_scrapy.pipelines.FileNameLengthPipeline': 50,
+        'dataPipelines.gc_scrapy.gc_scrapy.pipelines.FileNameFixerPipeline': 50,
         'dataPipelines.gc_scrapy.gc_scrapy.pipelines.DeduplicaterPipeline': 100,
         'dataPipelines.gc_scrapy.gc_scrapy.pipelines.AdditionalFieldsPipeline': 200,
         'dataPipelines.gc_scrapy.gc_scrapy.pipelines.ValidateJsonPipeline': 300,
