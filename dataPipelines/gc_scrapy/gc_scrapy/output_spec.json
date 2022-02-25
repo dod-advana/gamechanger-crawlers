@@ -197,7 +197,7 @@
 					"type": "string",
 					"title": "Web Url",
 					"description": "Web url to a downloadable artifact, compressed or not",
-					"pattern": "^https?://\\S+$"
+					"pattern": "^https?://"
 				},
 				"compression_type": {
 					"type": [

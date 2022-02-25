@@ -27,7 +27,8 @@ from pathlib import Path
 SUPPORTED_FILE_EXTENSIONS = [
     "pdf",
     "html",
-    "zip"
+    "txt",
+    "zip",
 ]
 
 
@@ -252,7 +253,7 @@ class FileDownloadPipeline(MediaPipeline):
                                 unzip_docs_as_needed(
                                     file_download_path, file_unzipped_path, doc_type)
 
-                        print('downloaded', file_download_path)
+                        # print('downloaded', file_download_path)
                         file_downloads.append(file_download_path)
 
                     except Exception as e:
@@ -386,3 +387,13 @@ class JsonWriterPipeline(object):
         validator.validate(doc)
         self.file.write(doc + '\n')
         return doc
+
+
+class FileNameFixerPipeline():
+    def process_item(self, item, spider):
+        if not item['doc_name']:
+            raise DropItem("No doc_name")
+
+        # limit length for OS filename limitations, replace / for filename dir confusion
+        item['doc_name'] = item['doc_name'].replace('/', '_')[0:235]
+        return item
