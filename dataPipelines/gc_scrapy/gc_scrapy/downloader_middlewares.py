@@ -224,7 +224,7 @@ class BanEvasionMiddleware:
         if dr and not request.meta.get("skip_delay"):
             delay_opts = dr if isinstance(dr, (range, list)) else self.delays
             delay = choice(delay_opts)
-            print('delay of', delay)
+            # print('delay of', delay)
             # makes sleep more interruptable
             for _ in range(delay):
                 try:
