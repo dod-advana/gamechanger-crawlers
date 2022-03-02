@@ -17,7 +17,7 @@ class DfarsSubpartSpider(GCSeleniumSpider):
         "https://www.acquisition.gov/dfars"
     ]
     cac_login_required = False
-    doc_type = "DFAR"
+    doc_type = "DFARS"
 
     def parse(self, response: TextResponse):
         pub_date = self.parse_pub_date(response)
@@ -83,6 +83,7 @@ class DfarsSubpartSpider(GCSeleniumSpider):
             ]
 
             version_hash_fields = {
+                "doc_type": self.doc_type,
                 "item_currency": href_raw,
                 "pub_date": pub_date
             }
