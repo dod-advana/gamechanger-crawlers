@@ -56,7 +56,7 @@ class DHASpider(GCSpider):
                     }
                 ]
 
-                doc_name = f"DHA {doc_type} {doc_num}"
+                doc_name = f"{doc_type} {doc_num}"
 
                 yield DocItem(
                     doc_name=doc_name,
