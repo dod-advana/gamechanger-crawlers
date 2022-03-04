@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-import scrapy
 from scrapy import Selector
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver import Chrome
 from selenium.common.exceptions import NoSuchElementException
 
@@ -82,6 +79,10 @@ class CoastGuardSpider(GCSeleniumSpider):
 
             doc_title_raw = row.css('td:nth-child(2) a::text').get()
             doc_title = self.ascii_clean(doc_title_raw)
+
+            office_primary_resp_raw = row.css('td:nth-child(3)::text').get()
+            office_primary_resp = self.ascii_clean(office_primary_resp_raw)
+
             href_raw = row.css('td:nth-child(2) a::attr(href)').get()
 
             web_url = self.ensure_full_href_url(href_raw, driver.current_url)
@@ -111,5 +112,6 @@ class CoastGuardSpider(GCSeleniumSpider):
                 publication_date=publication_date,
                 downloadable_items=downloadable_items,
                 version_hash_raw_data=version_hash_fields,
-                source_page_url=driver.current_url
+                source_page_url=driver.current_url,
+                office_primary_resp=office_primary_resp,
             )
