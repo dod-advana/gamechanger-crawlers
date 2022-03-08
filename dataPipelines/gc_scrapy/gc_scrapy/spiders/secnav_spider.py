@@ -94,7 +94,7 @@ class SecNavSpider(GCSpider):
                 web_url_suffix = r.get("FileRef")
                 file_type = r.get("File_x0020_Type")
                 status = r.get("Status")
-                sponsor = r.get("Sponsor")
+                sponsor = r.get("Sponsor", default="").replace("&amp;", "&")
                 cancel_date = r.get("Cancelled_x0020_Date")
 
                 version_hash_fields = {
@@ -129,7 +129,8 @@ class SecNavSpider(GCSpider):
                     cac_login_required=cac_login_required,
                     downloadable_items=downloadable_items,
                     version_hash_raw_data=version_hash_fields,
-                    source_page_url=self.source_page_url
+                    source_page_url=self.source_page_url,
+                    office_primary_resp=sponsor,
                 )
 
                 self.enqueue(doc)
