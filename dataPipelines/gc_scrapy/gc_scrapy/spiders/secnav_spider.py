@@ -94,7 +94,7 @@ class SecNavSpider(GCSpider):
                 web_url_suffix = r.get("FileRef")
                 file_type = r.get("File_x0020_Type")
                 status = r.get("Status")
-                sponsor = r.get("Sponsor", default="").replace("&amp;", "&")
+                sponsor = r.get("Sponsor", "").replace("&amp;", "&")
                 cancel_date = r.get("Cancelled_x0020_Date")
 
                 version_hash_fields = {
