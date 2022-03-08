@@ -45,6 +45,8 @@ class ArmySpider(GCSpider):
         publication_date = rows.css(
             "span#MainContent_PubForm_Date::text").get()
         dist_stm = rows.css("span#MainContent_PubForm_Dist_Rest::text").get()
+        proponent = self.ascii_clean(rows.css(
+            "span#MainContent_PubForm_Proponent::text").get(default=""))
         if dist_stm and (dist_stm.startswith("A") or dist_stm.startswith("N")):
             # the distribution statement is distribution A or says Not Applicable so anyone can access the information
             cac_login_required = False
@@ -93,4 +95,5 @@ class ArmySpider(GCSpider):
             cac_login_required=cac_login_required,
             downloadable_items=downloadable_items,
             version_hash_raw_data=version_hash_fields,
+            office_primary_resp=proponent
         )
