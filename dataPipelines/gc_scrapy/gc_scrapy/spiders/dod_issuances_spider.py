@@ -1,4 +1,3 @@
-import scrapy
 import re
 import bs4
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
@@ -16,6 +15,18 @@ class DoDSpider(GCSpider):
     def parse(self, response):
         links = response.css('li.col-sm-6')[0].css('a')
         yield from response.follow_all(links[4:-1], self.parse_documents)
+
+    def fix_oprs(self, text: str) -> str:
+        # remove phone numbers
+        office_primary_resp = re.sub(
+            '\s{0,1}\d{1,3}-\d{1,3}-\d{1,4}', '', text)
+        # remove emails
+        office_primary_resp = re.sub(
+            '\s+[\w|.|-]+@[\w|.|-]+', '', office_primary_resp)
+        # clean ends
+        office_primary_resp = office_primary_resp.strip()
+
+        return office_primary_resp
 
     def parse_documents(self, response):
 
@@ -42,9 +53,14 @@ class DoDSpider(GCSpider):
             doc_type = 'DoDI CPM'
 
         # iterate through each row of the table
-        parsed_docs = []
         cac_required = ['CAC', 'PKI certificate required',
                         'placeholder', 'FOUO']
+
+        opr_idx = None
+        for oidx, header in enumerate(rows[0].find_all('th')):
+            if header.text.strip() == "OPR":
+                opr_idx = oidx
+
         for row in rows[1:]:
 
             # reset variables to ensure there is no carryover between rows
@@ -110,6 +126,8 @@ class DoDSpider(GCSpider):
                     chapter_date = data
                 elif idx == 5:
                     exp_date = data
+                elif opr_idx and idx == opr_idx:
+                    office_primary_resp = self.fix_oprs(data)
 
                 # set boolean if CAC is required to view document
                 cac_login_required = True if any(x in pdf_url for x in cac_required) \
@@ -133,6 +151,6 @@ class DoDSpider(GCSpider):
                 source_page_url=response.url,
                 cac_login_required=cac_login_required,
                 downloadable_items=[pdf_di],
-                version_hash_raw_data=version_hash_fields
+                version_hash_raw_data=version_hash_fields,
+                office_primary_resp=office_primary_resp,
             )
-
