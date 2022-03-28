@@ -50,7 +50,7 @@ See LICENSE.md (including licensing intent - INTENT.md) and CONTRIBUTING.md
      ```shell
      conda activate gc-crawlers
      pip install --upgrade pip setuptools wheel
-     pip install -r ./docker/minimal-requirements.txt
+     pip install -r ./requirements.txt
      ```
 6. That's it.
 

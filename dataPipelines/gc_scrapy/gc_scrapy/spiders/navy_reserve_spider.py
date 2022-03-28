@@ -1,31 +1,28 @@
 # -*- coding: utf-8 -*-
-import scrapy
+
 from scrapy import Selector
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import Select, WebDriverWait
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver import Chrome
-from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
-from itertools import zip_longest
+from selenium.common.exceptions import (
+    NoSuchElementException,
+    StaleElementReferenceException,
+)
 import re
 
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSeleniumSpider import GCSeleniumSpider
 
-from time import sleep
-
 
 class NavyReserveSpider(GCSeleniumSpider):
     name = "navy_reserves"
-    allowed_domains = ['navyreserve.navy.mil']
-    start_urls = [
-        'https://www.navyreserve.navy.mil/'
-    ]
+    allowed_domains = ["navyreserve.navy.mil"]
+    start_urls = ["https://www.navyreserve.navy.mil/"]
 
-    file_type = 'pdf'
+    file_type = "pdf"
     cac_login_required = False
 
-    tables_selector = 'table.dnnGrid'
+    tables_selector = "table.dnnGrid"
 
     def parse(self, response):
         driver: Chrome = response.meta["driver"]
@@ -35,7 +32,9 @@ class NavyReserveSpider(GCSeleniumSpider):
         )
 
         pages = [
-            elem.get_attribute('href') for elem in anchors if 'Message' not in elem.get_attribute('href')
+            elem.get_attribute("href")
+            for elem in anchors
+            if "Message" not in elem.get_attribute("href")
         ]
 
         for page_url in pages:
@@ -52,7 +51,8 @@ class NavyReserveSpider(GCSeleniumSpider):
         init_webpage = Selector(text=driver.page_source)
         # get a list headers from tables that need parsing
         table_headers_raw = init_webpage.css(
-            'div.base-container.blue-header2 h2.title span.Head::text').getall()
+            "div.base-container.blue-header2 h2.title span.Head::text"
+        ).getall()
 
         # associate a table header with a table index
         for table_index, header_text_raw in enumerate(table_headers_raw):
@@ -66,36 +66,38 @@ class NavyReserveSpider(GCSeleniumSpider):
 
                 # grab associated tables again each page
                 data_table = webpage.css(self.tables_selector)[table_index]
-                paging_table = driver.find_elements_by_css_selector('table.PagingTable')[
-                    table_index]
+                paging_table = driver.find_elements_by_css_selector(
+                    "table.PagingTable"
+                )[table_index]
 
                 # check has next page link
                 try:
                     el = paging_table.find_element_by_xpath(
-                        "//a[contains(text(), 'Next')]")
+                        "//a[contains(text(), 'Next')]"
+                    )
                 except (StaleElementReferenceException, NoSuchElementException):
                     # expected when one page or on last page, set exit condition then parse table
                     has_next_page = False
                 except Exception as e:
                     # other exceptions not expected, dont page this table and try to continue
-                    print(
-                        f'Unexpected Exception - attempting to continue: {e}')
+                    print(f"Unexpected Exception - attempting to continue: {e}")
                     has_next_page = False
 
                 # parse data table
                 try:
-                    for tr in data_table.css('tbody tr:not(.dnnGridHeader)'):
-                        doc_num_raw = tr.css('td:nth-child(1)::text').get()
-                        doc_title_raw = tr.css('td:nth-child(2)::text').get()
-                        href_raw = tr.css(
-                            'td:nth-child(3) a::attr(href)').get()
+                    for tr in data_table.css("tbody tr:not(.dnnGridHeader)"):
+                        doc_num_raw = tr.css("td:nth-child(1)::text").get()
+                        doc_title_raw = tr.css("td:nth-child(2)::text").get()
+                        href_raw = tr.css("td:nth-child(3) a::attr(href)").get()
 
-                        doc_num = doc_num_raw.strip().replace(" ", "_").replace(u'\u200b', '')
-                        if not bool(re.search(r'\d', doc_num)):
+                        doc_num = (
+                            doc_num_raw.strip().replace(" ", "_").replace("\u200b", "")
+                        )
+                        if not bool(re.search(r"\d", doc_num)):
                             continue
                         if "RESPERSMAN" in driver.current_url:
                             type_suffix = ""
-                        elif '.' in doc_num:
+                        elif "." in doc_num:
                             type_suffix = "INST"
                         else:
                             type_suffix = "NOTE"
@@ -104,33 +106,38 @@ class NavyReserveSpider(GCSeleniumSpider):
 
                         doc_type = type_prefix + type_suffix
                         doc_name = doc_type + " " + doc_num
-                        if re.search(r'\(\d\)', doc_title):
-                            doc_name_suffix = re.split('\(', doc_title)
-                            doc_name_suffix = re.split(
-                                '\)', doc_name_suffix[1])
+                        if re.search(r"\(\d\)", doc_title):
+                            doc_name_suffix = re.split(r"\(", doc_title)
+                            doc_name_suffix = re.split(r"\)", doc_name_suffix[1])
                             if doc_name_suffix[0].strip() != "":
-                                doc_name = doc_name + '_' + doc_name_suffix[0]
-                            if len(doc_name_suffix) > 1 and doc_name_suffix[1].strip() != "":
-                                doc_name = doc_name + '_' + \
-                                    doc_name_suffix[1].strip().replace(
-                                        " ", "_")
+                                doc_name = doc_name + "_" + doc_name_suffix[0]
+                            if (
+                                len(doc_name_suffix) > 1
+                                and doc_name_suffix[1].strip() != ""
+                            ):
+                                doc_name = (
+                                    doc_name
+                                    + "_"
+                                    + doc_name_suffix[1].strip().replace(" ", "_")
+                                )
 
                         web_url = self.ensure_full_href_url(
-                            href_raw, driver.current_url)
+                            href_raw, driver.current_url
+                        )
 
                         doc_title = self.ascii_clean(doc_title_raw)
 
                         version_hash_fields = {
                             "item_currency": href_raw,
                             "document_title": doc_title,
-                            "document_number": doc_num
+                            "document_number": doc_num,
                         }
 
                         downloadable_items = [
                             {
                                 "doc_type": self.file_type,
-                                "web_url": web_url.replace(' ', '%20'),
-                                "compression_type": None
+                                "web_url": web_url.replace(" ", "%20"),
+                                "compression_type": None,
                             }
                         ]
 
@@ -141,15 +148,13 @@ class NavyReserveSpider(GCSeleniumSpider):
                             doc_type=doc_type.strip(),
                             downloadable_items=downloadable_items,
                             version_hash_raw_data=version_hash_fields,
-                            source_page_url=driver.current_url
+                            source_page_url=driver.current_url,
                         )
-                except:
-                    print(
-                        f'Unexpected Parsing Exception - attempting to continue: {e}')
+                except Exception as e:
+                    print(f"Unexpected Parsing Exception - attempting to continue: {e}")
                     pass
 
                 if has_next_page:
                     el.click()
                     # wait until paging table is stale from page load, can be slow
-                    WebDriverWait(driver, 100).until(
-                        EC.staleness_of(paging_table))
+                    WebDriverWait(driver, 100).until(EC.staleness_of(paging_table))

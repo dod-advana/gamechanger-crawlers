@@ -18,5 +18,11 @@ img/
 .pytest_cache/
 
 # transformer model cache
-transformer_cache/
-transformer_cache.zip
+transformer_cache*
+dist/
+.vscode
+.github/*
+*venv*
+*egg-info*
+**build/
+**__pycache__**

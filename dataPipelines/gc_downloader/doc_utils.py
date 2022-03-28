@@ -1,7 +1,7 @@
 from dataPipelines.gc_crawler.data_model import Document, DownloadableItem
-from .models import DownloadedDocument, ProcessedDocument
+from dataPipelines.gc_downloader.models import DownloadedDocument
 from pathlib import Path
-from typing import Dict, Iterable, Optional, Any, Union, List
+from typing import Iterable, Optional, Union, List
 import copy
 import tempfile
 from .file_utils import safe_move_file, unzip_all
@@ -12,9 +12,17 @@ from .exceptions import CouldNotDownload
 from .config import SUPPORTED_FILE_EXTENSIONS
 from selenium import webdriver
 
+
 def get_supported_downloadable_item(doc: Document) -> Optional[DownloadableItem]:
     """Get supported downloadable item corresponding to doc"""
-    return next((i for i in doc.downloadable_items if "."+i.doc_type.lower() in SUPPORTED_FILE_EXTENSIONS), None)
+    return next(
+        (
+            i
+            for i in doc.downloadable_items
+            if "." + i.doc_type.lower() in SUPPORTED_FILE_EXTENSIONS
+        ),
+        None,
+    )
 
 
 def read_docs_from_file(file_path: Path) -> Iterable[Document]:
@@ -49,14 +57,12 @@ def filter_out_non_pdf_docs(docs: Iterable[Document]) -> Iterable[Document]:
 
 
 def filter_out_already_downloaded_docs(
-        docs: Iterable[Document],
-        previous_manifest: Optional[Union[str, Path]] = None) -> Iterable[Document]:
+    docs: Iterable[Document], previous_manifest: Optional[Union[str, Path]] = None
+) -> Iterable[Document]:
     """Filter out docs that are in the old manifest"""
 
     previous_manifest_path = (
-        Path(previous_manifest).resolve()
-        if previous_manifest
-        else None
+        Path(previous_manifest).resolve() if previous_manifest else None
     )
 
     version_hashes = (
@@ -82,10 +88,7 @@ def download_doc(doc: Document, output_dir: Union[Path, str]) -> DownloadedDocum
     output_dir_path = Path(output_dir).resolve()
 
     try:
-        downloaded_file = download_file(
-            url=item.web_url,
-            output_dir=output_dir_path
-        )
+        downloaded_file = download_file(url=item.web_url, output_dir=output_dir_path)
     except CouldNotDownload as e:
         # for transparency's sake...
         raise e
@@ -94,10 +97,13 @@ def download_doc(doc: Document, output_dir: Union[Path, str]) -> DownloadedDocum
         document=doc,
         downloaded_file_path=str(downloaded_file.resolve()),
         origin=item.web_url,
-        entrypoint=doc.source_page_url
+        entrypoint=doc.source_page_url,
     )
 
-def download_doc_with_driver(doc: Document, output_dir: Union[Path, str], driver: webdriver.Chrome) -> DownloadedDocument:
+
+def download_doc_with_driver(
+    doc: Document, output_dir: Union[Path, str], driver: webdriver.Chrome
+) -> DownloadedDocument:
     """Download doc to given base_dir"""
     item = get_supported_downloadable_item(doc)
     if not item:
@@ -108,9 +114,7 @@ def download_doc_with_driver(doc: Document, output_dir: Union[Path, str], driver
 
     try:
         downloaded_file = download_file_with_driver(
-            url=item.web_url,
-            output_dir=output_dir_path,
-            driver=driver
+            url=item.web_url, output_dir=output_dir_path, driver=driver
         )
     except CouldNotDownload as e:
         # for transparency's sake...
@@ -120,14 +124,18 @@ def download_doc_with_driver(doc: Document, output_dir: Union[Path, str], driver
         document=doc,
         downloaded_file_path=str(downloaded_file.resolve()),
         origin=item.web_url,
-        entrypoint=doc.source_page_url
+        entrypoint=doc.source_page_url,
     )
 
-def unzip_docs_as_needed(ddoc: DownloadedDocument, output_dir: Union[Path, str]) -> List[DownloadedDocument]:
+
+def unzip_docs_as_needed(
+    ddoc: DownloadedDocument, output_dir: Union[Path, str], doc_type: str
+) -> List[DownloadedDocument]:
     """Handles zipped/packaged download artifacts by expanding them into their individual components
 
     :param ddoc: DownloadedDocument obj
     :param output_dir: Directory where files, unzipped or not, should be placed
+    :param doc_type: Document file type, e.g. "pdf", "html", "txt"
     :return: iterable of Downloaded documents, len > 1 for bundles
     """
 
@@ -135,7 +143,9 @@ def unzip_docs_as_needed(ddoc: DownloadedDocument, output_dir: Union[Path, str])
 
     # TODO: create set of recursive unzip methods for other archive types and a dispatcher
     if not file.suffix.lower() == ".zip":
-        new_path = safe_move_file(file_path=ddoc.downloaded_file_path, output_path=output_dir)
+        new_path = safe_move_file(
+            file_path=ddoc.downloaded_file_path, output_path=output_dir
+        )
         new_ddoc = copy.deepcopy(ddoc)
         new_ddoc.downloaded_file_path = new_path
         return [new_ddoc]
@@ -145,13 +155,14 @@ def unzip_docs_as_needed(ddoc: DownloadedDocument, output_dir: Union[Path, str])
         temp_dir = tempfile.TemporaryDirectory()
         unzipped_files = unzip_all(zip_file=file.resolve(), output_dir=temp_dir.name)
 
-        # TODO: Extend for non-pdf docs (trickier than it seems, there can be junk/manifest files)
-        unzipped_pdf_files = [f for f in unzipped_files if f.suffix.lower() == ".pdf"]
-        if not unzipped_pdf_files:
-            raise RuntimeError(f"Tried to unzip {file.name}, but could not find any expected files inside")
+        unzipped_files = [f for f in unzipped_files if f.suffix.lower()[1:] == doc_type]
+        if not unzipped_files:
+            raise RuntimeError(
+                f"Tried to unzip {file.name}, but could not find any expected files inside"
+            )
 
         final_ddocs = []
-        for pdf_file in unzipped_pdf_files:
+        for pdf_file in unzipped_files:
             new_ddoc = copy.deepcopy(ddoc)
             new_path = safe_move_file(file_path=pdf_file, output_path=output_dir)
             new_ddoc.downloaded_file_path = new_path

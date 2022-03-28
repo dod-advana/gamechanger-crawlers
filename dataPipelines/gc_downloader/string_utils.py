@@ -22,7 +22,7 @@ def translate_to_ascii_string(_s: Union[str, bytes]) -> str:
 
 def squash_whitespace_to_spaces(_s: str) -> str:
     """Squashes all consecutive whitespace characters into a single space character"""
-    return re.sub(pattern=r"\s+", repl=r' ', string=_s)
+    return re.sub(pattern=r"\s+", repl=r" ", string=_s)
 
 
 def translate_double_quotes_to_single_quotes(_s: str) -> str:
@@ -65,9 +65,7 @@ DEFAULT_TRANSFORMER_PIPELINE = [
 
 def transform_string(
     input_string: str,
-    ordered_string_transformers: Iterable[
-        Callable[[str], str]
-    ],
+    ordered_string_transformers: Iterable[Callable[[str], str]],
 ) -> str:
     """Translates arbitrary utf-8 name into one that conforms to a specific set of chars
     :param input_string: string that's meant to be processed through the pipeline
@@ -85,4 +83,7 @@ def transform_string(
 
 def normalize_string(input_string: str) -> str:
     """Apply default transformations to normalize the string"""
-    return transform_string(input_string=input_string, ordered_string_transformers=DEFAULT_TRANSFORMER_PIPELINE)
+    return transform_string(
+        input_string=input_string,
+        ordered_string_transformers=DEFAULT_TRANSFORMER_PIPELINE,
+    )

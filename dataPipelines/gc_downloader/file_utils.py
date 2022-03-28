@@ -15,8 +15,9 @@ def pad_empty_file(file_path: Union[str, Path]) -> None:
     """
     file_path = Path(file_path).resolve()
     if os.stat(str(file_path)).st_size == 0:
-        with file_path.open(mode='a') as f:
-            f.write('\n')
+        with file_path.open(mode="a") as f:
+            f.write("\n")
+
 
 def get_available_path(desired_path: Union[str, Path]) -> Path:
     """Given desired path, returns one that uses desired path as prefix but won't overwrite existing files
@@ -62,7 +63,9 @@ def get_available_path(desired_path: Union[str, Path]) -> Path:
     return path_candidate.resolve()
 
 
-def iter_all_files(dir_path: Union[Path, str], recursive: bool = True) -> Iterable[Path]:
+def iter_all_files(
+    dir_path: Union[Path, str], recursive: bool = True
+) -> Iterable[Path]:
     """Iterate over all files in dir tree
     :param dir_path: path to directory where the files are located
     :param recursive: whether to return files for entire dir tree
@@ -97,7 +100,7 @@ def md5_for_file(file_path: Union[Path, str], block_size: int = 8192) -> str:
         raise ValueError(f"Provided block_size is invalid: {block_size}")
 
     md5 = hashlib.md5()
-    with open(_path, 'rb') as f:
+    with open(_path, "rb") as f:
         while True:
             data = f.read(block_size)
             if not data:
@@ -108,7 +111,7 @@ def md5_for_file(file_path: Union[Path, str], block_size: int = 8192) -> str:
 
 
 def unzip_all(zip_file: Union[Path, str], output_dir: str) -> List[Path]:
-    """ Unzip all items in the input file and place them inside output_dir
+    """Unzip all items in the input file and place them inside output_dir
     :param zip_file: path to zip file
     :param output_dir: path to desired output directory
 
@@ -143,7 +146,9 @@ def unzip_all(zip_file: Union[Path, str], output_dir: str) -> List[Path]:
     return unzipped_file_paths
 
 
-def safe_move_file(file_path: Union[Path, str], output_path: Union[Path, str], copy: bool = False) -> Path:
+def safe_move_file(
+    file_path: Union[Path, str], output_path: Union[Path, str], copy: bool = False
+) -> Path:
     """Safely moves/copies file to given directory
     by changing file suffix (sans extension) to avoid collisions, if necessary
 
@@ -155,13 +160,19 @@ def safe_move_file(file_path: Union[Path, str], output_path: Union[Path, str], c
     _file_path = Path(file_path).resolve()
     _output_path = Path(output_path).resolve()
 
-    desired_path = Path(_output_path, _file_path.name) if _output_path.is_dir() else _output_path
+    desired_path = (
+        Path(_output_path, _file_path.name) if _output_path.is_dir() else _output_path
+    )
     available_dest_path = Path(get_available_path(desired_path))
 
     if not _file_path.is_file():
         raise ValueError(f"Given path is not a file: {_file_path!s}")
-    if (not available_dest_path.parent.is_dir()) or (available_dest_path.is_file() and available_dest_path.exists()):
-        raise ValueError(f"Given path parent is not a directory or is a file that already exists: {available_dest_path!s}")
+    if (not available_dest_path.parent.is_dir()) or (
+        available_dest_path.is_file() and available_dest_path.exists()
+    ):
+        raise ValueError(
+            f"Given path parent is not a directory or is a file that already exists: {available_dest_path!s}"
+        )
 
     if copy:
         shutil.copy(_file_path, available_dest_path)  # type: ignore
@@ -180,4 +191,4 @@ def purge_dir(dir_path):
             elif os.path.isdir(file_path):
                 shutil.rmtree(file_path)
         except Exception as e:
-            print('Failed to delete %s. Reason: %s' % (file_path, e))
+            print("Failed to delete %s. Reason: %s" % (file_path, e))

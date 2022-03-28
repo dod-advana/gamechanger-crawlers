@@ -3,7 +3,7 @@ import re
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
-digit_re = re.compile('\d')
+digit_re = re.compile(r"\d")
 
 
 def has_digit(text):
@@ -11,17 +11,18 @@ def has_digit(text):
 
 
 class MilpersmanSpider(GCSpider):
-    name = 'milpersman_crawler'
+    name = "milpersman_crawler"
 
-    start_urls = ['https://www.mynavyhr.navy.mil/References/MILPERSMAN/']
+    start_urls = ["https://www.mynavyhr.navy.mil/References/MILPERSMAN/"]
     doc_type = "MILPERSMAN"
     cac_login_required = False
 
     def parse(self, response):
 
         anchors = [
-            a for a in
-            response.css('li[title="MILPERSMAN"] ul li a') if has_digit(a.css("::text").get())
+            a
+            for a in response.css('li[title="MILPERSMAN"] ul li a')
+            if has_digit(a.css("::text").get())
         ]
 
         for res in response.follow_all(anchors, self.parse_doc_type):
@@ -41,23 +42,24 @@ class MilpersmanSpider(GCSpider):
     def parse_page(self, response):
         # get all rows that have an anchor tag in the first td
         rows = [
-            tr for tr in
-            response.css('div.livehtml table tbody tr')
+            tr
+            for tr in response.css("div.livehtml table tbody tr")
             # have to check a special case
-            if (len(tr.css('td:nth-child(1) a')) or len(tr.css('td:nth-child(2) a')))
+            if (len(tr.css("td:nth-child(1) a")) or len(tr.css("td:nth-child(2) a")))
         ]
 
         current_url = response.url
 
         for i, row in enumerate(rows):
-            doc_num_raw = "".join(row.css('td:nth-child(1) *::text').getall())
+            doc_num_raw = "".join(row.css("td:nth-child(1) *::text").getall())
             doc_num = self.ascii_clean(doc_num_raw)
 
             if not self.ascii_clean(doc_num):
                 continue
 
             doc_title = " ".join(
-                self.ascii_clean(text) for text in row.css('td:nth-child(2) *::text').getall()
+                self.ascii_clean(text)
+                for text in row.css("td:nth-child(2) *::text").getall()
             )
 
             href_raw = row.css("td:nth-child(1) a::attr(href)").get()
@@ -65,7 +67,7 @@ class MilpersmanSpider(GCSpider):
 
             version_hash_fields = {
                 "item_currency": href_raw,
-                "document_title": doc_title
+                "document_title": doc_title,
             }
 
             file_type = self.get_href_file_extension(href_raw)
@@ -74,27 +76,27 @@ class MilpersmanSpider(GCSpider):
                 {
                     "doc_type": file_type,
                     "web_url": self.url_encode_spaces(web_url),
-                    "compression_type": None
+                    "compression_type": None,
                 }
             ]
 
-            if doc_num == '1070-290':
+            if doc_num == "1070-290":
                 # if this changes, dont break
                 try:
-                    next_row = rows[i+1]
-                    supp_href = next_row.css(
-                        'td:nth-child(2) a::attr(href)').get()
+                    next_row = rows[i + 1]
+                    supp_href = next_row.css("td:nth-child(2) a::attr(href)").get()
 
                     supp_file_type = self.get_href_file_extension(supp_href)
-                    supp_web_url = self.ensure_full_href_url(
-                        supp_href, current_url)
+                    supp_web_url = self.ensure_full_href_url(supp_href, current_url)
 
-                    downloadable_items.append({
-                        "doc_type": supp_file_type,
-                        "web_url": self.url_encode_spaces(supp_web_url),
-                        "compression_type": None
-                    })
-                except:
+                    downloadable_items.append(
+                        {
+                            "doc_type": supp_file_type,
+                            "web_url": self.url_encode_spaces(supp_web_url),
+                            "compression_type": None,
+                        }
+                    )
+                except Exception:
                     pass
 
             doc_name = f"MILPERSMAN {doc_num}"
@@ -105,5 +107,5 @@ class MilpersmanSpider(GCSpider):
                 doc_num=doc_num,
                 downloadable_items=downloadable_items,
                 version_hash_raw_data=version_hash_fields,
-                source_page_url=current_url
+                source_page_url=current_url,
             )

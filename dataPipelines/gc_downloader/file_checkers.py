@@ -9,6 +9,6 @@ def is_valid_pdf(file: Union[Path, str]) -> bool:
     try:
         fitz.open(file_path)
     except RuntimeError as e:
-        if 'no objects found' in e.args:
+        if "no objects found" in e.args:
             return False
     return True

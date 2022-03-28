@@ -1,6 +1,6 @@
 from typing import Iterable
 from pathlib import Path
-from typing import Union, Any, Dict, Optional
+from typing import Union, Optional
 import json
 from .models import ProcessedDocument, DeadDocument, ManifestEntry, EntryType
 from .file_utils import md5_for_file
@@ -20,8 +20,8 @@ def get_downloaded_version_hashes(manifest: Union[Path, str]) -> Iterable[str]:
                 continue
 
             jdoc = json.loads(line)
-            if jdoc['entry_type'] == EntryType.DOCUMENT.value:
-                yield jdoc['version_hash']
+            if jdoc["entry_type"] == EntryType.DOCUMENT.value:
+                yield jdoc["version_hash"]
 
 
 def gen_doc_manifest_entry(pdoc: ProcessedDocument) -> ManifestEntry:
@@ -35,7 +35,7 @@ def gen_doc_manifest_entry(pdoc: ProcessedDocument) -> ManifestEntry:
         entrypoint=pdoc.entrypoint,
         version_hash=pdoc.document.version_hash,
         md5_hash=pdoc.md5_hash,
-        entry_type=EntryType.DOCUMENT
+        entry_type=EntryType.DOCUMENT,
     )
 
 
@@ -54,7 +54,7 @@ def gen_doc_metadata_manifest_entry(pdoc: ProcessedDocument) -> Optional[Manifes
         entrypoint=f"metadata://{pdoc.local_file_path.name}",
         version_hash=md5sum,
         md5_hash=md5sum,
-        entry_type=EntryType.DOC_METADATA
+        entry_type=EntryType.DOC_METADATA,
     )
 
 
@@ -72,12 +72,14 @@ def gen_job_metadata_manifest_entry(file: Union[str, Path]) -> ManifestEntry:
         entrypoint="metadata://",
         version_hash=md5sum,
         md5_hash=md5sum,
-        entry_type=EntryType.JOB_METADATA
+        entry_type=EntryType.JOB_METADATA,
     )
 
 
-def record_metadata_file_in_manifest(file: Union[str, Path], manifest: Union[Path, str]) -> None:
-    """ Append new entry to existing manifest for given job metadata file.
+def record_metadata_file_in_manifest(
+    file: Union[str, Path], manifest: Union[Path, str]
+) -> None:
+    """Append new entry to existing manifest for given job metadata file.
 
     :param file: path to arbitrary job metadata file (e.g. log, etc.)
     :param manifest: path to overall job manifest.json file
@@ -101,7 +103,9 @@ def record_dead_doc(dead_doc: DeadDocument, dead_queue: Union[Path, str]) -> Non
         fd.write(dead_doc.to_json() + "\n")
 
 
-def record_doc_and_metadata_in_manifest(pdoc: ProcessedDocument, manifest: Union[Path, str]) -> None:
+def record_doc_and_metadata_in_manifest(
+    pdoc: ProcessedDocument, manifest: Union[Path, str]
+) -> None:
     """Append JSON manifest records about the document and its' metadata in the overall manifest
 
     :param pdoc: Single ProcessedDocument

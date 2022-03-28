@@ -1,0 +1,78 @@
+# based on https://mestrak.com/blog/semantic-release-with-python-poetry-github-actions-20nn
+on: 
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ simplify-config-and-scripting ]
+  # pull_request:
+  #   branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest] # [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.7', '3.8'] #['2.7', '3.7', '3.8', '3.9', '3.10', 'pypy-2.7', 'pypy-3.8']
+        exclude:
+          - os: macos-latest
+            python-version: '3.8'
+          - os: windows-latest
+            python-version: '3.6'
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # this is to enable gitlint to check all PR commit messages
+          submodules: 'true'
+      - name: Setup Python ${{ matrix.python-version }} environment
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Create a cache for pip/poetry packages/versions
+        uses: actions/cache@v2.1.7
+        with:
+          path: ~/.cache/pip
+          key:
+            ${{ matrix.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('./poetry.lock') }}
+          restore-keys: |
+            ${{ matrix.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('./poetry.lock') }}
+
+      - name: Install Python ${{ matrix.python-version }} dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install poetry
+      - name: Configure poetry
+        run: python -m poetry config virtualenvs.in-project true
+      - name: View poetry version
+        run: poetry --version
+      - name: Install package
+        run: |
+          python -m poetry install
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          python -m poetry run flake8 . --exclude .venv --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          python -m poetry run flake8 . --exclude .venv --count --exit-zero --statistics
+      - name: Run tests 
+        run: |
+          python -m poetry run python -m pytest -v tests
+
+  release:
+    needs: lint
+    # https://github.community/t/how-do-i-specify-job-dependency-running-in-another-workflow/16482
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && !contains(github.event.head_commit.message, 'chore(release):')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Semantic Release
+        run: |
+          pip install python-semantic-release
+          git config user.name GAMECHANGER 🤖
+          git config user.email osd.pentagon.ousd-c.mbx.advana-gamechanger@mail.mil
+          semantic-release publish

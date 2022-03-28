@@ -97,7 +97,7 @@ class DefaultRequestor(Requestor):
         self.http = DefaultHttpSession()
 
     def get_text(self, url: str) -> str:
-        resp = self.http.get(url,verify=False)
+        resp = self.http.get(url, verify=False)
         return resp.text
 
 
@@ -156,7 +156,7 @@ class MapBasedPseudoRequestor(Requestor):
     def get_text(self, url: str) -> str:
         mapped_text: Optional[str] = None
 
-        if hasattr(self.url_text_map, '__call__'):
+        if hasattr(self.url_text_map, "__call__"):
             mapped_text = self.url_text_map(url)  # type: ignore
         elif isinstance(self.url_text_map, dict):
             mapped_text = self.url_text_map.get(url, None)  # type: ignore

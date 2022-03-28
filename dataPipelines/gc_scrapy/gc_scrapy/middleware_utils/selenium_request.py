@@ -3,9 +3,18 @@ from scrapy import Request
 
 class SeleniumRequest(Request):
     """Scrapy ``Request`` subclass providing additional arguments"""
+
     # Shamelessly taken from https://github.com/clemfromspace/scrapy-selenium
 
-    def __init__(self, wait_time=None, wait_until=None, screenshot=False, script=None, *args, **kwargs):
+    def __init__(
+        self,
+        wait_time=None,
+        wait_until=None,
+        screenshot=False,
+        script=None,
+        *args,
+        **kwargs
+    ):
         """Initialize a new selenium request
         Parameters
         ----------

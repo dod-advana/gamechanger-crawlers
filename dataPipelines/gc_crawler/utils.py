@@ -24,7 +24,7 @@ def str_to_sha256_hex_digest(_str: str) -> str:
 def dict_to_sha256_hex_digest(_dict: Dict[Any, Any]) -> str:
     """Converts dictionary to sha256 hex digest.
 
-      Sensitive to changes in presence and string value of any k/v pairs.
+    Sensitive to changes in presence and string value of any k/v pairs.
     """
     if not _dict and not isinstance(_dict, dict):
         raise ValueError("Arg should be a non-empty dictionary")
@@ -47,7 +47,7 @@ def is_valid_web_url(url_string: str) -> bool:
         return all(
             [
                 # only certain schemes
-                result.scheme in ['http', 'https'],
+                result.scheme in ["http", "https"],
                 # fqdn without any spaces
                 result.netloc and not re.findall(r"\s", result.netloc),
                 # path without any spaces

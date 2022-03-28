@@ -28,7 +28,7 @@ def str_to_sha256_hex_digest(_str: str) -> str:
 def dict_to_sha256_hex_digest(_dict: Dict[Any, Any]) -> str:
     """Converts dictionary to sha256 hex digest.
 
-      Sensitive to changes in presence and string value of any k/v pairs.
+    Sensitive to changes in presence and string value of any k/v pairs.
     """
     if not _dict and not isinstance(_dict, dict):
         raise ValueError("Arg should be a non-empty dictionary")
@@ -51,7 +51,7 @@ def is_valid_web_url(url_string: str) -> bool:
         return all(
             [
                 # only certain schemes
-                result.scheme in ['http', 'https'],
+                result.scheme in ["http", "https"],
                 # fqdn without any spaces
                 result.netloc and not re.findall(r"\s", result.netloc),
                 # path without any spaces
@@ -70,6 +70,7 @@ def abs_url(base_url: str, target_url: str) -> str:
 def get_fqdn_from_web_url(url_string: str) -> str:
     """Parses out just the FQDN from the url"""
     return urlparse(url_string).netloc
+
 
 def get_available_path(desired_path: Union[str, Path]) -> Path:
     """Given desired path, returns one that uses desired path as prefix but won't overwrite existing files
@@ -115,7 +116,9 @@ def get_available_path(desired_path: Union[str, Path]) -> Path:
     return path_candidate.resolve()
 
 
-def iter_all_files(dir_path: Union[Path, str], recursive: bool = True) -> Iterable[Path]:
+def iter_all_files(
+    dir_path: Union[Path, str], recursive: bool = True
+) -> Iterable[Path]:
     """Iterate over all files in dir tree
     :param dir_path: path to directory where the files are located
     :param recursive: whether to return files for entire dir tree
@@ -135,7 +138,7 @@ def iter_all_files(dir_path: Union[Path, str], recursive: bool = True) -> Iterab
 
 
 def unzip_all(zip_file: Union[Path, str], output_dir: str) -> List[Path]:
-    """ Unzip all items in the input file and place them inside output_dir
+    """Unzip all items in the input file and place them inside output_dir
     :param zip_file: path to zip file
     :param output_dir: path to desired output directory
 
@@ -168,7 +171,10 @@ def unzip_all(zip_file: Union[Path, str], output_dir: str) -> List[Path]:
 
     return unzipped_file_paths
 
-def safe_move_file(file_path: Union[Path, str], output_path: Union[Path, str], copy: bool = False) -> Path:
+
+def safe_move_file(
+    file_path: Union[Path, str], output_path: Union[Path, str], copy: bool = False
+) -> Path:
     """Safely moves/copies file to given directory
     by changing file suffix (sans extension) to avoid collisions, if necessary
 
@@ -180,13 +186,19 @@ def safe_move_file(file_path: Union[Path, str], output_path: Union[Path, str], c
     _file_path = Path(file_path).resolve()
     _output_path = Path(output_path).resolve()
 
-    desired_path = Path(_output_path, _file_path.name) if _output_path.is_dir() else _output_path
+    desired_path = (
+        Path(_output_path, _file_path.name) if _output_path.is_dir() else _output_path
+    )
     available_dest_path = Path(get_available_path(desired_path))
 
     if not _file_path.is_file():
         raise ValueError(f"Given path is not a file: {_file_path!s}")
-    if (not available_dest_path.parent.is_dir()) or (available_dest_path.is_file() and available_dest_path.exists()):
-        raise ValueError(f"Given path parent is not a directory or is a file that already exists: {available_dest_path!s}")
+    if (not available_dest_path.parent.is_dir()) or (
+        available_dest_path.is_file() and available_dest_path.exists()
+    ):
+        raise ValueError(
+            f"Given path parent is not a directory or is a file that already exists: {available_dest_path!s}"
+        )
 
     if copy:
         shutil.copy(_file_path, available_dest_path)  # type: ignore
@@ -195,11 +207,15 @@ def safe_move_file(file_path: Union[Path, str], output_path: Union[Path, str], c
 
     return available_dest_path
 
-def unzip_docs_as_needed(input_dir: Union[Path, str], output_dir: Union[Path, str]) -> List[Path]:
+
+def unzip_docs_as_needed(
+    input_dir: Union[Path, str], output_dir: Union[Path, str], doc_type: str
+) -> List[Path]:
     """Handles zipped/packaged download artifacts by expanding them into their individual components
 
     :param input_dir: Path of the zip file
     :param output_dir: Directory where files, unzipped or not, should be placed
+    :param doc_type: Document file type, e.g. "pdf", "html", "txt"
     :return: iterable of Downloaded documents, len > 1 for bundles
     """
 
@@ -208,16 +224,17 @@ def unzip_docs_as_needed(input_dir: Union[Path, str], output_dir: Union[Path, st
         # unzip & move
         temp_dir = tempfile.TemporaryDirectory()
         unzipped_files = unzip_all(zip_file=input_dir, output_dir=temp_dir.name)
-        # TODO: Extend for non-pdf docs (trickier than it seems, there can be junk/manifest files)
-        unzipped_pdf_files = [f for f in unzipped_files if f.suffix.lower() == ".pdf"]
-        if not unzipped_pdf_files:
-            raise RuntimeError(f"Tried to unzip {input_dir}, but could not find any expected files inside")
+        unzipped_files = [f for f in unzipped_files if f.suffix.lower()[1:] == doc_type]
+        if not unzipped_files:
+            raise RuntimeError(
+                f"Tried to unzip {input_dir}, but could not find any expected files inside"
+            )
         final_ddocs = []
 
         # TODO: Add capibility to unzip multiple zips and add corresponding metadata for each
         # do just the first iteration to unzip only the first file
-        unzipped_pdf_files.sort()   # messy solution. sorting to make sure we grab the first in us_code
-        for pdf_file in [unzipped_pdf_files[0]]:
+        unzipped_files.sort()  # messy solution. sorting to make sure we grab the first in us_code
+        for pdf_file in [unzipped_files[0]]:
             new_ddoc = copy.deepcopy(input_dir)
             safe_move_file(file_path=pdf_file, output_path=output_dir)
             final_ddocs.append(new_ddoc)

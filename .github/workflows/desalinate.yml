@@ -1,0 +1,20 @@
+# name: Desalinator - deals with salty pull requests 
+ 
+# on:
+#   workflow_dispatch:
+#   schedule:
+#   - cron: '5 4 * * *'
+ 
+# jobs:
+#   stale:
+#     runs-on: ubuntu-latest 
+#     steps:
+#     - uses: actions/stale@v4
+#       with:
+#         repo-token: ${{ secrets.GITHUB_TOKEN }}
+#         days-before-stale: 90
+#         days-before-close: 14
+#         stale-issue-message: 'This stale issue will be closed automatically in 2 weeks if there is no further activity.'
+#         stale-pr-message: 'This stale pull request will be closed automatically in 2 weeks if there is no further activity.'
+#         stale-issue-label: 'stale-issue'
+#         stale-pr-label: 'stale-pr'

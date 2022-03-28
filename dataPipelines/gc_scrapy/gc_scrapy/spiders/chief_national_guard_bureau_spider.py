@@ -1,29 +1,26 @@
-import scrapy
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
 
 class CNGBISpider(GCSpider):
     """
-        Parser for Chief National Guard Bureau Instructions
+    Parser for Chief National Guard Bureau Instructions
     """
 
     name = "National_Guard"
-    allowed_domains = ['ngbpmc.ng.mil']
-    start_urls = [
-        'https://www.ngbpmc.ng.mil/publications1/cngbi/'
-    ]
+    allowed_domains = ["ngbpmc.ng.mil"]
+    start_urls = ["https://www.ngbpmc.ng.mil/publications1/cngbi/"]
 
     file_type = "pdf"
     doc_type = "CNGBI"
 
     def parse(self, response):
-        rows = response.css('div.WordSection1 table.MsoNormalTable tbody tr')
+        rows = response.css("div.WordSection1 table.MsoNormalTable tbody tr")
 
         for row in rows:
-            href_raw = row.css('td:nth-child(1) a::attr(href)').get()
+            href_raw = row.css("td:nth-child(1) a::attr(href)").get()
 
-            if not href_raw.startswith('/'):
+            if not href_raw.startswith("/"):
                 cac_login_required = True
             else:
                 cac_login_required = False
@@ -35,31 +32,31 @@ class CNGBISpider(GCSpider):
             downloadable_items = [
                 {
                     "doc_type": file_type,
-                    "web_url": web_url.replace(' ', '%20'),
-                    "compression_type": None
+                    "web_url": web_url.replace(" ", "%20"),
+                    "compression_type": None,
                 }
             ]
 
-            doc_name_raw = row.css('td:nth-child(1) a span::text').get()
+            doc_name_raw = row.css("td:nth-child(1) a span::text").get()
 
             # one row returns empty for doc_name_raw, so skip that case
             if not doc_name_raw:
                 continue
 
-            doc_num_raw = doc_name_raw.replace('CNGBI ', '')
+            doc_num_raw = doc_name_raw.replace("CNGBI ", "")
 
-            publication_date = row.css('td:nth-child(2) span::text').get()
+            publication_date = row.css("td:nth-child(2) span::text").get()
 
-            doc_title_raw = row.css('td:nth-child(3) a::text').get()
+            doc_title_raw = row.css("td:nth-child(3) a::text").get()
             if doc_title_raw is None:
-                doc_title_raw = row.css('td:nth-child(3) span::text').get()
+                doc_title_raw = row.css("td:nth-child(3) span::text").get()
 
             doc_title = self.ascii_clean(doc_title_raw)
 
             version_hash_fields = {
                 "item_currency": href_raw,
                 "document_title": doc_title,
-                "document_number": doc_num_raw
+                "document_number": doc_num_raw,
             }
 
             yield DocItem(

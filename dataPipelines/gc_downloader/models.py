@@ -1,11 +1,12 @@
 from pathlib import Path
 from dataPipelines.gc_crawler.data_model import Document
-from typing import Union, Optional, Dict, Any
+from typing import Union, Dict, Any
 from .exceptions import CorruptedFile, CouldNotDownload, UnsupportedFileType
 from enum import Enum
 import json
 import copy
 import urllib3
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
@@ -14,15 +15,19 @@ class EntryType(Enum):
     DOC_METADATA = "doc_metadata"
     JOB_METADATA = "job_metadata"
 
+
 class ManifestEntry:
     """Entry in the download manifest"""
-    def __init__(self,
-                 filename: str,
-                 origin: str,
-                 entrypoint: str,
-                 version_hash: str,
-                 md5_hash: str,
-                 entry_type: Union[EntryType, str]):
+
+    def __init__(
+        self,
+        filename: str,
+        origin: str,
+        entrypoint: str,
+        version_hash: str,
+        md5_hash: str,
+        entry_type: Union[EntryType, str],
+    ):
         """
         :param filename: filename, as it appears in final output directory
         :param origin: most specific url known for retrieving related download item
@@ -40,39 +45,44 @@ class ManifestEntry:
 
     def to_dict(self) -> Dict[str, Any]:
         """Plain dictionary representation"""
-        return copy.deepcopy({
-            **self.__dict__
-        })
+        return copy.deepcopy({**self.__dict__})
 
     def to_json(self) -> str:
         """Serialize to json string"""
+
         def _supplementary_json_encoder(o: object) -> object:
             """Handle conversion of objects that default json encoder can't handle"""
             if isinstance(o, Enum):
                 return o.value
             else:
                 return json.JSONEncoder().default(o)
+
         return json.dumps(self.to_dict(), default=_supplementary_json_encoder)
 
     @staticmethod
-    def from_dict(obj_dict: Dict[Any, Any]) -> 'ManifestEntry':
+    def from_dict(obj_dict: Dict[Any, Any]) -> "ManifestEntry":
         """Deserialize from plain dictionary"""
-        _obj_dict = copy.deepcopy(obj_dict)  # avoid problems with arrays and other ref types
+        _obj_dict = copy.deepcopy(
+            obj_dict
+        )  # avoid problems with arrays and other ref types
         return ManifestEntry(**_obj_dict)
 
     @staticmethod
-    def from_json(serialized_obj: str) -> 'ManifestEntry':
+    def from_json(serialized_obj: str) -> "ManifestEntry":
         """Deserialize from json"""
         return ManifestEntry.from_dict(json.loads(serialized_obj))
 
 
 class DownloadedDocument:
     """Model of a downloaded document"""
-    def __init__(self,
-                 document: Document,
-                 downloaded_file_path: Union[str, Path],
-                 origin: str,
-                 entrypoint: str):
+
+    def __init__(
+        self,
+        document: Document,
+        downloaded_file_path: Union[str, Path],
+        origin: str,
+        entrypoint: str,
+    ):
         """
         :param document: The Document obj corresponding to crawler output json
         :param downloaded_file_path: Local path to where document was downloaded
@@ -87,14 +97,17 @@ class DownloadedDocument:
 
 class ProcessedDocument:
     """Model of a fully processed document"""
-    def __init__(self,
-                 document: Document,
-                 local_file_path: Union[str, Path],
-                 metadata_file_path: Union[str, Path],
-                 normalized_filename: str,
-                 md5_hash: str,
-                 origin: str,
-                 entrypoint: str):
+
+    def __init__(
+        self,
+        document: Document,
+        local_file_path: Union[str, Path],
+        metadata_file_path: Union[str, Path],
+        normalized_filename: str,
+        md5_hash: str,
+        origin: str,
+        entrypoint: str,
+    ):
         """
         :param document: The Document obj corresponding to crawler output json
         :param local_file_path: actual local file path where processed document was placed
@@ -115,13 +128,13 @@ class ProcessedDocument:
 
 
 class FailureReason(Enum):
-    COULD_NOT_DOWNLOAD = 'could_not_download'
-    CORRUPTED_FILE = 'corrupted_file'
-    UNSUPPORTED_FILE = 'unsupported_file'
-    WHO_KNOWS = 'who_knows'
+    COULD_NOT_DOWNLOAD = "could_not_download"
+    CORRUPTED_FILE = "corrupted_file"
+    UNSUPPORTED_FILE = "unsupported_file"
+    WHO_KNOWS = "who_knows"
 
     @staticmethod
-    def from_exception(e: Exception) -> 'FailureReason':
+    def from_exception(e: Exception) -> "FailureReason":
         if isinstance(e, CouldNotDownload):
             return FailureReason.COULD_NOT_DOWNLOAD
         elif isinstance(e, CorruptedFile):
@@ -134,7 +147,12 @@ class FailureReason(Enum):
 
 class DeadDocument:
     """Model of document that failed to process for some reason"""
-    def __init__(self, document: Document, failure_reason: Union[FailureReason, str] = FailureReason.WHO_KNOWS):
+
+    def __init__(
+        self,
+        document: Document,
+        failure_reason: Union[FailureReason, str] = FailureReason.WHO_KNOWS,
+    ):
         """
         :param document: The Document obj corresponding to crawler output json
         """
@@ -143,12 +161,11 @@ class DeadDocument:
 
     def to_dict(self) -> Dict[str, Any]:
         """Plain dictionary representation"""
-        return copy.deepcopy({
-            **self.__dict__
-        })
+        return copy.deepcopy({**self.__dict__})
 
     def to_json(self) -> str:
         """Serialize to json string"""
+
         def _supplementary_json_encoder(o: object) -> object:
             """Handle conversion of objects that default json encoder can't handle"""
             if isinstance(o, Enum):
@@ -157,12 +174,14 @@ class DeadDocument:
                 return o.to_json()
             else:
                 return json.JSONEncoder().default(o)
+
         return json.dumps(self.to_dict(), default=_supplementary_json_encoder)
 
     @staticmethod
-    def from_dict(obj_dict: Dict[Any, Any]) -> 'DeadDocument':
+    def from_dict(obj_dict: Dict[Any, Any]) -> "DeadDocument":
         """Deserialize from plain dictionary"""
-        _obj_dict = copy.deepcopy(obj_dict)  # avoid problems with arrays and other ref types
-        _obj_dict['document'] = Document.from_dict(_obj_dict['document'])
+        _obj_dict = copy.deepcopy(
+            obj_dict
+        )  # avoid problems with arrays and other ref types
+        _obj_dict["document"] = Document.from_dict(_obj_dict["document"])
         return DeadDocument(**_obj_dict)
-

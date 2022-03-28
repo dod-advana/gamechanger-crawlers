@@ -5,7 +5,8 @@ import json
 import re
 
 exec_order_re = re.compile(
-    r'(?:(?:Executive Order)|(?:Proclamation))\s*(\d+)', flags=re.IGNORECASE)
+    r"(?:(?:Executive Order)|(?:Proclamation))\s*(\d+)", flags=re.IGNORECASE
+)
 
 
 class ExecutiveOrdersSpider(GCSpider):
@@ -18,22 +19,22 @@ class ExecutiveOrdersSpider(GCSpider):
 
     @staticmethod
     def make_doc_item_from_dict(doc: dict) -> DocItem:
-        doc_num = doc.get('executive_order_number', '')
-        doc_title = doc.get('title')
-        publication_date = doc.get('publication_date', '')
-        source_page_url = doc.get('html_url')
-        disposition_notes = doc.get('disposition_notes', '')
-        signing_date = doc.get('signing_date', '')
+        doc_num = doc.get("executive_order_number", "")
+        doc_title = doc.get("title")
+        publication_date = doc.get("publication_date", "")
+        source_page_url = doc.get("html_url")
+        disposition_notes = doc.get("disposition_notes", "")
+        signing_date = doc.get("signing_date", "")
 
-        if doc_num == "12988" and 'CHAMPUS' in doc_title:
+        if doc_num == "12988" and "CHAMPUS" in doc_title:
             # this is not an executive order, its a notice from OSD
             # there may be other errors but this has a conflicting doc num
             # https://www.federalregister.gov/documents/1996/02/09/96-2755/civilian-health-and-medical-program-of-the-uniformed-services-champus
             return
 
-        pdf_url = doc.get('pdf_url')
-        xml_url = doc.get('full_text_xml_url')
-        txt_url = doc.get('raw_text_url')
+        pdf_url = doc.get("pdf_url")
+        xml_url = doc.get("full_text_xml_url")
+        txt_url = doc.get("raw_text_url")
 
         downloadable_items = []
         if pdf_url:
@@ -66,7 +67,7 @@ class ExecutiveOrdersSpider(GCSpider):
         version_hash_fields = {
             "publication_date": publication_date,
             "signing_date": signing_date,
-            "disposition_notes": disposition_notes
+            "disposition_notes": disposition_notes,
         }
 
         # handles rare case where a num cant be found
@@ -79,25 +80,25 @@ class ExecutiveOrdersSpider(GCSpider):
             publication_date=publication_date,
             source_page_url=source_page_url,
             downloadable_items=downloadable_items,
-            version_hash_raw_data=version_hash_fields
+            version_hash_raw_data=version_hash_fields,
         )
 
     def parse(self, response):
         all_orders_json_href = response.css(
-            'div.page-summary.reader-aid ul.bulk-files li:nth-child(1) > span.links > a:nth-child(2)::attr(href)'
+            "div.page-summary.reader-aid ul.bulk-files li:nth-child(1) > span.links > a:nth-child(2)::attr(href)"
         ).get()
 
         yield response.follow(url=all_orders_json_href, callback=self.parse_data_page)
 
     def parse_data_page(self, response):
         data = json.loads(response.body)
-        results = data.get('results')
+        results = data.get("results")
 
         for doc in results:
-            json_url = doc.get('json_url')
+            json_url = doc.get("json_url")
             yield response.follow(url=json_url, callback=self.get_doc_detail_data)
 
-        next_url = data.get('next_page_url')
+        next_url = data.get("next_page_url")
 
         if next_url:
             yield response.follow(url=next_url, callback=self.parse_data_page)
@@ -111,14 +112,14 @@ class ExecutiveOrdersSpider(GCSpider):
             yield response.follow(
                 url=raw_text_url,
                 callback=self.get_exec_order_num_from_text,
-                meta={"doc": data}
+                meta={"doc": data},
             )
         else:
             yield self.make_doc_item_from_dict(data)
 
     def get_exec_order_num_from_text(self, response):
         raw_text = str(response.body)
-        doc = response.meta['doc']
+        doc = response.meta["doc"]
 
         exec_order_num_groups = exec_order_re.search(raw_text)
         if exec_order_num_groups:

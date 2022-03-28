@@ -1,6 +1,5 @@
-import scrapy
 import re
-from urllib.parse import urljoin, urlencode, parse_qs
+from urllib.parse import urljoin
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
@@ -9,10 +8,8 @@ type_and_num_regex = re.compile(r"([a-zA-Z].*) (\d.*)")
 
 class ArmyReserveSpider(GCSpider):
     name = "Army_Reserve"
-    allowed_domains = ['usar.army.mil']
-    start_urls = [
-        'https://www.usar.army.mil/Publications/'
-    ]
+    allowed_domains = ["usar.army.mil"]
+    start_urls = ["https://www.usar.army.mil/Publications/"]
 
     file_type = "pdf"
     cac_login_required = False
@@ -21,21 +18,25 @@ class ArmyReserveSpider(GCSpider):
 
     @staticmethod
     def clean(text):
-        return text.encode('ascii', 'ignore').decode('ascii').strip()
+        return text.encode("ascii", "ignore").decode("ascii").strip()
 
     def parse(self, response):
 
         selected_items = response.css(
-            "div.DnnModule.DnnModule-ICGModulesExpandableTextHtml div.Normal > div p")
+            "div.DnnModule.DnnModule-ICGModulesExpandableTextHtml div.Normal > div p"
+        )
         for item in selected_items:
 
-            pdf_url = item.css('a::attr(href)').get()
+            pdf_url = item.css("a::attr(href)").get()
             if pdf_url is None:
                 continue
 
             # join relative urls to base
-            web_url = urljoin(self.start_urls[0], pdf_url) if pdf_url.startswith(
-                '/') else pdf_url
+            web_url = (
+                urljoin(self.start_urls[0], pdf_url)
+                if pdf_url.startswith("/")
+                else pdf_url
+            )
             # encode spaces from pdf names
             web_url = web_url.replace(" ", "%20")
 
@@ -45,14 +46,14 @@ class ArmyReserveSpider(GCSpider):
                 {
                     "doc_type": self.file_type,
                     "web_url": web_url,
-                    "compression_type": None
+                    "compression_type": None,
                 }
             ]
-            doc_name_raw = item.css('strong::text').get()
-            doc_title_raw = item.css('a::text').get()
+            doc_name_raw = item.css("strong::text").get()
+            doc_title_raw = item.css("a::text").get()
             # some are nested in span
             if doc_title_raw is None:
-                doc_title_raw = item.css('a span::text').get()
+                doc_title_raw = item.css("a span::text").get()
                 # some dont have anything except the name e.g. FY20 USAR IDT TRP Policy Update
                 if doc_title_raw is None:
                     doc_title_raw = doc_name_raw
@@ -70,9 +71,9 @@ class ArmyReserveSpider(GCSpider):
 
             version_hash_fields = {
                 # version metadata found on pdf links
-                "item_currency": web_url.split('/')[-1],
+                "item_currency": web_url.split("/")[-1],
                 "document_title": doc_title,
-                "document_number": doc_num
+                "document_number": doc_num,
             }
 
             yield DocItem(
