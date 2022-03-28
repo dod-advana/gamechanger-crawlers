@@ -1,0 +1,12 @@
+include:
+  - project: "platform/promotion"
+    file: "ci/container.yml"
+variables:
+  UPSTREAM_REPOSITORY_URL: "https://github.com/dod-advana/gamechanger-crawlers.git"
+  UPSTREAM_COMMIT_BRANCH: "feature/enable-packaging"
+  DOCKERFILE_PATH: "./Dockerfile"
+  AUTO_DEVOPS_BUILD_IMAGE_EXTRA_ARGS: >-
+    --format docker
+    --build-arg BASE_IMAGE=${ECR_REGISTRY}/registry1.dso.mil/ironbank/redhat/ubi/ubi8:latest
+    --build-arg APP_UID=1001
+    --build-arg APP_GID=1001

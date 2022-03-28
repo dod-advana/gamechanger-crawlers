@@ -64,7 +64,7 @@ def verify_spiders_are_scheduled():
         if isfile(join(spiders_dir, f)) and not f.startswith("_")
     ]
 
-    schedule_dir = f"{PACKAGE_PATH}/config/crawler_schedule"
+    schedule_dir = f"{PACKAGE_PATH}/../config/crawler_schedule"
     spiders_in_schedule = []
     for f_name in os.listdir(schedule_dir):
         if isfile(join(schedule_dir, f_name)) and f_name.endswith(".txt"):

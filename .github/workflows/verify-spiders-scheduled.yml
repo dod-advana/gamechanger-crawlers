@@ -32,4 +32,4 @@ jobs:
         run: |
           echo "Ensure all spiders are set to run"
           ls
-          python github_action.check_spiders_scheduled.py
+          python -m dataPipelines.utils verify_spiders_scheduled
