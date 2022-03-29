@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=registry.access.redhat.com/ubi8/ubi:8.5-236
+ARG BASE_IMAGE=registry.access.redhat.com/ubi8/ubi:8.5
 ARG BUILDER_BASE_IMAGE="registry.access.redhat.com/ubi8/python-38"
 FROM ${BASE_IMAGE} as base-image
 # non-root app USER/GROUP
@@ -52,7 +52,9 @@ ENV PYTHONUNBUFFERED=1 \
 # prepend poetry and venv to path
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 # Python3 and Env Prereqs
-RUN yum update -y \
+# ensure RHEL host repos are enabled (undo what's done here https://repo1.dso.mil/dsop/redhat/ubi/ubi8/-/blob/development/Dockerfile#L22)
+RUN sed -i "s/enabled=0/enabled=1/" /etc/dnf/plugins/subscription-manager.conf\
+    && yum update -y \
     && yum install -y \
     git \
     swig \
@@ -61,7 +63,7 @@ RUN yum update -y \
     file \
     wget \
     python38 \
-    cairo-devel \
+    cairo \
     unzip \
     && yum clean all \
     && rm -rf /var/cache/yum
@@ -70,16 +72,20 @@ RUN yum update -y \
 ## ## Chrome & ChromeDriver Setup
 #####
 
-# get chrome browser and clamav
-COPY config/*.repo /etc/yum.repos.d/
-RUN \
-    curl https://dl-ssl.google.com/linux/linux_signing_key.pub -o /etc/pki/rpm-gpg/tmp-google_key.pub \
-    && yum -y install google-chrome xdg-utils liberation-fonts \
-    && yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm \
-    && yum install -y clamav clamav-update \
-    && yum remove -y epel-release \
+# install chrome browser and clamav
+COPY config/gc-*.repo /etc/yum.repos.d/
+RUN curl https://dl-ssl.google.com/linux/linux_signing_key.pub -o /etc/pki/rpm-gpg/RPM-GPG-KEY-GOOGLE-8 \
+    && curl https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-8 -o /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-8 \
+    && yum install -y \
+    google-chrome-stable \
+    xdg-utils \
+    liberation-fonts \
+    clamav \
+    clamav-update \
     && yum clean all \
-    && rm -rf /var/cache/yum
+    && rm -rf /var/cache/yum \
+    && rm /etc/pki/rpm-gpg/*-8 \
+    && rm /etc/yum.repos.d/gc-*.repo
 
 RUN freshclam --update-db=daily
 

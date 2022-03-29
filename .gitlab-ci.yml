@@ -1,12 +1,19 @@
 include:
   - project: "platform/promotion"
-    file: "ci/container.yml"
+    file: "ci/container.yml"  
+  - project: "platform/promotion"
+    file: "ci/helm.yml"
+
 variables:
   UPSTREAM_REPOSITORY_URL: "https://github.com/dod-advana/gamechanger-crawlers.git"
   UPSTREAM_COMMIT_BRANCH: "feature/enable-packaging"
   DOCKERFILE_PATH: "./Dockerfile"
   AUTO_DEVOPS_BUILD_IMAGE_EXTRA_ARGS: >-
     --format docker
+    --target=crawler-prod
     --build-arg BASE_IMAGE=${ECR_REGISTRY}/registry1.dso.mil/ironbank/redhat/ubi/ubi8:latest
     --build-arg APP_UID=1001
     --build-arg APP_GID=1001
+
+promotion:
+  extends: ".helm-deploy-trigger"
