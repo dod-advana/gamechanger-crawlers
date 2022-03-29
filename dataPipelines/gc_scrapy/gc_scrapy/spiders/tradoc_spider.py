@@ -16,6 +16,8 @@ class TRADOCSpider(GCSpider):
     data_source = 'TRADOC'
     source_title = 'TRADOC Administrative Publications'
 
+    office_primary_resp = "Training and Doctrine Command"
+
     allowed_domains = ['adminpubs.tradoc.army.mil']
     start_urls = [
         'https://adminpubs.tradoc.army.mil/index.html'
@@ -33,12 +35,17 @@ class TRADOCSpider(GCSpider):
 
     def parse_page(self, response: TextResponse):
         doc_category = response.css('#content > h2::text').get()
-        doc_category_code = re.match(r'TRADOC .+ \((?P<code>.+)s\)', doc_category)['code']
+        doc_category_code = re.match(
+            r'TRADOC .+ \((?P<code>.+)s\)', doc_category)['code']
 
-        col_headers = response.css('table.pubsTable > thead > tr > td::text').getall()
-        num_col_i = next(i+1 for i, header in enumerate(col_headers) if 'Number' in header)
-        date_col_i = next(i+1 for i, header in enumerate(col_headers) if 'Published' in header)
-        title_col_i = next(i+1 for i, header in enumerate(col_headers) if 'Title' in header)
+        col_headers = response.css(
+            'table.pubsTable > thead > tr > td::text').getall()
+        num_col_i = next(
+            i+1 for i, header in enumerate(col_headers) if 'Number' in header)
+        date_col_i = next(
+            i+1 for i, header in enumerate(col_headers) if 'Published' in header)
+        title_col_i = next(
+            i+1 for i, header in enumerate(col_headers) if 'Title' in header)
 
         table_rows = response.css('table.pubsTable > tbody > tr')
         table_row: Selector
@@ -63,7 +70,8 @@ class TRADOCSpider(GCSpider):
 
             assert len(doc_nums) == len(doc_dates) == len(doc_url_lists)
             for doc_num, doc_date, doc_url_list in zip(doc_nums, doc_dates, doc_url_lists):
-                doc_num, doc_change = self.parse_doc_num(doc_category_code, doc_num, doc_nums[0])
+                doc_num, doc_change = self.parse_doc_num(
+                    doc_category_code, doc_num, doc_nums[0])
 
                 if doc_change:
                     doc_title = f'{row_title} with Change {doc_change}'
@@ -72,7 +80,8 @@ class TRADOCSpider(GCSpider):
 
                 publication_date = self.parse_date(doc_date)
 
-                web_urls = list(urljoin(response.url, url) for url in doc_url_list)
+                web_urls = list(urljoin(response.url, url)
+                                for url in doc_url_list)
                 downloadable_items = []
                 for web_url in web_urls:
                     ext = self.get_href_file_extension(web_url)
@@ -108,6 +117,7 @@ class TRADOCSpider(GCSpider):
                     source_title=self.source_title,
                     downloadable_items=downloadable_items,
                     version_hash_raw_data=version_hash_fields,
+                    office_primary_resp=self.office_primary_resp,
                 )
                 yield pgi_doc_item
 
