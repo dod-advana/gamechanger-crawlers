@@ -110,6 +110,32 @@ def md5_for_file(file_path: Union[Path, str], block_size: int = 8192) -> str:
     return md5.hexdigest()
 
 
+def sha256_for_file(file_path: Union[Path, str], block_size: int = 8192) -> str:
+    """Get sha256 hex digest for a file.
+    :param file_path: Path to input file
+    :param block_size: Input block size. Should be multiple of 128 bytes.
+
+    :returns: sha256 hex digest
+    """
+
+    _path = Path(file_path)
+    if not _path.is_file():
+        raise ValueError(f"Provided file path is invalid: {file_path}")
+
+    if not (block_size >= 0 and not block_size % 128):
+        raise ValueError(f"Provided block_size is invalid: {block_size}")
+
+    sha256_hash = hashlib.sha256()
+    with open(_path, "rb") as f:
+        while True:
+            data = f.read(block_size)
+            if not data:
+                break
+            sha256_hash.update(data)
+
+    return sha256_hash.hexdigest()
+
+
 def unzip_all(zip_file: Union[Path, str], output_dir: str) -> List[Path]:
     """Unzip all items in the input file and place them inside output_dir
     :param zip_file: path to zip file

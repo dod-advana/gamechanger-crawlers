@@ -13,7 +13,7 @@ from typing import Union, Iterable, List
 import tempfile
 import copy
 import re
-from .file_utils import md5_for_file
+from .file_utils import sha256_for_file
 from .string_utils import normalize_string
 from abc import ABC
 from .exceptions import (
@@ -182,7 +182,7 @@ class DefaultDownloadHandler(DownloadHandler):
                 local_file_path=ddoc.downloaded_file_path,
                 metadata_file_path=metadata_path,
                 normalized_filename=cls.normalize_filename(ddoc),
-                md5_hash=md5_for_file(ddoc.downloaded_file_path),
+                document_hash=sha256_for_file(ddoc.downloaded_file_path),
                 origin=ddoc.origin,
                 entrypoint=ddoc.entrypoint,
             )
@@ -296,7 +296,7 @@ class DriverDownloadHandler(DefaultDownloadHandler):
                 local_file_path=ddoc.downloaded_file_path,
                 metadata_file_path=metadata_path,
                 normalized_filename=cls.normalize_filename(ddoc),
-                md5_hash=md5_for_file(ddoc.downloaded_file_path),
+                document_hash=sha256_for_file(ddoc.downloaded_file_path),
                 origin=ddoc.origin,
                 entrypoint=ddoc.entrypoint,
             )

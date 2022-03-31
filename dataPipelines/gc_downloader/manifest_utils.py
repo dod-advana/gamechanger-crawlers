@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Union, Optional
 import json
 from .models import ProcessedDocument, DeadDocument, ManifestEntry, EntryType
-from .file_utils import md5_for_file
+from .file_utils import sha256_for_file
 
 
 def get_downloaded_version_hashes(manifest: Union[Path, str]) -> Iterable[str]:
@@ -34,7 +34,7 @@ def gen_doc_manifest_entry(pdoc: ProcessedDocument) -> ManifestEntry:
         origin=pdoc.origin,
         entrypoint=pdoc.entrypoint,
         version_hash=pdoc.document.version_hash,
-        md5_hash=pdoc.md5_hash,
+        document_hash=pdoc.document_hash,
         entry_type=EntryType.DOCUMENT,
     )
 
@@ -47,13 +47,13 @@ def gen_doc_metadata_manifest_entry(pdoc: ProcessedDocument) -> Optional[Manifes
     if not pdoc.metadata_file_path:
         return None
 
-    md5sum = md5_for_file(pdoc.metadata_file_path)
+    sha256_hash = sha256_for_file(pdoc.metadata_file_path)
     return ManifestEntry(
         filename=pdoc.metadata_file_path.name,  # type: ignore
         origin=f"metadata://{pdoc.local_file_path.name}",
         entrypoint=f"metadata://{pdoc.local_file_path.name}",
-        version_hash=md5sum,
-        md5_hash=md5sum,
+        version_hash=sha256_hash,
+        document_hash=sha256_hash,
         entry_type=EntryType.DOC_METADATA,
     )
 
@@ -65,13 +65,13 @@ def gen_job_metadata_manifest_entry(file: Union[str, Path]) -> ManifestEntry:
     """
     file_path = Path(file).resolve()
 
-    md5sum = md5_for_file(file_path)
+    sha256_hash = sha256_for_file(file_path)
     return ManifestEntry(
         filename=file_path.name,
         origin="metadata://",
         entrypoint="metadata://",
-        version_hash=md5sum,
-        md5_hash=md5sum,
+        version_hash=sha256_hash,
+        document_hash=sha256_hash,
         entry_type=EntryType.JOB_METADATA,
     )
 

@@ -25,19 +25,19 @@ class ManifestEntry:
         origin: str,
         entrypoint: str,
         version_hash: str,
-        md5_hash: str,
+        document_hash: str,
         entry_type: Union[EntryType, str],
     ):
         """
         :param filename: filename, as it appears in final output directory
         :param origin: most specific url known for retrieving related download item
         :param entrypoint: second most specific url for retrieving related download item (e.g. page url)
-        :param version_hash: sha256 hex hash of information uniquely identifying this publication
-        :param md5_hash: md5sum of the related file
+        :param version_hash: hash of information uniquely identifying this publication
+        :param md5_hash: hash of the related file
         :param entry_type: manifest EntryType - 'document', 'metadata', etc.
         """
         self.entry_type = EntryType(entry_type)
-        self.md5_hash = md5_hash
+        self.document_hash = document_hash
         self.version_hash = version_hash
         self.entrypoint = entrypoint
         self.origin = origin
@@ -104,7 +104,7 @@ class ProcessedDocument:
         local_file_path: Union[str, Path],
         metadata_file_path: Union[str, Path],
         normalized_filename: str,
-        md5_hash: str,
+        document_hash: str,
         origin: str,
         entrypoint: str,
     ):
@@ -113,7 +113,7 @@ class ProcessedDocument:
         :param local_file_path: actual local file path where processed document was placed
         :param metadata_file_path: Path to file containing json metadata, if any.
         :param normalized_filename: normalized filename - should be same as what's in local file
-        :param md5_hash: md5hash sum of the processed file
+        :param document_hash: hash of the processed file
         :param origin: most specific url to to get the processed file, e.g. direct download url
         :param entrypoint: second most specific url to get the processed file, e.g. page url
         path but collisions might happen, hence this attribute
@@ -122,7 +122,7 @@ class ProcessedDocument:
         self.local_file_path = Path(local_file_path).resolve()
         self.metadata_file_path = metadata_file_path
         self.normalized_filename = normalized_filename or self.local_file_path.name
-        self.md5_hash = md5_hash
+        self.document_hash = document_hash
         self.entrypoint = entrypoint
         self.origin = origin
 
