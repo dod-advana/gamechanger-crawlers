@@ -1,6 +1,5 @@
 import os
 import copy
-from tempfile import NamedTemporaryFile, TemporaryDirectory, mkdtemp
 from pathlib import Path
 import importlib
 import typing as t
@@ -25,7 +24,7 @@ SPIDER_MODULE_PREFIX = "gc_scrapy.spiders"
 FULL_MODULE_PREFIX = f"dataPipelines.gc_scrapy.{SPIDER_MODULE_PREFIX}"
 FULL_MODULE_PATH = os.path.join(*FULL_MODULE_PREFIX.split("."))
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 @click.group(context_settings=dict(max_content_width=120))
@@ -131,17 +130,22 @@ def crawl(
             logger.error(f"Unable to create {download_output_path.resolve()}")
             raise ose
     residual_manifest_path = Path(download_output_dir, "manifest.json")
-
+    new_manifest_path = Path(download_output_dir, "previous-manifest.json").resolve()
     if residual_manifest_path.exists():
-        new_manifest_path = Path(download_output_dir, "previous-manifest.json")
-        logger.debug(
-            "Encountered previously-created manifest in output directory; moving it prior to starting crawl."
+        logger.info(
+            f"Encountered previously-created manifest in output directory; appending to {new_manifest_path}."
         )
         logger.debug(
             f"{residual_manifest_path.resolve()} -> {new_manifest_path.resolve()}"
         )
-        os.rename(residual_manifest_path.resolve(), new_manifest_path.resolve)
-        previous_manifest_location = residual_manifest_path.resolve()
+        new_manifest_path.open("a").write(residual_manifest_path.open().read())
+        # logger.debug(residual_manifest_path.rename(new_manifest_path))
+
+    if not previous_manifest_location:
+        previous_manifest_location = new_manifest_path.resolve()
+        logger.info(
+            f"Defaulting to previous manifest path: {previous_manifest_location}"
+        )
 
     logger.debug(
         dedent(
@@ -171,7 +175,9 @@ def crawl(
     )
 
     settings = get_project_settings()
-    settings.set("FEED_URI", crawler_output_location)
+    settings.set(
+        "FEEDS", {crawler_output_location: {"format": "json", "overwrite": False}}
+    )
     runner = CrawlerRunner(settings)
 
     crawl_kwargs = {

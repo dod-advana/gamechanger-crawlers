@@ -1,0 +1,29 @@
+version: 1
+disable_existing_loggers: true
+formatters:
+  brief:
+    format: '%(levelname) | %(name)s :: %(levelname)s :: %(message)s'
+    datefmt: "%I:%M:%S"
+  verbose:
+    class: 'logging.Formatter'
+    format: '%(asctime)s | %(name)s :: %(levelname)s :: %(message)s'
+    datefmt: "%Y-%m-%dT%H:%M:%S"
+handlers:
+  console:
+    level: 'DEBUG'
+    class: 'logging.StreamHandler'
+    formatter: 'verbose'
+    stream : 'ext://sys.stdout'
+loggers:
+  dataPipelines:
+    level: 'INFO'
+    propagate: true
+  scrapy:
+    level: 'INFO'
+    propagate: true
+  tornado:
+    level: 'INFO'
+    propagate: true
+root:
+  handlers:
+    - 'console'

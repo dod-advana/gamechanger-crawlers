@@ -3,32 +3,32 @@
 import os
 from os.path import isfile, join
 import logging
-
+from logging.config import dictConfig as load_log_config_dict
+import codecs
 import subprocess
+import yaml
 
-logger = logging.getLogger()
+from pathlib import Path
+
+from dataPipelines import PACKAGE_PATH
+
+DEFAULT_LOG_CFG_PATH = join(PACKAGE_PATH, "log_cfg.yml")
 
 
-class LogFormatter(logging.Formatter):
+def setup_logging(log_cfg_path: str = DEFAULT_LOG_CFG_PATH, level: int = logging.INFO):
+    if Path(log_cfg_path).exists():
+        with codecs.open(log_cfg_path, "r", encoding="utf-8") as fd:
+            config = yaml.safe_load(fd)
+            str_level = logging.getLevelName(level)
+            for _logger in config["loggers"]:
+                config["loggers"][_logger]["level"] = str_level
+            load_log_config_dict(config)
+    elif level:
+        logging.basicConfig(level=level)
+    return logging.getLogger(__name__)
 
-    err_fmt = "ERROR: %(message)s"
-    dbg_fmt = "DEBUG: %(module)s: %(lineno)d: %(message)s"
-    info_fmt = "%(message)s"
 
-    def format(self, record):
-
-        # Replace the original format with one customized by logging level
-        if record.levelno == logging.DEBUG:
-            self._fmt = LogFormatter.dbg_fmt
-
-        elif record.levelno == logging.INFO:
-            self._fmt = LogFormatter.info_fmt
-
-        elif record.levelno == logging.ERROR:
-            self._fmt = LogFormatter.err_fmt
-
-        # Call the original formatter class to do the grunt work
-        return logging.Formatter.format(self, record)
+logger = logging.getLogger(__name__)
 
 
 def get_git_branch() -> str:
