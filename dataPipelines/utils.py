@@ -1,7 +1,7 @@
 """GAMECHANGER-crawler utilities
 """
 import os
-from os.path import isfile, join
+from os.path import isfile, join as join_path
 import logging
 from logging.config import dictConfig as load_log_config_dict
 import codecs
@@ -12,7 +12,7 @@ from pathlib import Path
 
 from dataPipelines import PACKAGE_PATH
 
-DEFAULT_LOG_CFG_PATH = join(PACKAGE_PATH, "log_cfg.yml")
+DEFAULT_LOG_CFG_PATH = join_path(PACKAGE_PATH, "log_cfg.yml")
 
 
 def setup_logging(log_cfg_path: str = DEFAULT_LOG_CFG_PATH, level: int = logging.INFO):
@@ -61,14 +61,14 @@ def verify_spiders_are_scheduled():
     spiders_in_dir = [
         f.replace(".py", "")
         for f in os.listdir(spiders_dir)
-        if isfile(join(spiders_dir, f)) and not f.startswith("_")
+        if isfile(join_path(spiders_dir, f)) and not f.startswith("_")
     ]
 
     schedule_dir = f"{PACKAGE_PATH}/../config/crawler_schedule"
     spiders_in_schedule = []
     for f_name in os.listdir(schedule_dir):
-        if isfile(join(schedule_dir, f_name)) and f_name.endswith(".txt"):
-            with open(join(schedule_dir, f_name)) as f:
+        if isfile(join_path(schedule_dir, f_name)) and f_name.endswith(".txt"):
+            with open(join_path(schedule_dir, f_name)) as f:
                 for line in f.readlines():
                     if line.strip():
                         spiders_in_schedule.append(line.strip().replace(".py", ""))
