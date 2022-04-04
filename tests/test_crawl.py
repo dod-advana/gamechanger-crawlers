@@ -1,9 +1,7 @@
-from click.testing import CliRunner
-from dataPipelines.gc_scrapy.cli import crawl
-from dataPipelines.cli import entry_point
+import pytest
 
-# from dataPipelines.cli import entry_point
-from dataPipelines.gc_scrapy.gc_scrapy.spiders.us_code_spider import USCodeSpider
+from click.testing import CliRunner
+from dataPipelines.gc_scrapy.cli import crawl, get_spider_class_references
 
 
 def create_test_manifest(path="test.json", manifest_data: list = []):
@@ -11,13 +9,17 @@ def create_test_manifest(path="test.json", manifest_data: list = []):
         f.writelines(manifest_data)
 
 
-def test_list_spiders():
-    runner = CliRunner()
-    with runner.isolated_filesystem():
-        result = runner.invoke(entry_point, ["crawl", "--list-spiders"])
-        print(result)
-        assert result.exit_code == 0
-        assert result.output == []
+@pytest.fixture(scope="module")
+def runner():
+    return CliRunner()
+
+
+def test_list_spiders(runner):
+    """Simple/naive test that counts number of spiders & compares that to number of return lines in crawl output cmd"""
+    result = runner.invoke(crawl, ["--list-spiders"])
+    number_spiders = len([s for s in get_spider_class_references()]) + 1
+    assert result.exit_code == 0
+    assert len(result.output.split("\n")) == number_spiders
 
 
 def test_test():

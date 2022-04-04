@@ -217,12 +217,12 @@ def get_spider_class_references(
             spider_path = f"{FULL_MODULE_PREFIX}.{spider_module_name}"
             spider_class = resolve_spider(spider_path)
             if not spider_class:
-                logger.info(f"Failed to resolve spider from {spider_path}, skipping")
+                logger.error(f"Failed to resolve spider from {spider_path}, skipping")
                 continue
             spider_class_refs.append(spider_class)
         except Exception as e:
-            logger.info(e)
-            logger.info(f"Error running spider at path{spider_path}")
+            logger.error(f"Error running spider at path: {spider_path}")
+            logger.error(e)
             raise e
     return spider_class_refs
 
