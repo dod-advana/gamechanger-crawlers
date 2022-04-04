@@ -4,8 +4,8 @@
 # Example: if `.git/` is in this file, then when `docker build --file <dockerfile-path> <repo-path>`
 # ... is issued, the `.git/` directory will be ignored and won't be exposed to `COPY` directives in Dockerfile
 
-# ignore git dir
-.git/
+# ignore git files/folders
+.git*
 
 # ignore tmp dirs
 tmp/
@@ -19,10 +19,14 @@ img/
 
 # transformer model cache
 transformer_cache*
+
+# dev/build/data artifacts 
 dist/
 .vscode
-.github/*
+**code-workspace**
 *venv*
 *egg-info*
 **build/
 **__pycache__**
+output/
+*Dockerfile*

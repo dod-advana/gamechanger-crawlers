@@ -97,13 +97,14 @@ ENV TMPDIR="/var/tmp"
 # https://github.com/python-poetry/poetry/discussions/1879#discussioncomment-216865
 # FROM ${BUILDER_BASE_IMAGE} as builder
 FROM base-image as builder
-
+ARG APP_UID=1000
+ARG APP_GID=1000
 # install poetry - respects $POETRY_VERSION & $POETRY_HOME
 RUN pip3 install poetry
 
 # copy project requirement files here to ensure they will be cached.
 WORKDIR $PYSETUP_PATH
-COPY . .
+COPY --chown=$APP_UID:$APP_GID . .
 
 # install runtime deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
 RUN poetry install --no-dev

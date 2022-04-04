@@ -12,6 +12,7 @@ readonly REPO_DIR="$( cd "$SCRIPT_PARENT_DIR/../"  >/dev/null 2>&1 && pwd )"
 source "${REPO_DIR}/config/constants.conf"
 echo "Building base image"
 docker build -f "$REPO_DIR/Dockerfile" \
+  --format=docker \
   --target=base-image \
   --build-arg BASE_IMAGE=${BASE_IMAGE} \
   --rm=false \
@@ -20,6 +21,7 @@ docker build -f "$REPO_DIR/Dockerfile" \
 
 echo "Building crawler prod image"
 docker build -f "$REPO_DIR/Dockerfile" \
+  --format=docker \
   --target=crawler-prod \
   --build-arg BASE_IMAGE=${BASE_IMAGE} \
   --rm=false \
@@ -28,6 +30,7 @@ docker build -f "$REPO_DIR/Dockerfile" \
 
 echo "Building crawler dev image"
 docker build -f "$REPO_DIR/Dockerfile" \
+  --format=docker \
   --target=crawler-dev \
   --build-arg BASE_IMAGE=${BASE_IMAGE} \
   --rm=false \
