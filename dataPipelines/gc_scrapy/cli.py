@@ -259,7 +259,7 @@ def queue_spiders_sequentially(
                 yield runner.crawl(spider, **crawl_kwargs)
             except Exception as e:
                 logger.error(f"ERROR RUNNING SPIDER CLASS: {spider}")
-                logger.debug(e, exc_info=True)
+                logger.debug(e, exc_info=True, stack_info=True)
     finally:
         logger.info("Done running spiders, stopping twisted.reactor and sending stats")
         try:
