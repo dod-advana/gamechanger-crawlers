@@ -10,7 +10,6 @@ formatters:
     datefmt: "%Y-%m-%dT%H:%M:%S"
 handlers:
   console:
-    level: 'INFO'
     class: 'logging.StreamHandler'
     formatter: 'verbose'
     stream : 'ext://sys.stdout'
