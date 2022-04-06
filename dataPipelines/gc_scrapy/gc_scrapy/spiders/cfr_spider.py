@@ -2,7 +2,7 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 import json
 import re
-
+import scrapy
 
 bill_version_re = re.compile(r'\((.*)\)')
 
@@ -17,6 +17,23 @@ class CFRSpider(GCSpider):
     start_urls = [
         "https://www.govinfo.gov/wssearch/rb/cfr?fetchChildrenOnly=0"
     ]
+
+    headers = {
+        "accept": "application/json",
+        "accept-language": "en-US,en;q=0.9",
+        "cache-control": "no-cache",
+        "content-type": "application/json",
+        "pragma": "no-cache",
+        "sec-ch-ua": "\" Not;A Brand\";v=\"99\", \"Google Chrome\";v=\"91\", \"Chromium\";v=\"91\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
+        "x-requested-with": "XMLHttpRequest"
+    }
+
+    def start_requests(self):
+        yield scrapy.Request(url=self.start_urls[0], method='GET', headers=self.headers)
 
     @staticmethod
     def get_visible_detail_url(package_id: str) -> str:
@@ -34,7 +51,7 @@ class CFRSpider(GCSpider):
 
         for year in years:
             year_url = f"https://www.govinfo.gov/wssearch/rb//cfr/{year}/?fetchChildrenOnly=1"
-            yield start_url_response.follow(url=year_url, callback=self.handle_title_nums)
+            yield start_url_response.follow(url=year_url, callback=self.handle_title_nums, headers=self.headers)
 
     def handle_title_nums(self, year_response):
         data = json.loads(year_response.body)
