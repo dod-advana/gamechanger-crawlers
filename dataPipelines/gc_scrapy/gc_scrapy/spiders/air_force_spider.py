@@ -132,6 +132,10 @@ class AirForcePubsSpider(GCSeleniumSpider):
                 doc_num = re.sub(doc_type, '', prod_num_new) if type_extract else re.sub(
                     doc_type, '', prod_num)
                 doc_name = ' '.join((doc_type, doc_num))
+            elif not type_pattern_start.findall(prod_num):
+                doc_type = "DAFGM"
+                doc_num = re.sub(doc_type, '', prod_num)
+                doc_name = ' '.join((doc_type, doc_num))
             else:
                 doc_type = type_pattern_start.findall(prod_num)[0]
                 # doc_type = 'AF '+doc_type if doc_type in ['HOI', 'QTP'] else doc_type
