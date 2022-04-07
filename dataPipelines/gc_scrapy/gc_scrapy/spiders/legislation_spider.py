@@ -2,7 +2,7 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 import json
 import re
-
+import scrapy
 
 bill_version_re = re.compile(r'\((.*)\)')
 
@@ -15,9 +15,26 @@ class LegislationSpider(GCSpider):
         "https://www.govinfo.gov/wssearch/rb/bills?fetchChildrenOnly=0"
     ]
 
+    headers = {
+        "accept": "application/json",
+        "accept-language": "en-US,en;q=0.9",
+        "cache-control": "no-cache",
+        "content-type": "application/json",
+        "pragma": "no-cache",
+        "sec-ch-ua": "\" Not;A Brand\";v=\"99\", \"Google Chrome\";v=\"91\", \"Chromium\";v=\"91\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
+        "x-requested-with": "XMLHttpRequest"
+    }
+
     # ex for code base specific_congress
     # specific_congress = '117'
     # can be added in command line with arg `-a specific_congress=117`
+
+    def start_requests(self):
+        yield scrapy.Request(url=self.start_urls[0], method='GET', headers=self.headers)
 
     @staticmethod
     def get_visible_detail_url(package_id: str) -> str:
@@ -50,7 +67,7 @@ class LegislationSpider(GCSpider):
         # as of May 2021, the site only goes back to the 103rd congress, so offset iteration isnt necessary
         specific_congress_url = self.get_browse_path_url(congress_num)
 
-        yield response.follow(url=specific_congress_url, callback=self.get_bill_type_data, meta={'congress_num': congress_num})
+        yield response.follow(url=specific_congress_url, callback=self.get_bill_type_data, meta={'congress_num': congress_num}, headers=self.headers)
 
     def get_bill_type_data(self, response):
         data = json.loads(response.body)
@@ -63,8 +80,7 @@ class LegislationSpider(GCSpider):
             # bill_type_url: 117/hconres = https://www.govinfo.gov/wssearch/rb//bills/117/hconres?fetchChildrenOnly=1&offset=0&pageSize=100
             bill_type_url = self.get_browse_path_url(bill_type_path)
 
-            yield response.follow(url=bill_type_url,
-                                  callback=self.get_bill_num_chunks)
+            yield response.follow(url=bill_type_url, callback=self.get_bill_num_chunks, headers=self.headers)
 
     def get_bill_num_chunks(self, response):
         data = json.loads(response.body)
@@ -77,7 +93,7 @@ class LegislationSpider(GCSpider):
         for bill_num_chunk_path in bill_num_chunks:
             bill_num_chunk_url = self.get_browse_path_url(bill_num_chunk_path)
 
-            yield response.follow(url=bill_num_chunk_url, callback=self.get_package_ids, meta={"offset": 0})
+            yield response.follow(url=bill_num_chunk_url, callback=self.get_package_ids, meta={"offset": 0}, headers=self.headers)
 
     def get_package_ids(self, response):
         data = json.loads(response.body)
@@ -90,14 +106,14 @@ class LegislationSpider(GCSpider):
 
         for package_id in packages:
             detail_url = self.get_api_detail_url(package_id)
-            yield response.follow(url=detail_url, callback=self.parse_detail_data)
+            yield response.follow(url=detail_url, callback=self.parse_detail_data, headers=self.headers)
 
         # iterate offset
         next_offset = current_offset + 1
         next_offset_url = response.url.replace(
             f'offset={current_offset}', f'offset={next_offset}')
 
-        yield response.follow(url=next_offset_url, callback=self.get_package_ids, meta={"offset": next_offset})
+        yield response.follow(url=next_offset_url, callback=self.get_package_ids, meta={"offset": next_offset}, headers=self.headers)
 
     def parse_detail_data(self, response):
         data = json.loads(response.body)
