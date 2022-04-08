@@ -33,7 +33,7 @@ SUPPORTED_FILE_EXTENSIONS = [
     "zip",
 ]
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class FileDownloadPipeline(MediaPipeline):
@@ -41,6 +41,7 @@ class FileDownloadPipeline(MediaPipeline):
         settings = dict(settings) if settings else {}
         settings.setdefault("MEDIA_ALLOW_REDIRECTS", True)
         super().__init__(download_func, settings)
+        logger.debug("FileDownloadPipeline loaded")
 
     previous_hashes = set()
     output_dir: Path
@@ -50,8 +51,7 @@ class FileDownloadPipeline(MediaPipeline):
 
     def open_spider(self, spider):
         super().open_spider(spider)
-        print("++ Initiating downloader for", spider.name)
-
+        logger.info(f"Opened {str(spider)}")
         self.output_dir = Path(spider.download_output_dir).resolve()
         self.job_manifest_path = Path(self.output_dir, "manifest.json")
 
@@ -86,7 +86,7 @@ class FileDownloadPipeline(MediaPipeline):
                 elif crawler_used == spider_name:
                     self.previous_hashes.add(jdoc["version_hash"])
 
-        logger.debug(
+        logger.info(
             f"Previous manifest loaded, will filter {len(self.previous_hashes)} hashes"
         )
 
@@ -117,14 +117,14 @@ class FileDownloadPipeline(MediaPipeline):
         doc_name = item["doc_name"]
         if item["version_hash"] in self.previous_hashes:
             # dont download anything just send item to crawl output
-            print(
+            logger.debug(
                 f"Skipping download of {item.get('doc_name')} because it was in previous_hashes"
             )
             info.spider.increment_in_previous_hashes()
             return item
 
         if item["cac_login_required"]:
-            print(
+            logger.debug(
                 f"Skipping download of {item.get('doc_name')} because it requires cac login"
             )
             info.spider.increment_required_cac()
@@ -154,9 +154,9 @@ class FileDownloadPipeline(MediaPipeline):
                 else:
                     yield scrapy.Request(url, meta=meta)
             except Exception as probably_url_error:
-                print("~~~~ REQUEST ERR", probably_url_error)
+                logger.error("~~~~ REQUEST ERR", probably_url_error)
         else:
-            print(f"No supported downloadable item for {item['doc_name']}")
+            logger.debug(f"No supported downloadable item for {item['doc_name']}")
             return item
 
     def media_downloaded(self, response, request, info):
@@ -172,9 +172,9 @@ class FileDownloadPipeline(MediaPipeline):
 
     def media_failed(self, failure, request, info):
         # I have never seen this called
-        print("**** MEDIA FAILED")
-        print(failure)
-        print(info.spider)
+        logger.error("**** MEDIA FAILED")
+        logger.error(failure)
+        logger.error(info.spider)
         return (False, failure, "Pipeline Media Request Failed")
 
     def add_to_dead_queue(self, item, reason):
@@ -197,7 +197,7 @@ class FileDownloadPipeline(MediaPipeline):
                 f.write("\n")
 
             except Exception as e:
-                print("Failed to write to dead_queue file", path, e)
+                logger.error("Failed to write to dead_queue file", path, e)
 
     def add_to_manifest(self, item):
 
@@ -263,7 +263,7 @@ class FileDownloadPipeline(MediaPipeline):
                         file_downloads.append(file_download_path)
 
                     except Exception as e:
-                        print(
+                        logger.error(
                             "Failed to write file to", file_download_path, "Error:", e
                         )
 
@@ -272,7 +272,7 @@ class FileDownloadPipeline(MediaPipeline):
                         f.write(json.dumps(dict(item)))
 
                     except Exception as e:
-                        print("Failed to write metadata", file_download_path, e)
+                        logger.error("Failed to write metadata", file_download_path, e)
 
         # if nothing was downloaded so don't add to manifest, just return item to crawl output
         if file_downloads:
@@ -284,6 +284,7 @@ class FileDownloadPipeline(MediaPipeline):
 class DeduplicaterPipeline:
     def __init__(self):
         self.ids_seen = set()
+        logger.debug("DeduplicaterPipeline loaded")
 
     def process_item(self, item, spider):
         if not item["doc_name"]:
@@ -360,6 +361,7 @@ class ValidateJsonPipeline:
             raise TypeError("arg: validator must be of type SchemaValidator")
 
         self.validator = validator
+        logger.debug("ValidateJsonPipeline loaded")
 
     def process_item(self, item, spider):
         item_dict = ItemAdapter(item).asdict()

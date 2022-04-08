@@ -2,6 +2,7 @@ version: 1
 disable_existing_loggers: true
 formatters:
   brief:
+    class: 'logging.Formatter'
     format: '%(levelname) | %(name)s :: %(levelname)s :: %(message)s'
     datefmt: "%I:%M:%S"
   verbose:
@@ -18,6 +19,9 @@ loggers:
     level: 'INFO'
     propagate: true
   scrapy:
+    level: 'INFO'
+    propagate: true
+  scrapy.crawler:
     level: 'INFO'
     propagate: true
   tornado:

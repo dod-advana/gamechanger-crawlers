@@ -3,29 +3,7 @@
 import os
 from os.path import isfile, join as join_path
 import logging
-from logging.config import dictConfig as load_log_config_dict
-import codecs
 import subprocess
-import yaml
-
-from pathlib import Path
-
-from dataPipelines import PACKAGE_PATH
-
-DEFAULT_LOG_CFG_PATH = join_path(PACKAGE_PATH, "log_cfg.yml")
-
-
-def setup_logging(log_cfg_path: str = DEFAULT_LOG_CFG_PATH, level: int = logging.INFO):
-    if Path(log_cfg_path).exists():
-        with codecs.open(log_cfg_path, "r", encoding="utf-8") as fd:
-            config = yaml.safe_load(fd)
-            str_level = logging.getLevelName(level)
-            for _logger in config["loggers"]:
-                config["loggers"][_logger]["level"] = str_level
-            load_log_config_dict(config)
-    elif level:
-        logging.basicConfig(level=level)
-    return logging.getLogger(__name__)
 
 
 logger = logging.getLogger(__name__)

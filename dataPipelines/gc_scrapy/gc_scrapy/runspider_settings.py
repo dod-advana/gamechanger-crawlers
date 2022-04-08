@@ -14,7 +14,6 @@ general_settings = {
     },
     # 'STATS_DUMP': False,
     "ROBOTSTXT_OBEY": False,
-    "LOG_LEVEL": "INFO",
 }
 
 selenium_settings = {
