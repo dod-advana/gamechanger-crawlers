@@ -31,9 +31,9 @@ selenium_settings = {
     ],
     "DOWNLOADER_MIDDLEWARES": {
         **general_settings["DOWNLOADER_MIDDLEWARES"],
-        #                                                                              make sure the values are not clashing
+        # make sure the values are not clashing, selenium middleware to load last by setting priority greater than max of general settings downloader middleware
         "dataPipelines.gc_scrapy.gc_scrapy.downloader_middlewares.SeleniumMiddleware": max(
-            {k: v or 0 for (
+            {k: v or 15000 for (
                 k, v) in general_settings["DOWNLOADER_MIDDLEWARES"].items()}.values()
         ) +
         1,

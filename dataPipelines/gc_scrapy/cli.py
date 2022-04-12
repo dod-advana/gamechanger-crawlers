@@ -228,8 +228,8 @@ def get_spider_class_references(
 
 
 def send_stats(all_stats: dict) -> None:
-    branch = get_git_branch()
-    msg = f"[STATS] Crawler ran on branch: {branch}"
+    # branch = get_git_branch()
+    msg = f"[STATS] Crawler ran"
 
     for spider_name, stats in all_stats.items():
         msg += f"\n {spider_name}"
