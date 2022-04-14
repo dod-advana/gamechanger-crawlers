@@ -2,7 +2,7 @@ import click
 from dataPipelines.gc_downloader.cli import download, add_to_manifest
 from dataPipelines.gc_scrapy.cli import crawl
 from dataPipelines.scanner import scan
-from dataPipelines.utils import setup_logging
+from dataPipelines.logging import setup_logging
 import logging
 
 

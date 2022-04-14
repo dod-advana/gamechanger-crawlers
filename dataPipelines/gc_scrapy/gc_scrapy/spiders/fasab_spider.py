@@ -1,11 +1,12 @@
 import scrapy
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
+from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
 import datetime
 import re
 
 
-class BrickSetSpider(scrapy.Spider):
+class BrickSetSpider(GCSpider):
     name = "FASAB"
     allowed_domains = ["fasab.gov"]
     file_type = "pdf"

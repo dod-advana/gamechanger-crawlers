@@ -86,6 +86,12 @@ RUN curl https://dl-ssl.google.com/linux/linux_signing_key.pub -o /etc/pki/rpm-g
     && rm -rf /var/cache/yum \
     && rm /etc/pki/rpm-gpg/*-8 \
     && rm /etc/yum.repos.d/gc-*.repo
+# install chromedriver
+RUN \
+    wget -O /tmp/chromedriver.zip \
+    https://chromedriver.storage.googleapis.com/$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip \
+    && unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/ \
+    && rm /tmp/chromedriver.zip
 
 RUN freshclam --update-db=daily
 

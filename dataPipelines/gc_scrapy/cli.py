@@ -117,7 +117,8 @@ def crawl(
     dont_filter_previous_hashes,
 ):
     """Execute given spider(s) and store metadata for downloading and cataloging."""
-
+    if isinstance(spiders, tuple):
+        spiders = list(spiders)
     # perform logic for creating any missing directories/paths here
     download_output_path = Path(download_output_dir)
     if not download_output_path.exists():
@@ -201,6 +202,7 @@ def get_spider_class_references(
 ) -> list:
     """Get all spiders from module, or from a given (optional) spider file."""
     if spiders_file_location:
+        print((spiders))
         spiders += [
             spider_spec.strip()
             for spider_spec in open(Path(spiders_file_location)).readlines()
@@ -228,8 +230,8 @@ def get_spider_class_references(
 
 
 def send_stats(all_stats: dict) -> None:
-    branch = get_git_branch()
-    msg = f"[STATS] Crawler ran on branch: {branch}"
+    # branch = get_git_branch()
+    msg = f"[STATS] Crawler ran"
 
     for spider_name, stats in all_stats.items():
         msg += f"\n {spider_name}"

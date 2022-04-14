@@ -54,6 +54,7 @@ pytest-subtests = "*"
 pytest-timeout = "*"
 python-semantic-release = "*"
 isort = "*"
+debugpy = "*"
 [tool.poetry.scripts]
 gc = "dataPipelines.cli:entry_point"
 gc-crawl = "dataPipelines.gc_scrapy.cli:cli"
