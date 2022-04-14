@@ -151,3 +151,4 @@ testoutput/
 **workspace.code-workspace
 output/
 config/trusted-ca-certs
+*.pem
