@@ -1,0 +1,110 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "airflow-jobs"
+version = "0.1.0"
+packages = [
+    { include = "dags" }
+]
+include = []
+description = "GAMECHANGER airflow job definitions."
+authors = ["GAMECHANGER Developers <osd.pentagon.ousd-c.mbx.advana-gamechanger@mail.mil>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/dod-advana/gamechanger-crawlers"
+repository = "https://github.com/dod-advana/gamechanger-crawlers"
+documentation = "https://github.com/dod-advana/gamechanger-crawlers"
+classifiers = [
+    "Framework :: Pytest",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.7",
+]
+
+
+# only hard dependencies here, let poetry manage child dependencies
+[tool.poetry.dependencies]
+python = "^3.7"
+airflow = "^2.2.5"
+kubernetes = "^23.3.0"
+
+# dev dependencies here
+[tool.poetry.dev-dependencies]
+black = "^22.1.0"
+flake8 = "^4.0.1"
+pytest = "*"
+pytest-randomly = "*"
+pytest-socket = "*"
+pytest-subtests = "*"
+pytest-timeout = "*"
+python-semantic-release = "*"
+isort = "*"
+debugpy = "*"
+[tool.poetry.scripts]
+# gc = "dataPipelines.cli:entry_point"
+# gc-crawl = "dataPipelines.gc_scrapy.cli:cli"
+# gc-download = "dataPipelines.gc_downloader.cli:cli"
+# gc-scan = "dataPipelines.scanner:cli"
+
+# auto-formatter
+[tool.black]
+# https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html?highlight=flake8
+# match this with what's in ./tox.ini
+line-length = 88
+exclude = '''
+/(
+    \.git
+    | venv
+    | \.venv
+    | build
+    | dist
+    | _build
+)/
+'''
+
+# more auto-formatting, specific to imports
+[tool.isort]
+# 
+profile = "black"
+src_paths = [
+    "dags"
+]
+
+
+# [tool.coverage.report]
+# exclude_lines = [
+#     'if TYPE_CHECKING:',
+#     'if __name__ == "__main__":'
+# ]
+# fail_under = 100
+
+# [tool.coverage.run]
+# branch = true
+# omit = [
+#     "venv/*"
+# ]
+
+
+[tool.pytest.ini_options]
+# addopts = ""
+# markers = []
+# python_functions = "should_*"
+# testpaths = [
+#     "tests"
+# ]
+
+# https://python-semantic-release.readthedocs.io/en/latest/configuration.html#config-version-variable
+# https://mestrak.com/blog/semantic-release-with-python-poetry-github-actions-20nn
+# [tool.semantic_release]
+# branch = "main"
+# upload_to_pypi = false
+# upload_to_release = true
+# version_toml = "pyproject.toml:tool.poetry.version"
+# prerelease_tag = "beta"
+# build_command = "poetry build"
