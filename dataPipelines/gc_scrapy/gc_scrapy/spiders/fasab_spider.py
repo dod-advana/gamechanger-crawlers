@@ -7,7 +7,7 @@ from dataPipelines.gc_scrapy.gc_scrapy.utils import abs_url
 import re
 
 
-class BrickSetSpider(scrapy.Spider):
+class BrickSetSpider(GCSpider):
     name = 'FASAB'
     allowed_domains = ['fasab.gov']
     file_type = "pdf"
