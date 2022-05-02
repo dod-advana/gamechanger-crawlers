@@ -23,7 +23,7 @@ class MARADMINSpider(GCSeleniumSpider):
     data_source = 'Marine Corps Publications Electronic Library'
     source_title = 'Marine Administrative Message'
 
-    start_urls = ['https://www.marines.mil/News/Messages/MARADMINS/Customstatus/4000/']
+    start_urls = ['https://www.marines.mil/News/Messages/MARADMINS/']
     allowed_domains = ['marines.mil/']
 
     cac_login_required = False
@@ -47,7 +47,10 @@ class MARADMINSpider(GCSeleniumSpider):
                     doc_num = doc_row.find_element_by_class_name('msg-num.msg-col a').get_attribute("textContent")
                     publication_date = doc_row.find_element_by_class_name('msg-pub-date.msg-col').get_attribute("textContent")
                     web_url = doc_row.find_element_by_class_name('msg-title.msg-col a').get_attribute('href')
+                    doc_status = doc_row.find_element_by_class_name('msg-status.msg-col').get_attribute('textContent').strip()
                     doc_name = doc_type + " " + doc_num.replace("/", "-") + " " + doc_title
+
+                    is_revoked = doc_status != 'Active'
 
                     version_hash_fields = {
                         "document_number": doc_num,
@@ -75,6 +78,7 @@ class MARADMINSpider(GCSeleniumSpider):
                         source_title=self.source_title,
                         downloadable_items=downloadable_items,
                         version_hash_raw_data=version_hash_fields,
+                        is_revoked=is_revoked,
                     )
                     yield doc_item
                 except Exception as e:
