@@ -12,7 +12,7 @@ include = []
 description = "GAMECHANGER airflow job definitions."
 authors = ["GAMECHANGER Developers <osd.pentagon.ousd-c.mbx.advana-gamechanger@mail.mil>"]
 license = "MIT"
-readme = "README.md"
+# readme = "dags/README.md"
 homepage = "https://github.com/dod-advana/gamechanger-crawlers"
 repository = "https://github.com/dod-advana/gamechanger-crawlers"
 documentation = "https://github.com/dod-advana/gamechanger-crawlers"
@@ -30,15 +30,19 @@ classifiers = [
 
 # only hard dependencies here, let poetry manage child dependencies
 [tool.poetry.dependencies]
-python = "^3.7"
-airflow = "^2.2.5"
-kubernetes = "^23.3.0"
+python = ">=3.7,<3.9"
+apache-airflow = "2.*"
+kubernetes = "*"
+apache-airflow-providers-cncf-kubernetes = ">=3.1"
+apache-airflow-providers-amazon = "*"
 
 # dev dependencies here
 [tool.poetry.dev-dependencies]
-black = "^22.1.0"
-flake8 = "^4.0.1"
+markdown="3.3.4"
+black = ">=22.1.0"
+flake8 = ">=4.0.1"
 pytest = "*"
+pytest-helpers-namespace="*"
 pytest-randomly = "*"
 pytest-socket = "*"
 pytest-subtests = "*"
@@ -46,6 +50,8 @@ pytest-timeout = "*"
 python-semantic-release = "*"
 isort = "*"
 debugpy = "*"
+moto = "*"
+freezegun = "*"
 [tool.poetry.scripts]
 # gc = "dataPipelines.cli:entry_point"
 # gc-crawl = "dataPipelines.gc_scrapy.cli:cli"
