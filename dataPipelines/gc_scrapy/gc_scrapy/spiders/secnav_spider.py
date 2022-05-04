@@ -131,6 +131,7 @@ class SecNavSpider(GCSpider):
                     version_hash_raw_data=version_hash_fields,
                     source_page_url=self.source_page_url,
                     office_primary_resp=sponsor,
+                    is_revoked = status != 'Active',
                 )
 
                 self.enqueue(doc)
