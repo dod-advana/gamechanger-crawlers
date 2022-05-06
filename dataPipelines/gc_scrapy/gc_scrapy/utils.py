@@ -194,6 +194,16 @@ def safe_move_file(file_path: Union[Path, str], output_path: Union[Path, str], c
     return available_dest_path
 
 
+def extract_title_42_subfile_names(filename: str, parent_filename: str) -> str:
+    pdf_filename = filename
+    chapters, sections = re.findall(r"ch\d+to\d+|Secs\d+to\d+", pdf_filename)
+    ch_from, ch_to = re.findall(r"\d+", chapters)
+    sc_from, sc_to = re.findall(r"\d+", sections)
+    output_file, _ = re.findall(r"(.+)+\.([a-z]+)", parent_filename)[0]
+    output_filename = f"{output_file} - Ch{ch_from} to Ch{ch_to} - Sec{sc_from} to Sec{sc_to}.pdf"
+    return output_filename
+
+
 def unzip_docs_as_needed(input_dir: Union[Path, str], output_dir: Union[Path, str], doc_type: str) -> List[Path]:
     """Handles zipped/packaged download artifacts by expanding them into their individual components
 
@@ -218,14 +228,8 @@ def unzip_docs_as_needed(input_dir: Union[Path, str], output_dir: Union[Path, st
         unzipped_files.sort()  # TODO: this doesnt work ->> messy solution. sorting to make sure we grab the first in us_code
         for pdf_file in unzipped_files:
             if pdf_file.name.startswith("usc42"):
-                pdf_filename = pdf_file.name
-                chapters, sections = re.findall(r"ch\d+to\d+|Secs\d+to\d+", pdf_filename)
-                ch_from, ch_to = re.findall(r"\d+", chapters)
-                sc_from, sc_to = re.findall(r"\d+", sections)
-                output_file, _ = re.findall(r"(.+)+\.([a-z]+)", input_dir.name)[0]
-                output_dir = (
-                    output_dir.parent / f"{output_file} - Ch{ch_from} to Ch{ch_to} - Sec{sc_from} to Sec{sc_to}.pdf"
-                )
+                output_filename = extract_title_42_subfile_names(pdf_file.name, input_dir.name)
+                output_dir = output_dir.parent / output_filename
             new_ddoc = copy.deepcopy(output_dir)
             safe_move_file(file_path=pdf_file, output_path=output_dir)
             final_ddocs.append(new_ddoc)
