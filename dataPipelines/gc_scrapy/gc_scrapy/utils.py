@@ -195,6 +195,15 @@ def safe_move_file(file_path: Union[Path, str], output_path: Union[Path, str], c
 
 
 def extract_title_42_subfile_names(filename: str, parent_filename: str) -> str:
+    """Create unique filename for nested zipped PDFs for Title 42 use-case
+
+    Args:
+        filename (str): Nested zipped filename with extension, without parent directory path
+        parent_filename (str): Top level title document name, basically the prefix for all the nested zipped pdfs
+
+    Returns:
+        str: Newly formatted filename with the prefixed title, chapter range, and section range
+    """
     pdf_filename = filename
     chapters, sections = re.findall(r"ch\d+to\d+|Secs\d+to\d+", pdf_filename)
     ch_from, ch_to = re.findall(r"\d+", chapters)
