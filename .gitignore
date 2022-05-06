@@ -148,3 +148,4 @@ cython_debug/
 # TMP files
 tmp/
 testoutput/
+logs/
