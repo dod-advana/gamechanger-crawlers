@@ -137,7 +137,7 @@ class GCSpider(scrapy.Spider):
             applys text.replace('\u00a0', ' ').encode('ascii', 'ignore').decode('ascii').strip()
         """
 
-        return text.replace('\u00a0', ' ').replace('\u2019', "'").encode('ascii', 'ignore').decode('ascii').strip()
+        return text.replace('\u00a0', ' ').replace('\u2019', "'").replace("&#39;", "'").replace("&nbsp;", " ").encode('ascii', 'ignore').decode('ascii').strip()
 
     @staticmethod
     def ensure_full_href_url(href_raw: str, url_base: str) -> str:
