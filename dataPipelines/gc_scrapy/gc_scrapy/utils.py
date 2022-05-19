@@ -28,7 +28,7 @@ def str_to_sha256_hex_digest(_str: str) -> str:
 def dict_to_sha256_hex_digest(_dict: Dict[Any, Any]) -> str:
     """Converts dictionary to sha256 hex digest.
 
-      Sensitive to changes in presence and string value of any k/v pairs.
+    Sensitive to changes in presence and string value of any k/v pairs.
     """
     if not _dict and not isinstance(_dict, dict):
         raise ValueError("Arg should be a non-empty dictionary")
@@ -51,7 +51,7 @@ def is_valid_web_url(url_string: str) -> bool:
         return all(
             [
                 # only certain schemes
-                result.scheme in ['http', 'https'],
+                result.scheme in ["http", "https"],
                 # fqdn without any spaces
                 result.netloc and not re.findall(r"\s", result.netloc),
                 # path without any spaces
@@ -71,6 +71,7 @@ def get_fqdn_from_web_url(url_string: str) -> str:
     """Parses out just the FQDN from the url"""
     return urlparse(url_string).netloc
 
+
 def get_available_path(desired_path: Union[str, Path]) -> Path:
     """Given desired path, returns one that uses desired path as prefix but won't overwrite existing files
     :param desired_path: proposed file/dir path
@@ -79,9 +80,7 @@ def get_available_path(desired_path: Union[str, Path]) -> Path:
     original_path = Path(desired_path)
     base_dir = Path(original_path).parent
     base_ext = original_path.suffix
-    base_name = original_path.name[
-        : (-len(base_ext) if original_path.is_file() else None)
-    ]
+    base_name = original_path.name[: (-len(base_ext) if original_path.is_file() else None)]
 
     if not base_dir.is_dir():
         raise ValueError(f"Base dir for path does not exist: {base_dir.absolute()}")
@@ -96,9 +95,7 @@ def get_available_path(desired_path: Union[str, Path]) -> Path:
     path_candidate = Path(desired_path)
     suffixes = suffix_generator()
 
-    _sanity_check_limit = (
-        100_000  # to avoid infinite loops if there are issues with file cleanup
-    )
+    _sanity_check_limit = 100_000  # to avoid infinite loops if there are issues with file cleanup
     while True:
         if path_candidate.exists():
             new_suffix = next(suffixes)
@@ -107,9 +104,7 @@ def get_available_path(desired_path: Union[str, Path]) -> Path:
         else:
             break
         if _sanity_check_limit <= 0:
-            raise RuntimeError(
-                "File name generator exceeded sensible number of retries."
-            )
+            raise RuntimeError("File name generator exceeded sensible number of retries.")
         _sanity_check_limit -= 1
 
     return path_candidate.resolve()
@@ -135,7 +130,7 @@ def iter_all_files(dir_path: Union[Path, str], recursive: bool = True) -> Iterab
 
 
 def unzip_all(zip_file: Union[Path, str], output_dir: str) -> List[Path]:
-    """ Unzip all items in the input file and place them inside output_dir
+    """Unzip all items in the input file and place them inside output_dir
     :param zip_file: path to zip file
     :param output_dir: path to desired output directory
 
@@ -168,6 +163,7 @@ def unzip_all(zip_file: Union[Path, str], output_dir: str) -> List[Path]:
 
     return unzipped_file_paths
 
+
 def safe_move_file(file_path: Union[Path, str], output_path: Union[Path, str], copy: bool = False) -> Path:
     """Safely moves/copies file to given directory
     by changing file suffix (sans extension) to avoid collisions, if necessary
@@ -186,7 +182,9 @@ def safe_move_file(file_path: Union[Path, str], output_path: Union[Path, str], c
     if not _file_path.is_file():
         raise ValueError(f"Given path is not a file: {_file_path!s}")
     if (not available_dest_path.parent.is_dir()) or (available_dest_path.is_file() and available_dest_path.exists()):
-        raise ValueError(f"Given path parent is not a directory or is a file that already exists: {available_dest_path!s}")
+        raise ValueError(
+            f"Given path parent is not a directory or is a file that already exists: {available_dest_path!s}"
+        )
 
     if copy:
         shutil.copy(_file_path, available_dest_path)  # type: ignore
@@ -194,6 +192,7 @@ def safe_move_file(file_path: Union[Path, str], output_path: Union[Path, str], c
         shutil.move(_file_path, available_dest_path)  # type: ignore
 
     return available_dest_path
+
 
 def unzip_docs_as_needed(input_dir: Union[Path, str], output_dir: Union[Path, str], doc_type: str) -> List[Path]:
     """Handles zipped/packaged download artifacts by expanding them into their individual components
@@ -216,7 +215,7 @@ def unzip_docs_as_needed(input_dir: Union[Path, str], output_dir: Union[Path, st
 
         # TODO: Add capibility to unzip multiple zips and add corresponding metadata for each
         # do just the first iteration to unzip only the first file
-        unzipped_files.sort()   # messy solution. sorting to make sure we grab the first in us_code
+        unzipped_files.sort()  # messy solution. sorting to make sure we grab the first in us_code
         for pdf_file in [unzipped_files[0]]:
             new_ddoc = copy.deepcopy(input_dir)
             safe_move_file(file_path=pdf_file, output_path=output_dir)
