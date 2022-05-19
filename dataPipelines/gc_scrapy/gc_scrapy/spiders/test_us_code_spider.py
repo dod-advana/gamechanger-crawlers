@@ -61,9 +61,9 @@ class TestUSCodeSpider(GCSpider):
         for unzipped_file in unzipped_files:
             version_hash_raw_data.update({"doc_name": unzipped_file.stem})
             item = DocItem(
-                doc_name=unzipped_file.name,
+                doc_name=unzipped_file.stem,
                 doc_num=doc_num,
-                doc_title=unzipped_file.name,
+                doc_title=unzipped_file.stem,
                 # crawler_used=self.name,
                 # source_page_url=response.meta["web_url"],
                 downloadable_items=downloadable_items,
