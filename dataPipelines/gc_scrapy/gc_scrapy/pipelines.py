@@ -250,6 +250,39 @@ class FileDownloadPipeline(MediaPipeline):
         return item
 
 
+class USCodeFileDownloadPipeline(FileDownloadPipeline):
+    def item_completed(self, results, item, info):
+        """Called per item when all media requests have been processed"""
+        # return item for crawler output if download was skipped
+        if not info.downloaded:
+            return item
+
+        # first in results is supposed to be ok status but it always returns true b/c 404 doesnt cause failure for some reason :(
+        # so I added it in the media downloaded part as a sub tuple in return
+        file_downloads = []
+        for (_, (okay, response, reason)) in results:
+            if not okay:
+                self.add_to_dead_queue(item, reason if reason else int(response.status))
+            else:
+                file_download_path = Path(info.spider.download_output_dir, item["doc_name"])
+                metadata_download_path = f"{file_download_path}.metadata"
+
+                file_downloads.append(file_download_path)
+
+                with open(metadata_download_path, "w") as f:
+                    try:
+                        f.write(json.dumps(dict(item)))
+
+                    except Exception as e:
+                        print("Failed to write metadata", file_download_path, e)
+
+        # if nothing was downloaded so don't add to manifest, just return item to crawl output
+        if file_downloads:
+            self.add_to_manifest(item)
+
+        return item
+
+
 class DeduplicaterPipeline:
     def __init__(self):
         self.ids_seen = set()
