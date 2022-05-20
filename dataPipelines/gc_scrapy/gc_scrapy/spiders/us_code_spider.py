@@ -35,6 +35,7 @@ class USCodeSpider(GCSpider):
         doc_num = response.meta["doc_num"]
         downloadable_items = response.meta["downloadable_items"]
         version_hash_raw_data = response.meta["version_hash_raw_data"]
+        doc_title = response.meta["doc_title"]
 
         if compression_type:
             file_download_path = Path(self.download_output_dir, output_file_name).with_suffix(f".{compression_type}")
@@ -56,7 +57,8 @@ class USCodeSpider(GCSpider):
 
         for unzipped_file in unzipped_files:
             version_hash_raw_data.update({"doc_name": unzipped_file.stem})
-            doc_title = unzipped_file.stem.split("-", 1)[1].strip()
+            if not ("Appendix" in doc_title):
+                doc_title = unzipped_file.stem.split("-", 1)[1].strip()
             item = DocItem(
                 doc_name=unzipped_file.stem,
                 doc_num=doc_num,
