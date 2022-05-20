@@ -71,12 +71,14 @@ class AirForcePubsSpider(GCSeleniumSpider):
                 )
 
             if has_next_page:
-                el.click()
-                WebDriverWait(driver, 5).until(
-                    EC.presence_of_element_located(
-                        (By.CSS_SELECTOR, self.table_selector)
-                    )
-                )
+                driver.execute_script("arguments[0].click();", WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, anchor_after_current_selector))))
+                # el.click()
+                # WebDriverWait(driver, 5).until(
+                # EC.element_to_be_clickable(
+                #     (By.CSS_SELECTOR, self.table_selector)
+                # )
+                # )
+                
 
     def parse_table(self, driver):
         webpage = Selector(text=driver.page_source)
