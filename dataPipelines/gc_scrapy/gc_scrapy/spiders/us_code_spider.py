@@ -51,16 +51,16 @@ class USCodeSpider(GCSpider):
                 if compression_type:
                     if compression_type.lower() == "zip":
                         unzipped_files = unzip_docs_as_needed(file_download_path, file_unzipped_path, doc_type)
-                        print(unzipped_files)
             except Exception as e:
                 print("Failed to write file to", file_download_path, "Error:", e)
 
         for unzipped_file in unzipped_files:
             version_hash_raw_data.update({"doc_name": unzipped_file.stem})
+            doc_title = unzipped_file.stem.split("-", 1)[1].strip()
             item = DocItem(
                 doc_name=unzipped_file.stem,
                 doc_num=doc_num,
-                doc_title=unzipped_file.stem,
+                doc_title=doc_title,
                 downloadable_items=downloadable_items,
                 version_hash_raw_data=version_hash_raw_data,
             )
@@ -122,6 +122,7 @@ class USCodeSpider(GCSpider):
                         "downloadable_items": downloadable_items,
                         "version_hash_raw_data": version_hash_fields,
                         "web_url": web_url,
+                        "doc_title": doc_title,
                     }
 
                     yield scrapy.Request(url=web_url, callback=self.parse_data, meta=meta)
