@@ -141,7 +141,7 @@ class NavyReserveSpider(GCSeleniumSpider):
                             doc_title=doc_title.strip(),
                             doc_num=doc_num.strip(),
                             doc_type=doc_type.strip(),
-                            display_org=display_org
+                            display_org=display_org,
                             downloadable_items=downloadable_items,
                             version_hash_raw_data=version_hash_fields,
                             source_page_url=driver.current_url
