@@ -12,6 +12,8 @@ json_re = re.compile("var WPQ3ListData = (?P<json>{.*?});", flags=re.M | re.S)
 
 class SecNavSpider(GCSpider):
     name = "secnav_pubs"
+    
+    display_org = "US Navy"
 
     start_urls = [
         "https://www.secnav.navy.mil/doni/default.aspx",
@@ -125,6 +127,7 @@ class SecNavSpider(GCSpider):
                     doc_title=doc_title,
                     doc_num=doc_num,
                     doc_type=doc_type,
+                    display_org = display_org,
                     publication_date=publication_date,
                     cac_login_required=cac_login_required,
                     downloadable_items=downloadable_items,
