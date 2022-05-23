@@ -14,6 +14,7 @@ class BupersSpider(GCSpider):
     ]
 
     doc_type = "BUPERSINST"
+    display_info = "US Navy"
     cac_login_required = False
 
     @staticmethod
@@ -196,6 +197,7 @@ class BupersSpider(GCSpider):
                     doc_name=doc_name,
                     doc_title=doc_title,
                     doc_num=doc_num,
+                    display_info=display_info,
                     publication_date=publication_date,
                     downloadable_items=downloadable_items,
                     version_hash_raw_data=version_hash_fields,
