@@ -304,7 +304,7 @@ class MarineCorpSpider(GCSpider):
                         doc_num=raw_data['doc_num'],
                         doc_type=raw_data['doc_type'],
                         doc_title=doc_title,
-                        display_org=display_org,
+                        display_org=self.display_org,
                         source_page_url=source_page_url,
                         version_hash_raw_data=version_hash_fields,
                         cac_login_required=cac_login_required
