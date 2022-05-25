@@ -127,7 +127,7 @@ class SecNavSpider(GCSpider):
                     doc_title=doc_title,
                     doc_num=doc_num,
                     doc_type=doc_type,
-                    display_org = display_org,
+                    display_org = self.display_org,
                     publication_date=publication_date,
                     cac_login_required=cac_login_required,
                     downloadable_items=downloadable_items,
