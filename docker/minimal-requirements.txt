@@ -15,5 +15,6 @@ selenium==3.141.0
 Scrapy==2.1.0
 six==1.15.0
 soupsieve==2.0.1
+Twisted==21.7.0
 urllib3==1.24.3
 zipp==3.1.0
