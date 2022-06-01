@@ -297,6 +297,7 @@ crawl = KubernetesPodOperator(namespace="airflow",
                                                 'runAsGroup': 1000,
                                                 'fsGroup': 1000},
                               get_logs=True,
+                              startup_timeout_seconds=400,
                               is_delete_operator_pod=True,
                               arguments=["crawl"],
                               volumes=[
