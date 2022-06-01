@@ -38,26 +38,26 @@ schedules_volume_mount = k8s.V1VolumeMount(name='crawler-schedule-volume',
                                            sub_path=None,
                                            read_only=False
                                            )
-# cacert_path = '/app/tmp/ca-cert/'
-# cert_volume_mount = k8s.V1VolumeMount(name='ca-cert-volume',
-#                                            mount_path=cacert_path,
-#                                            sub_path=None,
-#                                            read_only=False
-#                                       )
+cacert_path = '/app/tmp/ca-cert/'
+cert_volume_mount = k8s.V1VolumeMount(name='ca-cert-volume',
+                                           mount_path=cacert_path,
+                                           sub_path=None,
+                                           read_only=False
+                                      )
 results_volume_config = k8s.V1PersistentVolumeClaimVolumeSource(
     claim_name='gc-crawler-output')
 
 schedule_volume_config = k8s.V1ConfigMapVolumeSource(
     name="crawler-schedules-configmap")
 
-# cert_volume_config = k8s.V1ConfigMapVolumeSource(
-#     name="certs-configmap")
+cert_volume_config = k8s.V1ConfigMapVolumeSource(
+    name="certs-configmap")
 results_volume = k8s.V1Volume(name='gc-crawler-output',
                               persistent_volume_claim=results_volume_config)
 schedule_volume = k8s.V1Volume(name='crawler-schedule-volume',
                                config_map=schedule_volume_config)
-# cert_volume = k8s.V1Volume(name='ca-cert-volume',
-#                            config_map=cert_volume_config)
+cert_volume = k8s.V1Volume(name='ca-cert-volume',
+                           config_map=cert_volume_config)
 
 
 # Downloads/Outputs Volume Mounts
@@ -105,9 +105,9 @@ def download_manifest():
     bucket = os.environ["BUCKET"]
     key = os.environ["KEY"]
     destination = os.environ["DESTINATION"]
-    # cert_path = os.environ["CACERT_PATH"]
+    cert_path = os.environ["CACERT_PATH"]
 
-    source_s3 = S3Hook(AWS_S3_CONN_ID)
+    source_s3 = S3Hook(AWS_S3_CONN_ID, verify=cert_path)
     obj = source_s3.get_key(key, bucket)
     obj.download_file(destination)
 
@@ -117,9 +117,9 @@ def backup_manifest(**context):
     AWS_S3_CONN_ID = os.environ["AWS_S3_CONN_ID"]
     bucket = os.environ["BUCKET"]
     key = os.environ["KEY"]
-    # cert_path = os.environ["CACERT_PATH"]
+    cert_path = os.environ["CACERT_PATH"]
 
-    source_s3 = S3Hook(AWS_S3_CONN_ID)
+    source_s3 = S3Hook(AWS_S3_CONN_ID, verify=cert_path)
 
     original_key_count = len(source_s3.list_keys(bucket_name=bucket))
     source_s3.copy_object(source_bucket_key=key, dest_bucket_key=key.split(".json")[0] + str(context['ts_nodash'] + ".json"),
@@ -135,9 +135,9 @@ def upload_manifest():
     bucket = os.environ["BUCKET"]
     key = os.environ["KEY"]
     filename = os.environ["FILENAME"]
-    # cert_path = os.environ["CACERT_PATH"]
+    cert_path = os.environ["CACERT_PATH"]
 
-    source_s3 = S3Hook(AWS_S3_CONN_ID)
+    source_s3 = S3Hook(AWS_S3_CONN_ID, verify=cert_path)
     # replaces the latest manifest in s3 as well
     source_s3.load_file(filename=filename, key=key,
                         bucket_name=bucket, replace=True)
@@ -219,7 +219,7 @@ def split_crawler_folder(**kwargs):
 
 # DAG definition
 dag = DAG(
-    dag_id="crawl-parallel-pipeline",
+    dag_id="crawl-parallel-pipeline-minio-mv-cluster",
     description="full crawl pipeline",
     default_args=args,
     schedule_interval=None,
@@ -255,12 +255,12 @@ download_manifest_task = PythonOperator(
                     k8s.V1Container(
                         name="base",
                         volume_mounts=[
-                            downloads_volume_mount],
+                            downloads_volume_mount, cert_volume_mount],
                         env_from=[download_env_from_source,
                                   aws_env_from_source]
                     )
                 ],
-                volumes=[downloads_volume],
+                volumes=[downloads_volume, cert_volume],
             )
         )
     })
@@ -368,11 +368,12 @@ scan_upload = KubernetesPodOperator.partial(namespace="jupyterhub",
                                             task_id="scanupload-task",
                                             get_logs=True,
                                             is_delete_operator_pod=True,
-                                            arguments=["scan"],
+                                            cmds=["/bin/sh", "-c", "echo 'alias aws='\"'\"'aws --endpoint-url " + credentials_dict['host'] +
+                                                  " '\"'\"'' | cat - /app/scripts/dlp-scanner.sh > temp && mv temp /app/scripts/dlp-scanner.sh && echo 'shopt -s expand_aliases' | cat - /app/scripts/dlp-scanner.sh > temp && mv temp /app/scripts/dlp-scanner.sh && gc scan"],
                                             volumes=[
-                                                downloads_volume],
+                                                downloads_volume, cert_volume],
                                             volume_mounts=[
-                                                downloads_volume_mount],
+                                                downloads_volume_mount, cert_volume_mount],
                                             dag=dag,
                                             do_xcom_push=False
                                             ).expand(env_vars=XComArg(partition_task))
@@ -412,10 +413,13 @@ backup_manifest_task = PythonOperator(
                 containers=[
                     k8s.V1Container(
                         name="base",
+                        volume_mounts=[cert_volume_mount],
                         env_from=[download_env_from_source,
                                   aws_env_from_source]
                     )
                 ],
+                volumes=[
+                    cert_volume],
             )
         )
 
@@ -483,13 +487,13 @@ upload_new_manifest_task = PythonOperator(task_id='upload_new_s3_manifest',
                                                           k8s.V1Container(
                                                               name="base",
                                                               volume_mounts=[
-                                                                  downloads_volume_mount],
+                                                                  downloads_volume_mount, cert_volume_mount],
                                                               env_from=[
                                                                   uploader_env_from_source, aws_env_from_source]
                                                           )
                                                       ],
                                                       volumes=[
-                                                          downloads_volume],
+                                                          downloads_volume, cert_volume],
                                                   )
                                               )
                                           })

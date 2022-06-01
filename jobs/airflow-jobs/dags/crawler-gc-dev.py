@@ -101,25 +101,23 @@ aws_env_from_source = k8s.V1EnvFromSource(
 
 def download_manifest():
     import os
-    AWS_S3_CONN_ID = os.environ["AWS_S3_CONN_ID"]
     bucket = os.environ["BUCKET"]
     key = os.environ["KEY"]
     destination = os.environ["DESTINATION"]
     # cert_path = os.environ["CACERT_PATH"]
 
-    source_s3 = S3Hook(AWS_S3_CONN_ID)
+    source_s3 = S3Hook()
     obj = source_s3.get_key(key, bucket)
     obj.download_file(destination)
 
 
 def backup_manifest(**context):
     import os
-    AWS_S3_CONN_ID = os.environ["AWS_S3_CONN_ID"]
     bucket = os.environ["BUCKET"]
     key = os.environ["KEY"]
     # cert_path = os.environ["CACERT_PATH"]
 
-    source_s3 = S3Hook(AWS_S3_CONN_ID)
+    source_s3 = S3Hook()
 
     original_key_count = len(source_s3.list_keys(bucket_name=bucket))
     source_s3.copy_object(source_bucket_key=key, dest_bucket_key=key.split(".json")[0] + str(context['ts_nodash'] + ".json"),
@@ -131,13 +129,12 @@ def backup_manifest(**context):
 
 def upload_manifest():
     import os
-    AWS_S3_CONN_ID = os.environ["AWS_S3_CONN_ID"]
     bucket = os.environ["BUCKET"]
     key = os.environ["KEY"]
     filename = os.environ["FILENAME"]
     # cert_path = os.environ["CACERT_PATH"]
 
-    source_s3 = S3Hook(AWS_S3_CONN_ID)
+    source_s3 = S3Hook()
     # replaces the latest manifest in s3 as well
     source_s3.load_file(filename=filename, key=key,
                         bucket_name=bucket, replace=True)
