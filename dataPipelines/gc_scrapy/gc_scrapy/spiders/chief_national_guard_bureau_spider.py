@@ -16,6 +16,7 @@ class CNGBISpider(GCSpider):
 
     file_type = "pdf"
     doc_type = "CNGBI"
+    rotate_user_agent = True
 
     def parse(self, response):
         rows = response.css('div.WordSection1 table.MsoNormalTable tbody tr')

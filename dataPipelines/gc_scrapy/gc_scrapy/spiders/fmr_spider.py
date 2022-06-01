@@ -12,6 +12,7 @@ class FmrSpider(GCSpider):
     download_base_url = 'https://comptroller.defense.gov/'
     doc_type = "DoDFMR"
     cac_login_required = False
+    rotate_user_agent = True
 
     seen = set({})
 

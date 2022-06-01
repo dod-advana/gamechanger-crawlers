@@ -17,6 +17,7 @@ class SASCSpider(GCSpider):
     start_urls = [base_url]
 
     randomly_delay_request = True
+    rotate_user_agent = True
 
     def parse(self, _):
         pages_parser_map = [

@@ -13,6 +13,7 @@ class BrickSetSpider(GCSpider):
     file_type = "pdf"
     start_urls = ['https://fasab.gov/accounting-standards/document-by-chapter/']
     start_url = 'https://fasab.gov/accounting-standards/document-by-chapter/'
+    rotate_user_agent = True
 
     def parse(self, response):
         SET_SELECTOR = 'li'

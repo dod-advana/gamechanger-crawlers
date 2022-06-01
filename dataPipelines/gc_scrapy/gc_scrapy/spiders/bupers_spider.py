@@ -16,6 +16,7 @@ class BupersSpider(GCSpider):
     doc_type = "BUPERSINST"
     display_org = "US Navy"
     cac_login_required = False
+    rotate_user_agent = True
 
     @staticmethod
     def clean(text):

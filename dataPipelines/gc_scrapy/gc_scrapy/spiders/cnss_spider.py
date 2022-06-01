@@ -82,6 +82,7 @@ class CNSSSpider(GCSpider):
         ("https://www.cnss.gov/CNSS/issuances/Supplemental.cfm", supp),
         ("https://www.cnss.gov/CNSS/issuances/historicalIndex.cfm", historical),
     ]
+    rotate_user_agent = True
 
     def parse(self, response):
         # do nothing on start url

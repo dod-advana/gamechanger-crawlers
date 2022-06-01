@@ -12,6 +12,7 @@ class StigSpider(GCSpider):
     download_base_url = 'https://public.cyber.mil/'
     doc_type = "STIG"
     cac_login_required = False
+    rotate_user_agent = True
     source_title = "Security Technical Implementation Guides"
     display_org = "Defense Information Systems Agency"
     data_source = "Federal Registry"

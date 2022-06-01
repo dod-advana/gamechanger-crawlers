@@ -18,6 +18,7 @@ class MilpersmanSpider(GCSpider):
     start_urls = ['https://www.mynavyhr.navy.mil/References/MILPERSMAN/']
     doc_type = "MILPERSMAN"
     cac_login_required = False
+    rotate_user_agent = True
 
     def parse(self, response):
 

@@ -20,6 +20,7 @@ class FarSubpartSpider(GCSeleniumSpider):
         'https://www.acquisition.gov/far'
     ]
     cac_login_required = False
+    randomly_delay_request = True
     doc_type = "FAR"
 
     def parse(self, response: TextResponse):

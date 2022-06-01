@@ -17,6 +17,7 @@ class DHASpider(GCSpider):
     file_type = "pdf"
     cac_login_required = False
     randomly_delay_request = True
+    rotate_user_agent = True
 
     @staticmethod
     def get_display(doc_type):

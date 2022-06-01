@@ -13,6 +13,7 @@ class DCMASpider(GCSpider):
     ]
 
     cac_login_required = False
+    rotate_user_agent = True
 
     def parse(self, response):
         sections = response.css('div#accGen div table tbody')
