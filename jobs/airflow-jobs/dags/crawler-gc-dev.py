@@ -370,7 +370,9 @@ scan_upload = KubernetesPodOperator.partial(namespace="airflow",
                                             volume_mounts=[
                                                 downloads_volume_mount],
                                             dag=dag,
-                                            do_xcom_push=False
+                                            do_xcom_push=False,
+                                            annotations={
+                                                "iam.amazonaws.com/role": "advana/k8s/s3.wildcard"},
                                             ).expand(env_vars=XComArg(partition_task))
 
 combine_manifests = BashOperator(
