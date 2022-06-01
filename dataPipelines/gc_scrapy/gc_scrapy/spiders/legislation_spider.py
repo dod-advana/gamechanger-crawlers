@@ -10,6 +10,7 @@ bill_version_re = re.compile(r'\((.*)\)')
 class LegislationSpider(GCSpider):
     name = "legislation_pubs"
     cac_login_required = False
+    rotate_user_agent = True
 
     start_urls = [
         "https://www.govinfo.gov/wssearch/rb/bills?fetchChildrenOnly=0"

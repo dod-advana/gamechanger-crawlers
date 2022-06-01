@@ -10,6 +10,7 @@ class OmbSpider(GCSpider):
     source_title = "Office of Management and Budget Memoranda"
     display_org = "OMB"
     data_source = "Executive Office of the President"
+    rotate_user_agent = True
 
     start_urls = [
         'https://www.whitehouse.gov/omb/information-for-agencies/memoranda/'

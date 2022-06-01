@@ -15,6 +15,8 @@ class ExecutiveOrdersSpider(GCSpider):
     ]
     cac_login_required = False
     doc_type = "EO"
+    rotate_user_agent = True
+    randomly_delay_request = True
 
     @staticmethod
     def make_doc_item_from_dict(doc: dict) -> DocItem:

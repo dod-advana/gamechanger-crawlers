@@ -16,6 +16,7 @@ class ArmyReserveSpider(GCSpider):
 
     file_type = "pdf"
     cac_login_required = False
+    rotate_user_agent = True
 
     section_selector = "div.DnnModule.DnnModule-ICGModulesExpandableTextHtml div.Normal"
 

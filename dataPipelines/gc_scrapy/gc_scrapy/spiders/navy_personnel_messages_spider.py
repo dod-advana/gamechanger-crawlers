@@ -22,6 +22,7 @@ class TRADOCSpider(GCSpider):
     ]
 
     cac_login_required = False
+    rotate_user_agent = True
 
     def parse(self, response: TextResponse):
         links = response.css('div.afMenuLinkHeader > a::attr(href)').getall()

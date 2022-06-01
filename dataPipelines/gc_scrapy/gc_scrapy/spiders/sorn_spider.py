@@ -10,6 +10,7 @@ class SornSpider(GCSpider):
         "https://www.federalregister.gov/api/v1/agencies/defense-department"
     ]
     cac_login_required = False
+    rotate_user_agent = True
     doc_type = "SORN"
     display_org = "Dept. of Defense"
     display_source = "Federal Registry"

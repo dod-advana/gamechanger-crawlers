@@ -20,6 +20,7 @@ class ArmySpider(GCSpider):
 
     base_url = 'https://armypubs.army.mil'
     pub_url = base_url + '/ProductMaps/PubForm/'
+    rotate_user_agent = True
 
     def parse(self, response):
         do_not_process = ["/ProductMaps/PubForm/PB.aspx",

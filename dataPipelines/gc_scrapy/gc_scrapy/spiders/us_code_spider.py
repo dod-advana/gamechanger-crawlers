@@ -21,6 +21,7 @@ class USCodeSpider(GCSpider):
     start_urls = ["https://uscode.house.gov/download/download.shtml"]
     doc_type = "Title"
     cac_login_required = False
+    rotate_user_agent = True
 
     GCSpider.custom_settings["ITEM_PIPELINES"][
         "dataPipelines.gc_scrapy.gc_scrapy.pipelines.USCodeFileDownloadPipeline"

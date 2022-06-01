@@ -13,6 +13,7 @@ class JcsPubsSpider(GCSpider):
 
     cac_required_options = [
         'CAC', 'PKI certificate required', 'placeholder', 'FOUO']
+    rotate_user_agent = True
 
     def parse(self, response):
         doc_links = [

@@ -10,6 +10,7 @@ import base64
 
 class NatoSpider(GCSpider):
     name = "nato_stanag"
+    rotate_user_agent = True
 
     source_page_url = "https://nso.nato.int/nso/nsdd/ListPromulg.html"
     start_urls = [

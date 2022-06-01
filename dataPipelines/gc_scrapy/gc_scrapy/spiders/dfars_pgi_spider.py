@@ -14,6 +14,7 @@ class DoDSpider(GCSpider):
     allowed_domains = ['www.acq.osd.mil']
 
     cac_login_required = False
+    rotate_user_agent = True
 
     def parse(self, response: TextResponse):
         options = response.css('select.tocselect option::text')

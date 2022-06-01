@@ -11,6 +11,7 @@ class IcPoliciesSpider(GCSpider):
     start_urls = [
         'https://www.dni.gov/index.php/what-we-do/ic-policies-reports/'
     ]
+    rotate_user_agent = True
 
     def parse(self, response):
         base_url = 'https://www.dni.gov'

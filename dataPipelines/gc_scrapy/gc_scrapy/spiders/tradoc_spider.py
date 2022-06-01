@@ -24,6 +24,7 @@ class TRADOCSpider(GCSpider):
     ]
 
     cac_login_required = False
+    rotate_user_agent = True
 
     _doc_num_rgx = re.compile(r'^(?P<num>[-0-9a-zA-Z]+)?(?: with )?(?:Change (?P<change>\d+))?$',
                               re.IGNORECASE)

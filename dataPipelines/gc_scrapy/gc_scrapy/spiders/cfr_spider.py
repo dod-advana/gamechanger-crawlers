@@ -13,6 +13,7 @@ class CFRSpider(GCSpider):
     display_source = "U.S. Publishing Office"
 
     cac_login_required = False
+    rotate_user_agent = True
     visible_start = "https://www.govinfo.gov/app/collection/cfr"
     start_urls = [
         "https://www.govinfo.gov/wssearch/rb/cfr?fetchChildrenOnly=0"
