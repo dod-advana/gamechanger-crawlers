@@ -297,13 +297,12 @@ crawl = KubernetesPodOperator(namespace="airflow",
                                                 'runAsGroup': 1000,
                                                 'fsGroup': 1000},
                               get_logs=True,
-                              startup_timeout_seconds=400,
                               is_delete_operator_pod=True,
                               arguments=["crawl"],
                               volumes=[
-                                  results_volume, schedule_volume, downloads_volume],
+                                  schedule_volume, downloads_volume],
                               volume_mounts=[
-                                  results_volume_mount, schedules_volume_mount, downloads_volume_mount],
+                                  schedules_volume_mount, downloads_volume_mount],
                               dag=dag,
                               do_xcom_push=False,
                               )
