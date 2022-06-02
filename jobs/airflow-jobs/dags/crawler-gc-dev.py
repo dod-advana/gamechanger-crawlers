@@ -14,6 +14,9 @@ scan_concurrency = int(Variable.get("SCAN_CONCURRENCY"))
 scanner_image = Variable.get("SCANNER_IMAGE")
 crawler_image = Variable.get("CRAWLER_IMAGE")
 busybox_image = Variable.get("BUSYBOX_IMAGE")
+partition_bucket = Variable.get("PARTITION_BUCKET")
+# no leading slash, have trailing slash
+partition_directory = Variable.get("PARTITION_DIRECTORY")
 # credentials_dict = Connection.get_connection_from_secrets(
 #     conn_id="S3_CONN").extra_dejson
 
@@ -152,6 +155,36 @@ def skip_scan_if_no_downloads():
         return "partition-data"
 
 
+def combine_s3_partitions_manifests():
+    import os
+    import shutil
+    source_s3 = S3Hook()
+    output_filepath = os.environ["GC_CRAWL_DOWNLOAD_OUTPUT_DIR"] + \
+        "/manifest.json"
+
+    # Read the keys from s3 bucket
+    paths = source_s3.list_keys(
+        bucket_name=partition_bucket, prefix=partition_directory)
+
+    counter = 0
+    # download files from s3 and save to /tmp
+    destinations = []
+    for key in paths:
+        if "manifest.json" in key:
+            manifest = source_s3.get_key(key, partition_bucket)
+            fp = "/tmp/" + str(counter) + "manifest.json"
+            manifest.download_file(fp)
+            destinations.append(fp)
+            counter += 1
+
+    # combine all manifests into one output file
+    with open(output_filepath, 'wb') as outfile:
+        for fname in destinations:
+            with open(fname, 'rb') as infile:
+                shutil.copyfileobj(infile, outfile)
+                outfile.write(b"\n")
+
+
 def partition(lst, n):
     division = len(lst) / float(n)
     return [lst[int(round(division * i)): int(round(division * (i + 1)))] for i in range(n)]
@@ -213,7 +246,82 @@ def split_crawler_folder(**kwargs):
     return scanner_env_list
 
 
-# DAG definition
+def chunks(lst, n):
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
+
+def clear_s3_partition_dir():
+    source_s3 = S3Hook()
+    object_keys = source_s3.list_keys(
+        bucket_name=partition_bucket, prefix=partition_directory)
+
+    if object_keys:
+        batches = chunks(object_keys, 1000)
+        for batch in batches:
+            source_s3.delete_objects(bucket=partition_bucket, keys=batch)
+
+
+def split_crawler_folder_s3(**kwargs):
+    import os
+    import random
+
+    num_partitions = kwargs["num_partitions"]
+    print("Num partitions: " + str(num_partitions))
+    download_dir = os.environ["GC_CRAWL_DOWNLOAD_OUTPUT_DIR"]
+    prev_manifest_fp = os.environ["GC_CRAWL_PREVIOUS_MANIFEST_LOCATION"]
+
+    # List of files in the download dir
+#     data = os.listdir(download_dir)
+    data = []
+    for entry in os.scandir(download_dir):
+        if (entry.is_dir()) | ("previous-manifest.json" in entry.name):
+            # skip directories and prev manifest
+            continue
+        # use entry.path to get the full path of this entry, or use
+        # entry.name for the base filename
+        data.append(entry.name)
+
+    # make the n subfolders and also create the list that contains dicts of env-vars for each parallel downstream scan task
+    subfolder_names = []
+    scanner_env_list = []
+    for i in range(num_partitions):
+
+        subfolder_path = os.path.join(download_dir, "partition" + str(i) + "/")
+
+        os.makedirs(subfolder_path, exist_ok=True)
+        print("Made: " + subfolder_path)
+        subfolder_names.append(subfolder_path)
+        env_var_dict = {"GC_SCAN_INPUT_PATH": subfolder_path}
+        scanner_env_list.append(env_var_dict)
+
+    # shuffle data to normalize the file size per subfolder
+    random.shuffle(data)
+
+    split_data = partition(data, num_partitions)
+
+    # each item in the dict will be a foldername : list [] of filenames
+    data_list_per_folder = dict(zip(subfolder_names, split_data))
+    print(data_list_per_folder)
+
+    source_s3 = S3Hook()
+    # Moving files to subfolders, except for previous-manifest.json
+    for folder, file_list in data_list_per_folder.items():
+        for f in file_list:
+            # skip previous-manifest upload
+            if "previous-manifest.json" in f:
+                # source_s3.load_file(filename=download_dir + "/" + f, key=partition_directory + "/" + f,
+                #                     bucket_name=partition_bucket, replace=True)
+                continue
+            # upload files to s3
+            source_s3.load_file(filename=download_dir + "/" + f, key=partition_directory + folder[1:] + "/" + f,
+                                bucket_name=partition_bucket, replace=True)
+            # shutil.move(download_dir + "/" + f, folder)
+            print("Uploaded to s3 partition: " + f)
+
+    return scanner_env_list
+
+    # DAG definition
 dag = DAG(
     dag_id="crawl-parallel-pipeline-gc-dev",
     description="full crawl pipeline",
@@ -330,33 +438,63 @@ downloads_check = BranchPythonOperator(task_id="downloads-check",
                                            )
                                        })
 
+purge_s3_partitions = PythonOperator(task_id="purge_s3_partitions",
+                                     python_callable=clear_s3_partition_dir,
+                                     dag=dag)
+
+
 # Partitioner goes here? Partition a RW-many PV, or upload files to S3 in partitions for downstream tasks.
 # Attaches crawler configmap as env
-partition_task = PythonOperator(task_id="partition-data",
-                                python_callable=split_crawler_folder,
-                                op_kwargs={"num_partitions": scan_concurrency},
-                                dag=dag,
-                                trigger_rule="all_success",
-                                executor_config={
-                                    "pod_override": k8s.V1Pod(
-                                        spec=k8s.V1PodSpec(
-                                            containers=[
-                                                k8s.V1Container(
-                                                    name="base",
-                                                    volume_mounts=[
-                                                        downloads_volume_mount],
-                                                    env_from=[crawler_env_from_source
-                                                              ]
-                                                )
-                                            ],
-                                            volumes=[
-                                                downloads_volume],
-                                        )
-                                    )
-                                })
+# partition_task = PythonOperator(task_id="partition-data",
+#                                 python_callable=split_crawler_folder,
+#                                 op_kwargs={"num_partitions": scan_concurrency},
+#                                 dag=dag,
+#                                 trigger_rule="all_success",
+#                                 executor_config={
+#                                     "pod_override": k8s.V1Pod(
+#                                         spec=k8s.V1PodSpec(
+#                                             containers=[
+#                                                 k8s.V1Container(
+#                                                     name="base",
+#                                                     volume_mounts=[
+#                                                         downloads_volume_mount],
+#                                                     env_from=[crawler_env_from_source
+#                                                               ]
+#                                                 )
+#                                             ],
+#                                             volumes=[
+#                                                 downloads_volume],
+#                                         )
+#                                     )
+#                                 })
+
+
+partition_to_s3_task = PythonOperator(task_id="partition-data",
+                                      python_callable=split_crawler_folder_s3,
+                                      op_kwargs={
+                                          "num_partitions": scan_concurrency},
+                                      dag=dag,
+                                      trigger_rule="all_success",
+                                      executor_config={
+                                          "pod_override": k8s.V1Pod(
+                                              spec=k8s.V1PodSpec(
+                                                  containers=[
+                                                      k8s.V1Container(
+                                                          name="base",
+                                                          volume_mounts=[
+                                                              downloads_volume_mount],
+                                                          env_from=[crawler_env_from_source
+                                                                    ]
+                                                      )
+                                                  ],
+                                                  volumes=[
+                                                      downloads_volume],
+                                              )
+                                          )
+                                      })
 
 # Run Parallel Scanners
-# scan downloaded crawled files then upload to s3
+# download s3 partitioned files then scan downloaded crawled files then reupload to s3 with metadata files, then upload individual manifests to partition for downstream task to load and combine
 scan_upload = KubernetesPodOperator.partial(namespace="airflow",
                                             image=scanner_image,
                                             name="scanupload-task",
@@ -364,24 +502,49 @@ scan_upload = KubernetesPodOperator.partial(namespace="airflow",
                                             task_id="scanupload-task",
                                             get_logs=True,
                                             is_delete_operator_pod=True,
-                                            arguments=["scan"],
-                                            volumes=[
-                                                downloads_volume],
-                                            volume_mounts=[
-                                                downloads_volume_mount],
+                                            cmds=["/bin/sh", "-c", "aws s3 cp s3://" + partition_bucket +
+                                                  "/" + partition_directory + "\"$GC_SCAN_INPUT_PATH\" \"$GC_SCAN_INPUT_PATH\" --recursive && gc scan && aws s3 cp \"$GC_SCAN_INPUT_PATH\"/manifest.json s3://" + partition_bucket +
+                                                  "/" + partition_directory],
                                             dag=dag,
                                             do_xcom_push=False,
                                             annotations={
                                                 "iam.amazonaws.com/role": "advana/k8s/s3.wildcard"},
-                                            ).expand(env_vars=XComArg(partition_task))
+                                            ).expand(env_vars=XComArg(partition_to_s3_task))
 
-combine_manifests = BashOperator(
-    task_id='combine_manifests',
-    bash_command="find \"$GC_CRAWL_DOWNLOAD_OUTPUT_DIR\" -type f -name \"manifest.json\" -exec cat {} + | tee \"$GC_CRAWL_DOWNLOAD_OUTPUT_DIR\"/manifest.json",
+# combine_manifests = BashOperator(
+#     task_id='combine_manifests',
+#     bash_command="aws s3 cp s3://" + partition_bucket + "/" + partition_directory +
+#     "\"$GC_CRAWL_DOWNLOAD_OUTPUT_DIR\" --exclude '*' --include '*manifest.json' && find \"$GC_CRAWL_DOWNLOAD_OUTPUT_DIR\" -type f -name \"manifest.json\" -exec cat {} + | tee \"$GC_CRAWL_DOWNLOAD_OUTPUT_DIR\"/manifest.json",
+#     dag=dag,
+#     do_xcom_push=False,
+#     executor_config={
+#         "pod_override": k8s.V1Pod(
+#             metadata=k8s.V1ObjectMeta(
+#                 annotations={"iam.amazonaws.com/role": "advana/k8s/s3.wildcard"}),
+#             spec=k8s.V1PodSpec(
+#                 containers=[
+#                     k8s.V1Container(
+#                         name="base",
+#                         volume_mounts=[downloads_volume_mount],
+#                         env_from=[crawler_env_from_source,
+#                                   ]
+#                     )
+#                 ],
+#                 volumes=[downloads_volume],
+#             )
+#         )
+#     })
+
+combine_manifests_from_s3 = PythonOperator(
+    task_id='combine_manifests_from_s3',
+    python_callable=combine_s3_partitions_manifests,
+    provide_context=True,
     dag=dag,
     do_xcom_push=False,
     executor_config={
         "pod_override": k8s.V1Pod(
+            metadata=k8s.V1ObjectMeta(
+                annotations={"iam.amazonaws.com/role": "advana/k8s/s3.wildcard"}),
             spec=k8s.V1PodSpec(
                 containers=[
                     k8s.V1Container(
@@ -498,5 +661,5 @@ skip_scan = DummyOperator(task_id='skip_scan', dag=dag)
 purge >> download_manifest_task >> check_for_manifest_task
 check_for_manifest_task >> crawl >> downloads_check
 # branching
-downloads_check >> partition_task >> scan_upload >> combine_manifests >> create_cumulative_manifest >> update_cumulative_manifest >> backup_manifest_task >> upload_new_manifest_task
+downloads_check >> purge_s3_partitions >> partition_to_s3_task >> scan_upload >> combine_manifests_from_s3 >> create_cumulative_manifest >> update_cumulative_manifest >> backup_manifest_task >> upload_new_manifest_task
 downloads_check >> skip_scan >> create_cumulative_manifest >> update_cumulative_manifest >> backup_manifest_task >> upload_new_manifest_task
