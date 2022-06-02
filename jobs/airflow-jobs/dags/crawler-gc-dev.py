@@ -152,7 +152,7 @@ def skip_scan_if_no_downloads():
     if len(os.listdir(download_dir_to_check)) <= 2:
         return "skip_scan"
     else:
-        return "partition-data"
+        return "purge_s3_partitions"
 
 
 def combine_s3_partitions_manifests():
