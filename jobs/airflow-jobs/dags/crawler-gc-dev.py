@@ -314,7 +314,7 @@ def split_crawler_folder_s3(**kwargs):
                 #                     bucket_name=partition_bucket, replace=True)
                 continue
             # upload files to s3
-            source_s3.load_file(filename=download_dir + "/" + f, key=partition_directory + folder[1:] + "/" + f,
+            source_s3.load_file(filename=download_dir + "/" + f, key=partition_directory + folder[1:] + f,
                                 bucket_name=partition_bucket, replace=True)
             # shutil.move(download_dir + "/" + f, folder)
             print("Uploaded to s3 partition: " + f)
