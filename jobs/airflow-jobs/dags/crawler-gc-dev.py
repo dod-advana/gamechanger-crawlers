@@ -15,7 +15,7 @@ scanner_image = Variable.get("SCANNER_IMAGE")
 crawler_image = Variable.get("CRAWLER_IMAGE")
 busybox_image = Variable.get("BUSYBOX_IMAGE")
 partition_bucket = Variable.get("PARTITION_BUCKET")
-# no leading slash, have trailing slash
+# no leading slash, no trailing slash
 partition_directory = Variable.get("PARTITION_DIRECTORY")
 # credentials_dict = Connection.get_connection_from_secrets(
 #     conn_id="S3_CONN").extra_dejson
@@ -310,17 +310,14 @@ def split_crawler_folder_s3(**kwargs):
         for f in file_list:
             # skip previous-manifest upload
             if "previous-manifest.json" in f:
-                # source_s3.load_file(filename=download_dir + "/" + f, key=partition_directory + "/" + f,
-                #                     bucket_name=partition_bucket, replace=True)
                 continue
             # upload files to s3
-            source_s3.load_file(filename=download_dir + "/" + f, key=partition_directory + folder[1:] + f,
+            source_s3.load_file(filename=download_dir + "/" + f, key=+ "/" + folder[1:] + f,
                                 bucket_name=partition_bucket, replace=True)
             # shutil.move(download_dir + "/" + f, folder)
             print("Uploaded to s3 partition: " + f)
 
     return scanner_env_list
-
 
     # DAG definition
 dag = DAG(
