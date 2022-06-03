@@ -509,7 +509,7 @@ scan_upload = KubernetesPodOperator.partial(namespace="airflow",
                                             cmds=["bash", "-c"],
                                             arguments=[
                                                 "echo 's3://" + partition_bucket + "/" + partition_directory +
-                                                "$GC_SCAN_INPUT_PATH' && aws s3 cp s3://" + partition_bucket + "/" + partition_directory +
+                                                "\"$GC_SCAN_INPUT_PATH\"' && aws s3 cp s3://" + partition_bucket + "/" + partition_directory +
                                                 "$GC_SCAN_INPUT_PATH $GC_SCAN_INPUT_PATH --recursive && ls $GC_SCAN_INPUT_PATH && gc scan && echo 'finished'"],
                                             dag=dag,
                                             do_xcom_push=False,
