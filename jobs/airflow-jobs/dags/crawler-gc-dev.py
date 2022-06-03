@@ -287,7 +287,7 @@ def split_crawler_folder_s3(**kwargs):
     scanner_env_list = []
     for i in range(num_partitions):
 
-        subfolder_path = os.path.join(download_dir, "partition" + str(i))
+        subfolder_path = os.path.join(download_dir, "partition" + str(i) + "/")
 
         os.makedirs(subfolder_path, exist_ok=True)
         print("Made: " + subfolder_path)
