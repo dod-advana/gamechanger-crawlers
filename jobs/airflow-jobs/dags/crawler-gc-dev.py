@@ -321,6 +321,7 @@ def split_crawler_folder_s3(**kwargs):
 
     return scanner_env_list
 
+
     # DAG definition
 dag = DAG(
     dag_id="crawl-parallel-pipeline-gc-dev",
@@ -494,6 +495,9 @@ partition_to_s3_task = PythonOperator(task_id="partition-data",
                                       })
 
 # Run Parallel Scanners
+
+# single initcontainer downloads all partitions of s3 to emptydir then mounts to all containers
+
 # download s3 partitioned files then scan downloaded crawled files then reupload to s3 with metadata files, then upload individual manifests to partition for downstream task to load and combine
 scan_upload = KubernetesPodOperator.partial(namespace="airflow",
                                             image=scanner_image,
@@ -504,7 +508,8 @@ scan_upload = KubernetesPodOperator.partial(namespace="airflow",
                                             is_delete_operator_pod=True,
                                             cmds=["bash", "-c"],
                                             arguments=[
-                                                "echo $GC_SCAN_INPUT_PATH && aws s3 cp s3://" + partition_bucket + "/" + partition_directory +
+                                                "echo s3://" + partition_bucket + "/" + partition_directory +
+                                                "$GC_SCAN_INPUT_PATH && aws s3 cp s3://" + partition_bucket + "/" + partition_directory +
                                                 "$GC_SCAN_INPUT_PATH $GC_SCAN_INPUT_PATH --recursive && ls $GC_SCAN_INPUT_PATH && gc scan && echo 'finished'"],
                                             dag=dag,
                                             do_xcom_push=False,
