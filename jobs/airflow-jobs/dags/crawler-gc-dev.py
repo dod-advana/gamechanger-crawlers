@@ -13,15 +13,15 @@ from airflow.models import Variable
 
 scanner_image = os.environ["SCANNER_IMAGE"]
 assert isinstance(scanner_image, str)
-crawler_image = os.environ.get("CRAWLER_IMAGE")
-busybox_image = os.environ.get("BUSYBOX_IMAGE")
-partition_bucket = os.environ.get("PARTITION_BUCKET")
+crawler_image = os.environ["CRAWLER_IMAGE"]
+busybox_image = os.environ["BUSYBOX_IMAGE"]
+partition_bucket = os.environ["PARTITION_BUCKET"]
 # no leading slash, no trailing slash
-partition_directory = os.environ.get("PARTITION_DIRECTORY")
+partition_directory = os.environ["PARTITION_DIRECTORY"]
 # credentials_dict = Connection.get_connection_from_secrets(
 #     conn_id="S3_CONN").extra_dejson
 
-scan_concurrency = int(os.environ.get("SCAN_CONCURRENCY"))
+scan_concurrency = int(os.environ["SCAN_CONCURRENCY"])
 
 # Airflow dag metadata
 args = {
