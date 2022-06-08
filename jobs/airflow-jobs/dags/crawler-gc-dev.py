@@ -13,7 +13,7 @@ import os
 
 # scanner_image = Variable.get("SCANNER_IMAGE")
 scanner_image = os.environ.get("SCANNER_IMAGE").astype(str)
-crawler_image = os.environ.get("CRAWLER_IMAGE")
+crawler_image = os.environ.get("CRAWLER_IMAGE").astype(int)
 busybox_image = os.environ.get("BUSYBOX_IMAGE")
 partition_bucket = os.environ.get("PARTITION_BUCKET")
 # no leading slash, no trailing slash
