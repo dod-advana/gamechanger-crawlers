@@ -11,16 +11,8 @@ from airflow import XComArg
 import os
 from airflow.models import Variable
 
-
-try:
-    raise Exception('Exception')
-except Exception as error:
-    for k, v in sorted(os.environ.items()):
-        print(k + ':', v)
-    print('\n')
-
-
-scanner_image = os.environ.get("SCANNER_IMAGE")
+scanner_image = os.environ["SCANNER_IMAGE"]
+assert isinstance(scanner_image, str)
 crawler_image = os.environ.get("CRAWLER_IMAGE")
 busybox_image = os.environ.get("BUSYBOX_IMAGE")
 partition_bucket = os.environ.get("PARTITION_BUCKET")
@@ -328,6 +320,7 @@ def split_crawler_folder_s3(**kwargs):
             print("Uploaded to s3 partition: " + f)
 
     return scanner_env_list
+
 
     # DAG definition
 dag = DAG(
