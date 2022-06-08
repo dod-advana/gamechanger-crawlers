@@ -8,17 +8,16 @@ from kubernetes.client import models as k8s
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.models import Connection
 from airflow import XComArg
-from airflow.models import Variable
 import os
 
-scan_concurrency = int(Variable.get("SCAN_CONCURRENCY"))
+scan_concurrency = int(os.environ.get("SCAN_CONCURRENCY"))
 # scanner_image = Variable.get("SCANNER_IMAGE")
 scanner_image = os.environ.get("SCANNER_IMAGE")
-crawler_image = Variable.get("CRAWLER_IMAGE")
-busybox_image = Variable.get("BUSYBOX_IMAGE")
-partition_bucket = Variable.get("PARTITION_BUCKET")
+crawler_image = os.environ.get("CRAWLER_IMAGE")
+busybox_image = os.environ.get("BUSYBOX_IMAGE")
+partition_bucket = os.environ.get("PARTITION_BUCKET")
 # no leading slash, no trailing slash
-partition_directory = Variable.get("PARTITION_DIRECTORY")
+partition_directory = os.environ.get("PARTITION_DIRECTORY")
 # credentials_dict = Connection.get_connection_from_secrets(
 #     conn_id="S3_CONN").extra_dejson
 

@@ -9,11 +9,12 @@ from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.models import Connection
 from airflow import XComArg
 from airflow.models import Variable
+import os
 
-scan_concurrency = int(Variable.get("SCAN_CONCURRENCY"))
-scanner_image = Variable.get("SCANNER_IMAGE")
-crawler_image = Variable.get("CRAWLER_IMAGE")
-busybox_image = Variable.get("BUSYBOX_IMAGE")
+scan_concurrency = int(os.environ.get("SCAN_CONCURRENCY"))
+scanner_image = os.environ.get("SCANNER_IMAGE")
+crawler_image = os.environ.get("CRAWLER_IMAGE")
+busybox_image = os.environ.get("BUSYBOX_IMAGE")
 credentials_dict = Connection.get_connection_from_secrets(
     conn_id="S3_CONN").extra_dejson
 
