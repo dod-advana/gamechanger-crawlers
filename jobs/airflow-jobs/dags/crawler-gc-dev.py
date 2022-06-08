@@ -10,9 +10,7 @@ from airflow.models import Connection
 from airflow import XComArg
 import os
 from airflow.models import Variable
-
-scanner_image = Variable.get("SCANNER_IMAGE").astype(str)
-
+assert os.environ.get("SCAN_CONCURRENCY") == "3"
 scanner_image = os.environ.get("SCANNER_IMAGE").astype(str)
 
 
