@@ -9,10 +9,13 @@ from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.models import Connection
 from airflow import XComArg
 import os
+from airflow.models import Variable
 
+scanner_image = Variable.get("SCANNER_IMAGE").astype(str)
 
-# scanner_image = Variable.get("SCANNER_IMAGE")
 scanner_image = os.environ.get("SCANNER_IMAGE").astype(str)
+
+
 crawler_image = os.environ.get("CRAWLER_IMAGE").astype(int)
 busybox_image = os.environ.get("BUSYBOX_IMAGE")
 partition_bucket = os.environ.get("PARTITION_BUCKET")
