@@ -22,7 +22,7 @@ partition_directory = os.environ.get("PARTITION_DIRECTORY")
 # credentials_dict = Connection.get_connection_from_secrets(
 #     conn_id="S3_CONN").extra_dejson
 
-scan_concurrency = os.environ.get("SCAN_CONCURRENCY").astype(int)
+scan_concurrency = int(os.environ.get("SCAN_CONCURRENCY"))
 
 # Airflow dag metadata
 args = {
