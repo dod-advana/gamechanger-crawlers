@@ -237,7 +237,10 @@ def split_crawler_folder_s3(**kwargs):
         os.makedirs(subfolder_path, exist_ok=True)
         print("Made: " + subfolder_path)
         subfolder_names.append(subfolder_path)
-        env_var_dict = {"GC_SCAN_INPUT_PATH": subfolder_path}
+        env_var_dict = {"GC_SCAN_INPUT_PATH": subfolder_path, "SKIP_S3_UPLOAD": os.environ["SKIP_S3_UPLOAD"],
+                        "S3_UPLOAD_BASE_PATH": os.environ["S3_UPLOAD_BASE_PATH"],
+                        "BUCKET": os.environ["BUCKET"],
+                        "DELETE_AFTER_UPLOAD": os.environ["DELETE_AFTER_UPLOAD"]}
         scanner_env_list.append(env_var_dict)
 
     # shuffle data to normalize the file size per subfolder
@@ -263,6 +266,7 @@ def split_crawler_folder_s3(**kwargs):
             print("Uploaded to s3 partition: " + f)
 
     return scanner_env_list
+
 
     # DAG definition
 dag = DAG(
@@ -436,10 +440,6 @@ partition_to_s3_task = PythonOperator(task_id="partition-data",
 scan_upload = KubernetesPodOperator.partial(namespace="airflow",
                                             image=scanner_image,
                                             name="scanupload-task",
-                                            env_vars={"SKIP_S3_UPLOAD": os.environ["SKIP_S3_UPLOAD"],
-                                                      "S3_UPLOAD_BASE_PATH": os.environ["S3_UPLOAD_BASE_PATH"],
-                                                      "BUCKET": os.environ["BUCKET"],
-                                                      "DELETE_AFTER_UPLOAD": os.environ["DELETE_AFTER_UPLOAD"]},
                                             task_id="scanupload-task",
                                             get_logs=True,
                                             is_delete_operator_pod=True,
