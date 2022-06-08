@@ -12,16 +12,13 @@ import os
 from airflow.models import Variable
 
 
-def error_and_print_env():
-    try:
-        raise Exception('Exception')
-    except Exception as error:
-        for k, v in sorted(os.environ.items()):
-            print(k + ':', v)
-        print('\n')
+try:
+    raise Exception('Exception')
+except Exception as error:
+    for k, v in sorted(os.environ.items()):
+        print(k + ':', v)
+    print('\n')
 
-
-error_and_print_env()
 
 scanner_image = os.environ.get("SCANNER_IMAGE")
 crawler_image = os.environ.get("CRAWLER_IMAGE")
@@ -331,7 +328,6 @@ def split_crawler_folder_s3(**kwargs):
             print("Uploaded to s3 partition: " + f)
 
     return scanner_env_list
-
 
     # DAG definition
 dag = DAG(
