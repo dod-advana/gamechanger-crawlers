@@ -340,6 +340,7 @@ crawler_to_run = files_configmap_path + \
 crawl = KubernetesPodOperator(namespace="airflow",
                               image=crawler_image,
                               name="crawler-task",
+                              startup_timeout_seconds=400,
                               env_vars={
                                   "GC_CRAWL_SPIDERS_FILE_LOCATION": crawler_to_run,
                                   "GC_CRAWL_CRAWLER_OUTPUT_LOCATION": os.environ["GC_CRAWL_CRAWLER_OUTPUT_LOCATION"],
