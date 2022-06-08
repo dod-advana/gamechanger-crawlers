@@ -9,9 +9,11 @@ from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.models import Connection
 from airflow import XComArg
 from airflow.models import Variable
+import os
 
 scan_concurrency = int(Variable.get("SCAN_CONCURRENCY"))
-scanner_image = Variable.get("SCANNER_IMAGE")
+# scanner_image = Variable.get("SCANNER_IMAGE")
+scanner_image = os.environ.get("SCANNER_IMAGE")
 crawler_image = Variable.get("CRAWLER_IMAGE")
 busybox_image = Variable.get("BUSYBOX_IMAGE")
 partition_bucket = Variable.get("PARTITION_BUCKET")
@@ -103,7 +105,7 @@ aws_env_from_source = k8s.V1EnvFromSource(
 
 
 def download_manifest():
-    import os
+
     bucket = os.environ["BUCKET"]
     key = os.environ["KEY"]
     destination = os.environ["DESTINATION"]
@@ -115,7 +117,7 @@ def download_manifest():
 
 
 def backup_manifest(**context):
-    import os
+
     bucket = os.environ["BUCKET"]
     key = os.environ["KEY"]
     # cert_path = os.environ["CACERT_PATH"]
@@ -131,7 +133,7 @@ def backup_manifest(**context):
 
 
 def upload_manifest():
-    import os
+
     bucket = os.environ["BUCKET"]
     key = os.environ["KEY"]
     filename = os.environ["FILENAME"]
@@ -144,7 +146,7 @@ def upload_manifest():
 
 
 def skip_scan_if_no_downloads():
-    import os
+
     download_dir_to_check = os.environ["GC_CRAWL_DOWNLOAD_OUTPUT_DIR"]
     print((os.listdir(download_dir_to_check)))
 
@@ -156,7 +158,7 @@ def skip_scan_if_no_downloads():
 
 
 def combine_s3_partitions_manifests():
-    import os
+
     import shutil
     source_s3 = S3Hook()
     output_filepath = os.environ["GC_CRAWL_DOWNLOAD_OUTPUT_DIR"] + \
@@ -191,7 +193,7 @@ def partition(lst, n):
 
 
 def split_crawler_folder(**kwargs):
-    import os
+
     import shutil
     import random
 
@@ -263,7 +265,7 @@ def clear_s3_partition_dir():
 
 
 def split_crawler_folder_s3(**kwargs):
-    import os
+
     import random
 
     num_partitions = kwargs["num_partitions"]
