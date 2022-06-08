@@ -13,8 +13,8 @@ from airflow.models import Variable
 assert os.environ.get("SCAN_CONCURRENCY") == "3"
 assert os.environ.get("BUSYBOX_IMAGE_TAG") == "latest"
 
-scanner_image = os.environ.get("SCANNER_IMAGE").astype(str)
-crawler_image = os.environ.get("CRAWLER_IMAGE").astype(int)
+scanner_image = os.environ.get("SCANNER_IMAGE")
+crawler_image = os.environ.get("CRAWLER_IMAGE")
 busybox_image = os.environ.get("BUSYBOX_IMAGE")
 partition_bucket = os.environ.get("PARTITION_BUCKET")
 # no leading slash, no trailing slash
