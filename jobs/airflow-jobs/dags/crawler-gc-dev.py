@@ -6,23 +6,18 @@ from airflow.operators.bash import BashOperator
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
 from kubernetes.client import models as k8s
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-from airflow.models import Connection
 from airflow import XComArg
 import os
-from airflow.models import Variable
 
 scanner_image = os.environ["SCANNER_IMAGE"]
-assert isinstance(scanner_image, str)
 crawler_image = os.environ["CRAWLER_IMAGE"]
 busybox_image = os.environ["BUSYBOX_IMAGE"]
 partition_bucket = os.environ["PARTITION_BUCKET"]
 # no leading slash, no trailing slash
 partition_directory = os.environ["PARTITION_DIRECTORY"]
-# credentials_dict = Connection.get_connection_from_secrets(
-#     conn_id="S3_CONN").extra_dejson
-
 scan_concurrency = int(os.environ["SCAN_CONCURRENCY"])
-
+downloads_pvc_name = os.environ["CRAWLER_DOWNLOADS_PVC_NAME"]
+files_from_configmap_name = os.environ["FILES_CONFIGMAP_NAME"]
 # Airflow dag metadata
 args = {
     "owner": "gamechanger",
@@ -30,85 +25,33 @@ args = {
     "retries": 1,
 }
 
-# Results and Schedule volume mounts
-# mounts
-results_volume_mount = k8s.V1VolumeMount(name='gc-crawler-output',
-                                         mount_path='/app/tmp/output/',
-                                         sub_path=None,
-                                         read_only=False
-                                         )
-crawler_schedules_path = '/app/tmp/crawler-schedules/'
-schedules_volume_mount = k8s.V1VolumeMount(name='crawler-schedule-volume',
-                                           mount_path=crawler_schedules_path,
-                                           sub_path=None,
-                                           read_only=False
-                                           )
-# cacert_path = '/app/tmp/ca-cert/'
-# cert_volume_mount = k8s.V1VolumeMount(name='ca-cert-volume',
-#                                            mount_path=cacert_path,
-#                                            sub_path=None,
-#                                            read_only=False
-#                                       )
-results_volume_config = k8s.V1PersistentVolumeClaimVolumeSource(
-    claim_name='gc-crawler-output')
-
-schedule_volume_config = k8s.V1ConfigMapVolumeSource(
-    name="crawler-schedules-configmap")
-
-# cert_volume_config = k8s.V1ConfigMapVolumeSource(
-#     name="certs-configmap")
-results_volume = k8s.V1Volume(name='gc-crawler-output',
-                              persistent_volume_claim=results_volume_config)
-schedule_volume = k8s.V1Volume(name='crawler-schedule-volume',
-                               config_map=schedule_volume_config)
-# cert_volume = k8s.V1Volume(name='ca-cert-volume',
-#                            config_map=cert_volume_config)
-
+# Configmap that contains files
+files_configmap_path = '/app/tmp/configmap-files/'
+files_configmap_volume_mount = k8s.V1VolumeMount(name='crawler-schedule-volume',
+                                                 mount_path=files_configmap_path,
+                                                 sub_path=None,
+                                                 read_only=False
+                                                 )
+files_configmap_volume_config = k8s.V1ConfigMapVolumeSource(
+    name=files_from_configmap_name)
+files_configmap_volume = k8s.V1Volume(name='crawler-schedule-volume',
+                                      config_map=files_configmap_volume_config)
 
 # Downloads/Outputs Volume Mounts
 downloads_volume_mount = k8s.V1VolumeMount(name='gc-crawler-downloads', mount_path="/app/tmp/downloads/",
                                            sub_path=None,
                                            read_only=False)
 pvc = k8s.V1PersistentVolumeClaimVolumeSource(
-    claim_name='gc-crawler-downloads')
+    claim_name=downloads_pvc_name)
 downloads_volume = k8s.V1Volume(
     name='gc-crawler-downloads', persistent_volume_claim=pvc)
-
-# list of configmaps for tasks that use kubernetespodoperator
-crawler_configmap_source = k8s.V1ConfigMapEnvSource(
-    name='crawler-configmap')
-crawler_env_from_source = k8s.V1EnvFromSource(
-    config_map_ref=crawler_configmap_source)
-
-scanner_configmap_source = k8s.V1ConfigMapEnvSource(
-    name='parallel-scanner-configmap')
-scanner_env_from_source = k8s.V1EnvFromSource(
-    config_map_ref=scanner_configmap_source)
-
-# using configmap/V1EnvFromSource objects in order to mount configmap as env var for certain tasks that require executor_config to launch in pod
-
-# env for upload_manifest task
-uploader_configmap_source = k8s.V1ConfigMapEnvSource(
-    name='upload-manifest-configmap')
-uploader_env_from_source = k8s.V1EnvFromSource(
-    config_map_ref=uploader_configmap_source)
-# env for download_manifest task
-download_configmap_source = k8s.V1ConfigMapEnvSource(
-    name='download-manifest-configmap')
-download_env_from_source = k8s.V1EnvFromSource(
-    config_map_ref=download_configmap_source)
-# env for providing the airflow-made aws connection id
-aws_configmap_source = k8s.V1ConfigMapEnvSource(
-    name='aws-conn-configmap')
-aws_env_from_source = k8s.V1EnvFromSource(
-    config_map_ref=aws_configmap_source)
 
 
 def download_manifest():
 
-    bucket = os.environ["BUCKET"]
-    key = os.environ["KEY"]
-    destination = os.environ["DESTINATION"]
+    bucket = os.environ["DOWNLOAD_MANIFEST_BUCKET"]
+    key = os.environ["DOWNLOAD_MANIFEST_KEY"]
+    destination = os.environ["DOWNLOAD_MANIFEST_DESTINATION"]
     # cert_path = os.environ["CACERT_PATH"]
 
     source_s3 = S3Hook()
@@ -118,8 +61,8 @@ def download_manifest():
 
 def backup_manifest(**context):
 
-    bucket = os.environ["BUCKET"]
-    key = os.environ["KEY"]
+    bucket = os.environ["DOWNLOAD_MANIFEST_BUCKET"]
+    key = os.environ["DOWNLOAD_MANIFEST_KEY"]
     # cert_path = os.environ["CACERT_PATH"]
 
     source_s3 = S3Hook()
@@ -134,9 +77,9 @@ def backup_manifest(**context):
 
 def upload_manifest():
 
-    bucket = os.environ["BUCKET"]
-    key = os.environ["KEY"]
-    filename = os.environ["FILENAME"]
+    bucket = os.environ["UPLOAD_MANIFEST_BUCKET"]
+    key = os.environ["UPLOAD_MANIFEST_KEY"]
+    filename = os.environ["UPLOAD_MANIFEST_FILENAME"]
     # cert_path = os.environ["CACERT_PATH"]
 
     source_s3 = S3Hook()
@@ -271,7 +214,7 @@ def split_crawler_folder_s3(**kwargs):
     num_partitions = kwargs["num_partitions"]
     print("Num partitions: " + str(num_partitions))
     download_dir = os.environ["GC_CRAWL_DOWNLOAD_OUTPUT_DIR"]
-    prev_manifest_fp = os.environ["GC_CRAWL_PREVIOUS_MANIFEST_LOCATION"]
+    # prev_manifest_fp = os.environ["GC_CRAWL_PREVIOUS_MANIFEST_LOCATION"]
 
     # List of files in the download dir
 #     data = os.listdir(download_dir)
@@ -321,7 +264,6 @@ def split_crawler_folder_s3(**kwargs):
 
     return scanner_env_list
 
-
     # DAG definition
 dag = DAG(
     dag_id="crawl-parallel-pipeline-gc-dev",
@@ -332,7 +274,7 @@ dag = DAG(
     tags=["crawler", "test"],
 )
 
-
+# Clear the download volume
 purge = KubernetesPodOperator(namespace="airflow",
                               image=busybox_image,
                               name="purge-volume",
@@ -361,8 +303,6 @@ download_manifest_task = PythonOperator(
                         name="base",
                         volume_mounts=[
                             downloads_volume_mount],
-                        env_from=[download_env_from_source,
-                                  aws_env_from_source]
                     )
                 ],
                 volumes=[downloads_volume],
@@ -373,7 +313,7 @@ download_manifest_task = PythonOperator(
 # Not necessary for a manifest to exist and be downloaded, so this task is just for logging
 check_for_manifest_task = BashOperator(
     task_id='check_manifest',
-    bash_command="[ -f /app/tmp/downloads/previous-manifest.json ] && echo 'Previous manifest exists.' || echo 'Previous manifest does not exist.'",
+    bash_command="[ -f $GC_CRAWL_PREVIOUS_MANIFEST_LOCATION ] && echo 'Previous manifest exists.' || echo 'Previous manifest does not exist.'",
     dag=dag,
     do_xcom_push=False,
     executor_config={
@@ -383,8 +323,6 @@ check_for_manifest_task = BashOperator(
                     k8s.V1Container(
                         name="base",
                         volume_mounts=[downloads_volume_mount],
-                        env_from=[download_env_from_source,
-                                  ]
                     )
                 ],
                 volumes=[downloads_volume],
@@ -393,14 +331,17 @@ check_for_manifest_task = BashOperator(
     })
 
 # Executor starts a pod that runs the crawler. Configs from the Gamechanger helm deployments from
-crawler_to_run = crawler_schedules_path + \
+crawler_to_run = files_configmap_path + \
     datetime.today().strftime('%A').lower() + ".txt"
 crawl = KubernetesPodOperator(namespace="airflow",
                               image=crawler_image,
                               name="crawler-task",
                               env_vars={
-                                  "GC_CRAWL_SPIDERS_FILE_LOCATION": crawler_to_run},
-                              env_from=[crawler_env_from_source],
+                                  "GC_CRAWL_SPIDERS_FILE_LOCATION": crawler_to_run,
+                                  "GC_CRAWL_CRAWLER_OUTPUT_LOCATION": os.environ["GC_CRAWL_CRAWLER_OUTPUT_LOCATION"],
+                                  "GC_CRAWL_DOWNLOAD_OUTPUT_DIR": os.environ["GC_CRAWL_DOWNLOAD_OUTPUT_DIR"],
+                                  "GC_CRAWL_PREVIOUS_MANIFEST_LOCATION": os.environ["GC_CRAWL_PREVIOUS_MANIFEST_LOCATION"],
+                                  "GC_CRAWL_SKIP_CONFIRMATION": os.environ["GC_CRAWL_SKIP_CONFIRMATION"]},
                               task_id="crawler-task",
                               security_context={'runAsUser': 1000,
                                                 'runAsGroup': 1000,
@@ -409,9 +350,9 @@ crawl = KubernetesPodOperator(namespace="airflow",
                               is_delete_operator_pod=True,
                               arguments=["crawl"],
                               volumes=[
-                                  schedule_volume, downloads_volume],
+                                  files_configmap_volume, downloads_volume],
                               volume_mounts=[
-                                  schedules_volume_mount, downloads_volume_mount],
+                                  files_configmap_volume_mount, downloads_volume_mount],
                               dag=dag,
                               do_xcom_push=False,
                               )
@@ -429,8 +370,6 @@ downloads_check = BranchPythonOperator(task_id="downloads-check",
                                                            name="base",
                                                            volume_mounts=[
                                                                downloads_volume_mount],
-                                                           env_from=[crawler_env_from_source
-                                                                     ]
                                                        )
                                                    ],
                                                    volumes=[
@@ -484,8 +423,6 @@ partition_to_s3_task = PythonOperator(task_id="partition-data",
                                                           name="base",
                                                           volume_mounts=[
                                                               downloads_volume_mount],
-                                                          env_from=[crawler_env_from_source
-                                                                    ]
                                                       )
                                                   ],
                                                   volumes=[
@@ -499,7 +436,10 @@ partition_to_s3_task = PythonOperator(task_id="partition-data",
 scan_upload = KubernetesPodOperator.partial(namespace="airflow",
                                             image=scanner_image,
                                             name="scanupload-task",
-                                            env_from=[scanner_env_from_source],
+                                            env_vars={"SKIP_S3_UPLOAD": os.environ["SKIP_S3_UPLOAD"],
+                                                      "S3_UPLOAD_BASE_PATH": os.environ["S3_UPLOAD_BASE_PATH"],
+                                                      "BUCKET": os.environ["BUCKET"],
+                                                      "DELETE_AFTER_UPLOAD": os.environ["DELETE_AFTER_UPLOAD"]},
                                             task_id="scanupload-task",
                                             get_logs=True,
                                             is_delete_operator_pod=True,
@@ -553,8 +493,6 @@ combine_manifests_from_s3 = PythonOperator(
                     k8s.V1Container(
                         name="base",
                         volume_mounts=[downloads_volume_mount],
-                        env_from=[crawler_env_from_source,
-                                  ]
                     )
                 ],
                 volumes=[downloads_volume],
@@ -576,8 +514,6 @@ backup_manifest_task = PythonOperator(
                 containers=[
                     k8s.V1Container(
                         name="base",
-                        env_from=[download_env_from_source,
-                                  aws_env_from_source]
                     )
                 ],
             )
@@ -591,6 +527,8 @@ create_cumulative_manifest = KubernetesPodOperator(namespace="airflow",
                                                    name="create_cumulative_manifest",
                                                    task_id="create_cumulative_manifest",
                                                    trigger_rule='none_failed_or_skipped',
+                                                   env_vars={"GC_CRAWL_PREVIOUS_MANIFEST_LOCATION": os.environ["GC_CRAWL_PREVIOUS_MANIFEST_LOCATION"],
+                                                             "GC_CRAWL_DOWNLOAD_OUTPUT_DIR": os.environ["GC_CRAWL_DOWNLOAD_OUTPUT_DIR"]},
                                                    cmds=[
                                                        '/bin/sh'],
                                                    arguments=['-c', "if [ -f \"$GC_CRAWL_PREVIOUS_MANIFEST_LOCATION\" ]; then cat \"$GC_CRAWL_PREVIOUS_MANIFEST_LOCATION\" > \"$GC_CRAWL_DOWNLOAD_OUTPUT_DIR\"/cumulative-manifest.json && echo >> \"$GC_CRAWL_DOWNLOAD_OUTPUT_DIR\"/cumulative-manifest.json; fi"
@@ -604,8 +542,6 @@ create_cumulative_manifest = KubernetesPodOperator(namespace="airflow",
                                                        downloads_volume],
                                                    volume_mounts=[
                                                        downloads_volume_mount],
-                                                   env_from=[
-                                                       crawler_env_from_source],
                                                    dag=dag,
                                                    do_xcom_push=False
                                                    )
@@ -615,6 +551,8 @@ update_cumulative_manifest = KubernetesPodOperator(namespace="airflow",
                                                    image=busybox_image,
                                                    name="update_cumulative_manifest",
                                                    task_id="update_cumulative_manifest",
+                                                   env_vars={"GC_CRAWL_PREVIOUS_MANIFEST_LOCATION": os.environ["GC_CRAWL_PREVIOUS_MANIFEST_LOCATION"],
+                                                             "GC_CRAWL_DOWNLOAD_OUTPUT_DIR": os.environ["GC_CRAWL_DOWNLOAD_OUTPUT_DIR"]},
                                                    cmds=[
                                                        '/bin/sh'],
                                                    arguments=['-c', "if [ -f \"$GC_CRAWL_DOWNLOAD_OUTPUT_DIR\"/manifest.json ]; then cat \"$GC_CRAWL_DOWNLOAD_OUTPUT_DIR\"/manifest.json >> \"$GC_CRAWL_DOWNLOAD_OUTPUT_DIR\"/cumulative-manifest.json; fi"
@@ -629,8 +567,6 @@ update_cumulative_manifest = KubernetesPodOperator(namespace="airflow",
                                                        downloads_volume],
                                                    volume_mounts=[
                                                        downloads_volume_mount],
-                                                   env_from=[
-                                                       crawler_env_from_source],
                                                    dag=dag,
                                                    do_xcom_push=False
                                                    )
@@ -648,8 +584,6 @@ upload_new_manifest_task = PythonOperator(task_id='upload_new_s3_manifest',
                                                               name="base",
                                                               volume_mounts=[
                                                                   downloads_volume_mount],
-                                                              env_from=[
-                                                                  uploader_env_from_source, aws_env_from_source]
                                                           )
                                                       ],
                                                       volumes=[
