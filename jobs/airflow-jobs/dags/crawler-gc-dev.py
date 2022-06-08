@@ -10,8 +10,18 @@ from airflow.models import Connection
 from airflow import XComArg
 import os
 from airflow.models import Variable
-assert os.environ.get("SCAN_CONCURRENCY") == "3"
-assert os.environ.get("BUSYBOX_IMAGE_TAG") == "latest"
+
+
+def error_and_print_env():
+    try:
+        raise Exception('Exception')
+    except Exception as error:
+        for k, v in sorted(os.environ.items()):
+            print(k + ':', v)
+        print('\n')
+
+
+error_and_print_env()
 
 scanner_image = os.environ.get("SCANNER_IMAGE")
 crawler_image = os.environ.get("CRAWLER_IMAGE")
