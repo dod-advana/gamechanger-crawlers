@@ -12,7 +12,7 @@ import os
 
 
 # scanner_image = Variable.get("SCANNER_IMAGE")
-scanner_image = os.environ.get("SCANNER_IMAGE")
+scanner_image = os.environ.get("SCANNER_IMAGE").astype(str)
 crawler_image = os.environ.get("CRAWLER_IMAGE")
 busybox_image = os.environ.get("BUSYBOX_IMAGE")
 partition_bucket = os.environ.get("PARTITION_BUCKET")
@@ -20,6 +20,7 @@ partition_bucket = os.environ.get("PARTITION_BUCKET")
 partition_directory = os.environ.get("PARTITION_DIRECTORY")
 # credentials_dict = Connection.get_connection_from_secrets(
 #     conn_id="S3_CONN").extra_dejson
+
 scan_concurrency = os.environ.get("SCAN_CONCURRENCY").astype(int)
 
 # Airflow dag metadata
