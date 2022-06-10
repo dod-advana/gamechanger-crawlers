@@ -1,0 +1,32 @@
+{
+    "doc_name": "Title 1 - General Provisions",
+    "doc_title": "General Provisions",
+    "doc_num": "1",
+    "doc_type": "Title",
+    "cac_login_required": false,
+    // publication date should be YYYY-MM-DD
+    "publication_date": "N/A",
+    "version_hash_raw_data": {
+        "item_currency": "117-139",
+        "doc_name": "Title 1 - General Provisions",
+        // missing
+        "edition": "3",
+        "volume": "",
+        "version": "",
+        "publication_date": "2015-04-30",
+        // end missing
+        "web_url": "https://nso.nato.int/nso/nsdd/webapi/api/download-manager/download?id=8473&type=STANAG&language=EN&subType=None"
+    },
+    "downloadable_items": [
+        {
+            "doc_type": "pdf",
+            "web_url": "https://uscode.house.gov/download/releasepoints/us/pl/117/139/pdf_usc01@117-139.zip",
+            "compression_type": "zip"
+        }
+    ],
+    "source_fqdn": "uscode.house.gov",
+    "crawler_used": "us_code",
+    "source_page_url": "https://uscode.house.gov/download/download.shtml",
+    "version_hash": "781ecc5462f6c249c9bd1b4230157110fe57b1987e96645c5dbbc722b173e806",
+    "access_timestamp": "2022-06-10 11:59:14.499853"
+}
