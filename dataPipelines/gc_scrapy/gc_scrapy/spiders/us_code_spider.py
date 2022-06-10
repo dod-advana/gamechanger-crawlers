@@ -22,6 +22,11 @@ class USCodeSpider(GCSpider):
     doc_type = "Title"
     cac_login_required = False
     rotate_user_agent = True
+    test_title_42 = (
+        GCSpider.custom_settings["TEST_USCODE_TITLE42"]
+        if "TEST_USCODE_TITLE42" in GCSpider.custom_settings.keys()
+        else False
+    )
 
     GCSpider.custom_settings["ITEM_PIPELINES"][
         "dataPipelines.gc_scrapy.gc_scrapy.pipelines.USCodeFileDownloadPipeline"
@@ -57,7 +62,7 @@ class USCodeSpider(GCSpider):
                 print("Failed to write file to", file_download_path, "Error:", e)
 
         for unzipped_file in unzipped_files:
-            version_hash_raw_data.update({"doc_name": unzipped_file.stem})
+            version_hash_raw_data["doc_name"] = unzipped_file.stem
             if not ("Appendix" in doc_title):
                 doc_title = unzipped_file.stem.split("-", 1)[1].strip()
             item = DocItem(
@@ -88,7 +93,6 @@ class USCodeSpider(GCSpider):
             else:
                 doc_num = self.ascii_clean(doc_type_num_raw.replace("Title", ""))
                 prev_doc_num = doc_num
-
                 doc_title = self.ascii_clean(doc_title_raw)
 
             # e.x. - Title 53 is reserved for now
@@ -97,6 +101,10 @@ class USCodeSpider(GCSpider):
 
             doc_title = doc_title.replace(",", "").replace("'", "")
             doc_name = f"{self.doc_type} {doc_num}{PART}{doc_title}"
+
+            # TODO: remove this - testing title 42
+            if self.test_title_42 and not ("42" == doc_num):
+                continue
 
             item_currency_raw = row.css("div.itemcurrency::text").get()
             item_currency = self.ascii_clean(item_currency_raw)
