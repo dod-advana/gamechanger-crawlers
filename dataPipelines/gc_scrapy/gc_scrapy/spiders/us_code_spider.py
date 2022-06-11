@@ -3,7 +3,7 @@ import scrapy
 from pathlib import Path
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
-from dataPipelines.gc_scrapy.gc_scrapy.utils import unzip_docs_as_needed
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
 
 PART = " - "
 SUPPORTED_URL_EXTENSIONS = ["PDF"]
@@ -22,11 +22,7 @@ class USCodeSpider(GCSpider):
     doc_type = "Title"
     cac_login_required = False
     rotate_user_agent = True
-    test_title_42 = (
-        GCSpider.custom_settings["TEST_USCODE_TITLE42"]
-        if "TEST_USCODE_TITLE42" in GCSpider.custom_settings.keys()
-        else False
-    )
+    test_title_42 = False
 
     GCSpider.custom_settings["ITEM_PIPELINES"][
         "dataPipelines.gc_scrapy.gc_scrapy.pipelines.USCodeFileDownloadPipeline"
@@ -34,46 +30,9 @@ class USCodeSpider(GCSpider):
         "dataPipelines.gc_scrapy.gc_scrapy.pipelines.FileDownloadPipeline"
     )
 
-    def parse_data(self, response):
-        output_file_name = response.meta["output_file_name"]
-        doc_type = response.meta["doc_type"]
-        compression_type = response.meta["compression_type"]
-        doc_num = response.meta["doc_num"]
-        downloadable_items = response.meta["downloadable_items"]
-        version_hash_raw_data = response.meta["version_hash_raw_data"]
-        doc_title = response.meta["doc_title"]
-
-        if compression_type:
-            file_download_path = Path(self.download_output_dir, output_file_name).with_suffix(f".{compression_type}")
-            file_unzipped_path = Path(self.download_output_dir, output_file_name)
-        else:
-            file_download_path = Path(self.download_output_dir, output_file_name)
-
-        with open(file_download_path, "wb") as f:
-            try:
-                to_write = self.download_response_handler(response)
-                f.write(to_write)
-                f.close()
-
-                if compression_type:
-                    if compression_type.lower() == "zip":
-                        unzipped_files = unzip_docs_as_needed(file_download_path, file_unzipped_path, doc_type)
-            except Exception as e:
-                print("Failed to write file to", file_download_path, "Error:", e)
-
-        for unzipped_file in unzipped_files:
-            version_hash_raw_data["doc_name"] = unzipped_file.stem
-            if not ("Appendix" in doc_title):
-                doc_title = unzipped_file.stem.split("-", 1)[1].strip()
-            item = DocItem(
-                doc_name=unzipped_file.stem,
-                doc_num=doc_num,
-                doc_title=doc_title,
-                downloadable_items=downloadable_items,
-                version_hash_raw_data=version_hash_raw_data,
-            )
-
-            yield item
+    GCSpider.custom_settings["FEED_EXPORTERS"][
+        "json"
+    ] = "dataPipelines.gc_scrapy.gc_scrapy.exporters.ZippedJsonLinesAsJsonItemExporter"
 
     def parse(self, response):
         rows = [el for el in response.css("div.uscitemlist > div.uscitem") if el.css("::attr(id)").get() != "alltitles"]
@@ -108,7 +67,10 @@ class USCodeSpider(GCSpider):
 
             item_currency_raw = row.css("div.itemcurrency::text").get()
             item_currency = self.ascii_clean(item_currency_raw)
-            version_hash_fields = {"item_currency": item_currency}
+            # Setting doc name and version hash here because the downloaded file is single (a zip of zips)
+            # so it should have one hash so it doesnt get re-downloaded
+            version_hash_fields = {"item_currency": item_currency, "doc_name": doc_type_num_title_raw}
+            version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 
             links = row.css("div.itemdownloadlinks a")
             downloadable_items = []
@@ -124,20 +86,16 @@ class USCodeSpider(GCSpider):
                     downloadable_items.append(
                         {"doc_type": doc_type, "web_url": web_url, "compression_type": compression_type}
                     )
-
-                    meta = {
-                        "output_file_name": f"{doc_name}.{doc_type}",
-                        "doc_type": doc_type,
-                        "compression_type": compression_type,
-                        "doc_num": doc_num,
-                        "downloadable_items": downloadable_items,
-                        "version_hash_raw_data": version_hash_fields,
-                        "web_url": web_url,
-                        "doc_title": doc_title,
-                    }
-
-                    yield scrapy.Request(url=web_url, callback=self.parse_data, meta=meta)
-
                 else:
-                    # print("NO DOWNLOADABLE ITEMS", doc_title)
                     continue
+
+            item = DocItem(
+                doc_name=doc_name,
+                doc_num=doc_num,
+                doc_title=doc_title,
+                downloadable_items=downloadable_items,
+                version_hash_raw_data=version_hash_fields,
+                version_hash=version_hash,
+            )
+
+            yield item
