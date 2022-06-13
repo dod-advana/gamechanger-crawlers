@@ -14,16 +14,15 @@ url_re = re.compile("((http|https)://)(www.)?" +
                     "{2,256}\\.[a-z]" +
                     "{2,6}\\b([-a-zA-Z0-9@:%" +
                     "._\\+~#?&//=]*)"
-                    )
+                    ) # Compiled regular expression used to check if a string is a valid url:
 
-mailto_re = re.compile(r'mailto\:', re.IGNORECASE)
+mailto_re = re.compile(r'mailto\:', re.IGNORECASE) # Ignore email address character case
 
-# placeholder so we can capture that there should be a downloadable item there but it doesnt have a file extension
-# if the link is updated, the hash will change and it will be downloadable later
+# Placeholder so we can capture that there should be a downloadable item there but it doesn't have a file extension.
+#   If the link is updated, the hash will change and it will be downloadable later:
 UNKNOWN_FILE_EXTENSION_PLACEHOLDER = "UNKNOWN"
-
-
-# creates names for incementable methods on each spider
+# 
+# Creates names for incementable methods on each spider
 # eg In Previous Hashes creates spider.increment_in_previous_hashes()
 STATS_BASE = {
     "Required CAC": 0,
@@ -65,11 +64,11 @@ class GCSpider(scrapy.Spider):
         spider.stats[spider.name]['Close Reason'] = reason
         super().close(spider, reason)
 
-    # this class init/del timer
+    # This class init/del timer
     time_lifespan: bool = False
-    # runspider_settings.py
+    # Runspider_settings.py
     custom_settings: dict = general_settings
-    # for downloader_middlewares.py#BanEvasionMiddleware
+    # For downloader_middlewares.py#BanEvasionMiddleware
     rotate_user_agent: bool = True
     randomly_delay_request: typing.Union[bool, range, typing.List[int]] = False
 
@@ -104,7 +103,7 @@ class GCSpider(scrapy.Spider):
     @staticmethod
     def get_href_file_extension(url: str) -> str:
         """
-            returns file extension if exists in passed url path, else UNKNOWN
+            Returns file extension if exists in passed url path, else UNKNOWN
             UNKNOWN is used so that if the website fixes their link it will trigger an update from the doc type changing
         """
         path = urlparse(url).path

@@ -4,12 +4,16 @@ from urllib.parse import urljoin, urlencode, parse_qs
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
+
 type_and_num_regex = re.compile(r"([a-zA-Z].*) (\d.*)") # Get 'type' (alphabetic) value and 'num' (numeric) value from 'doc_name' string
 
 
 class ArmyReserveSpider(GCSpider):
     '''
     Class defines the behavior for crawling and extracting text-based documents from the U.S. Army Reserves "Publications" site.
+    This class inherits the 'GCSpider' class from GCSpider.py. The GCSpider class is Gamechanger's implementation of the standard
+    parse method used in Scrapy crawlers in order to return a response.
+
     The "class" and its methods = the army_reserve "spider".
     '''
 
@@ -21,8 +25,6 @@ class ArmyReserveSpider(GCSpider):
 
     file_type = "pdf" # Define filetype for the spider to download
     cac_login_required = False # Assume document is accessible without CAC
-
-    section_selector = "div.DnnModule.DnnModule-ICGModulesExpandableTextHtml div.Normal" ##(**Superfluous? variable not used)
 
     @staticmethod
     def clean(text):

@@ -15,7 +15,7 @@ from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSeleniumSpider import GCSeleniumSpider
 
 
-## Regular expression matching variables (universal variables)
+## Universal variables - Regular expression matching
 squash_spaces = re.compile(r'\s*[\n\t\r\s+]\s*') # Find redundant spaces in a string
 type_pattern_start = re.compile('^[A-Z]+') # Find the first letter in a capital letter string
 type_pattern_mid = re.compile('[A-Z]+') # Find capital letter substring
@@ -23,11 +23,11 @@ type_pattern_mid = re.compile('[A-Z]+') # Find capital letter substring
 
 class AirForcePubsSpider(GCSeleniumSpider):
     '''
-    Class defines the behavior for crawling and extracting text-based documents from the "Department of the Air Force E-publishing" site.
-    The "class" and its methods = the air_force_pubs "spider".
+    Class defines the behavior for crawling and extracting text-based documents from the "Department of the Air Force E-publishing" site. 
+    This class inherits the 'GCSeleniumSpider' class from GCSeleniumSpider.py. The GCSeleniumSpider class applies Selenium settings to the standard
+    parse method used in Scrapy crawlers in order to return a Selenium response instead of a standard Scrapy response.
 
-    'GCSeleniumSpider' applies Selenium settings to the standard parse method used in crawlers in order to return a Selenium response
-    instead of a standard Scrapy response.
+    This class and its methods = the air_force_pubs "spider".
     '''
 
     name = 'air_force_pubs' # Spider name (required variable for Scrapy to locate and instantiate the spider)
@@ -43,7 +43,7 @@ class AirForcePubsSpider(GCSeleniumSpider):
                                                      # that a CAC is required to view a document
 
     item_count_dropdown_selector = 'label select[name="data_length"]' # Count of a given dropdown's selection options
-    table_selector = "table.epubs-table.dataTable.no-footer.dtr-inline" # Define CSS selector for scraping tables
+    table_selector = "table.epubs-table.dataTable.no-footer.dtr-inline" # Define CSS selector for tables
 
     selenium_request_overrides = {
         "wait_until": EC.element_to_be_clickable(
@@ -64,7 +64,6 @@ class AirForcePubsSpider(GCSeleniumSpider):
         ).select_by_value("100") # Select all dropdown option elements. --Changed to 100 items per page  ##(**Why 100 items/ page?)
 
         anchor_after_current_selector = "div.dataTables_paginate.paging_simple_numbers a.paginate_button.current + a" # Next page button element
-
         has_next_page = True # Initial default value; assumes next page exists
 
         while(has_next_page):
@@ -92,12 +91,12 @@ class AirForcePubsSpider(GCSeleniumSpider):
     def parse_table(self, driver):
         '''
         This function generates a link and metadata for each document in the "Product Index" table on the Air Force E-Publishing 
-        site for use by bash download script.
+        site for download.
         '''
         webpage = Selector(text=driver.page_source) # Raw HTML of webpage
         row_selector = f'{self.table_selector} tbody tr ' # Define list of table rows
 
-        ## Iterate through each row in table get column values as downloadable document's metadata
+        ## Iterate through each row in table get column values as metadata for each downloadable document
         for row in webpage.css(row_selector):
             product_number_raw = row.css(
                 f'td:nth-child(1) a::text').get(default='')
@@ -112,9 +111,9 @@ class AirForcePubsSpider(GCSeleniumSpider):
             last_action_raw = row.css(
                 f'td:nth-child(5)::text').get(default='')
 
-            prod_num = squash_spaces.sub(" ", product_number_raw).strip() # Clean any superfluous spaces in raw value
+            prod_num = squash_spaces.sub(" ", product_number_raw).strip() # Clean superfluous spaces in raw value
 
-            ## Handle special metadata value cases
+            ## Assign document metadata by utilizing file naming convention, acconting for inconsistencies
             if prod_num.find('CFETP') != -1:
                 doc_type = 'CFETP'
                 doc_num = re.sub(doc_type, '', prod_num)
@@ -159,7 +158,7 @@ class AirForcePubsSpider(GCSeleniumSpider):
 
             ## Clean raw metadata values
             doc_title = squash_spaces.sub(' ', title_raw).strip() # Clean any superfluous spaces in raw value
-
+            
             pub_date = squash_spaces.sub(' ', publish_date_raw).strip() # Clean any superfluous spaces in raw value
             pub_date = pub_date.split(' ')[0] # Get only year-month-day from published_date_raw value
             pub_date = datetime.strptime(

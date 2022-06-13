@@ -8,6 +8,9 @@ from dataPipelines.gc_scrapy.gc_scrapy.utils import abs_url
 class ArmySpider(GCSpider):
     '''
     Class defines the behavior for crawling and extracting text-based documents from the "Army Publishing Directorate" site.
+    This class inherits the 'GCSpider' class from GCSpider.py. The GCSpider class is Gamechanger's implementation of the standard
+    parse method used in Scrapy crawlers in order to return a response.
+    
     The "class" and its methods = the army_pubs "spider".
     '''
 
@@ -84,7 +87,7 @@ class ArmySpider(GCSpider):
                     "doc_type": item.css("::text").get().strip().lower(),
                     "web_url": abs_url(self.base_url, item.css("::attr(href)").get()).replace(' ', '%20'),
                     "compression_type": None
-                } # 
+                }
                 downloadable_items.append(di)
         version_hash_fields = {
             "pub_date": publication_date,
