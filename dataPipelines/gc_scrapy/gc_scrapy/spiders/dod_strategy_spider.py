@@ -51,31 +51,21 @@ class DoDStrategySpider(GCSpider):
 
             doc_title = self.ascii_clean(doc_title_raw)
             doc_name = doc_title
-            doc_num = ""
-            publication_date = ""
+            doc_num = "N/A"
 
             # exclude non-strategy documents
             if not (self.doc_type_suffix.lower() in doc_title_raw.lower()):
                 continue
 
-        # downloadable_items = [
-        #     {"doc_type": file_type, "web_url": web_url.replace(" ", "%20"), "compression_type": None}
-        # ]
+            downloadable_items = [{"doc_type": file_type, "web_url": web_url, "compression_type": None}]
+            version_hash_fields = {"item_currency": href_raw}
 
-        # version_hash_fields = {"publication_date": publication_date, "item_currency": href_raw}
-
-        # if doc_name in self.seen:
-        #     extra, *_ = doc_title.partition(":")
-        #     doc_name += f" {extra}"
-
-        # self.seen.add(doc_name)
-
-        # yield DocItem(
-        #     doc_name=doc_name,
-        #     doc_num=doc_num,
-        #     doc_title=doc_title,
-        #     publication_date=publication_date,
-        #     source_page_url=source_page_url,
-        #     downloadable_items=downloadable_items,
-        #     version_hash_raw_data=version_hash_fields,
-        # )
+            yield DocItem(
+                doc_name=doc_name,
+                doc_num=doc_num,
+                doc_title=doc_title,
+                source_page_url=response.url,
+                downloadable_items=downloadable_items,
+                version_hash_raw_data=version_hash_fields,
+                cac_login_required=self.cac_login_required,
+            )

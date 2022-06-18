@@ -213,6 +213,10 @@ class FileDownloadPipeline(MediaPipeline):
                 output_file_name = response.meta["output_file_name"]
                 doc_type = response.meta["doc_type"]
                 compression_type = response.meta["compression_type"]
+                publication_date = datetime.strptime(
+                    response.headers["Last-Modified"].decode("ascii"), "%a, %d %b %Y %H:%M:%S %Z"
+                ).strftime("%Y-%m-%d")
+                item["publication_date"] = publication_date
                 if compression_type:
                     file_download_path = Path(self.output_dir, output_file_name).with_suffix(f".{compression_type}")
                     file_unzipped_path = Path(self.output_dir, output_file_name)
