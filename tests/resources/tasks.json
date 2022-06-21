@@ -1,0 +1,39 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "TMP_DOD",
+            "type": "shell",
+            "runOptions": {
+                "runOn": "default"
+            },
+            "command": "/home/melkiga/code/helpers/scripts/clean_crawler_output.sh tmp/dod_strategy_spider"
+        },
+        {
+            "label": "TMP_NATO",
+            "type": "shell",
+            "runOptions": {
+                "runOn": "default"
+            },
+            "command": "clean_crawlers tmp/nato_spider"
+        },
+        {
+            "label": "TMP_US",
+            "type": "shell",
+            "runOptions": {
+                "runOn": "default"
+            },
+            "command": "/home/melkiga/code/helpers/scripts/clean_crawler_output.sh tmp/us_code_spider"
+        },
+        {
+            "label": "TMP_TUS",
+            "type": "shell",
+            "runOptions": {
+                "runOn": "default"
+            },
+            "command": "./home/melkiga/code/helpers/scripts/clean_crawler_output.sh tmp/test_us_code_spider"
+        },
+    ]
+}

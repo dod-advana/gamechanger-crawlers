@@ -1,0 +1,91 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "DoDStrategy",
+            "type": "python",
+            "request": "launch",
+            "module": "scrapy",
+            "args": [
+                "runspider",
+                "dataPipelines/gc_scrapy/gc_scrapy/spiders/dod_strategy_spider.py",
+                "-a",
+                "download_output_dir=tmp/dod_strategy_spider",
+                "-a",
+                "previous_manifest_location=tmp/dod_strategy_spider/prev_manifest.json",
+                "-o",
+                "tmp/dod_strategy_spider/output.json"
+            ],
+            "preLaunchTask": "TMP_DOD"
+        },
+        {
+            "name": "Python: US",
+            "type": "python",
+            "request": "launch",
+            "module": "scrapy",
+            "args": [
+                "runspider",
+                "dataPipelines/gc_scrapy/gc_scrapy/spiders/us_code_spider.py",
+                "-a",
+                "download_output_dir=tmp/us_code_spider",
+                "-a",
+                "previous_manifest_location=tmp/us_code_spider/prev_manifest.json",
+                "-o",
+                "tmp/us_code_spider/output.json"
+            ],
+            "preLaunchTask": "TMP_US"
+        },
+        {
+            "name": "Python: TUS",
+            "type": "python",
+            "request": "launch",
+            "module": "scrapy",
+            "args": [
+                "runspider",
+                "dataPipelines/gc_scrapy/gc_scrapy/spiders/us_code_spider.py",
+                "-a",
+                "download_output_dir=tmp/test_us_code_spider",
+                "-a",
+                "previous_manifest_location=tmp/test_us_code_spider/prev_manifest.json",
+                "-o",
+                "tmp/test_us_code_spider/output.json"
+            ]
+        },
+        {
+            "name": "Test US Previous Hash",
+            "type": "python",
+            "request": "launch",
+            "module": "scrapy",
+            "args": [
+                "runspider",
+                "dataPipelines/gc_scrapy/gc_scrapy/spiders/us_code_spider.py",
+                "-a",
+                "download_output_dir=tmp/test_us_code_spider",
+                "-a",
+                "previous_manifest_location=tmp/test_us_code_spider/manifest.json",
+                "-o",
+                "tmp/test_us_code_spider/output.json"
+            ]
+        },
+        {
+            "name": "Python: NATO",
+            "type": "python",
+            "request": "launch",
+            "module": "scrapy",
+            "args": [
+                "runspider",
+                "dataPipelines/gc_scrapy/gc_scrapy/spiders/nato_spider.py",
+                "-a",
+                "download_output_dir=tmp/nato_spider",
+                "-a",
+                "previous_manifest_location=tmp/nato_spider/prev_manifest.json",
+                "-o",
+                "tmp/nato_spider/output.json"
+            ],
+            "preLaunchTask": "TMP_NATO"
+        }
+    ]
+}
