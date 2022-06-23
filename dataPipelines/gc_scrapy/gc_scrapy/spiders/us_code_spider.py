@@ -61,7 +61,7 @@ class USCodeSpider(GCSpider):
             if not ("Appendix" in doc_title):
                 doc_title = unzipped_file.stem.split("-", 1)[1].strip()
             item = DocItem(
-                doc_name=unzipped_file.stem,
+                doc_name=unzipped_file.name,
                 doc_num=doc_num,
                 doc_title=doc_title,
                 downloadable_items=downloadable_items,
