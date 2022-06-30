@@ -29,7 +29,11 @@ class AirForcePubsSpider(GCSeleniumSpider):
     This class and its methods = the air_force_pubs "spider".
     '''
 
-    name = 'air_force_pubs' # Spider name (required variable for Scrapy to locate and instantiate the spider)
+    name = 'air_force_pubs' # Crawler name
+    display_org = "Dept. of the Air Force" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Dept. of the Air Force E-Publishing" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
+
     allowed_domains = ['e-publishing.af.mil'] # Domains the spider is allowed to crawl
     start_urls = [
         'https://www.e-publishing.af.mil/Product-Index/#/?view=pubs&orgID=10141&catID=1&series=-1&modID=449&tabID=131/'

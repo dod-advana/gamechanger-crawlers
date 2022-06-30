@@ -7,16 +7,18 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
 
 class BupersSpider(GCSpider):
-    name = "Bupers_Crawler"
+    name = "Bupers_Crawler" # Crawler name
+    display_org = "US Navy" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "MyNavy HR" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
+    cac_login_required = False
+    rotate_user_agent = True
+    doc_type = "BUPERSINST"
+
     allowed_domains = ['mynavyhr.navy.mil']
     start_urls = [
         "https://www.mynavyhr.navy.mil/References/Instructions/BUPERS-Instructions/"
     ]
-
-    doc_type = "BUPERSINST"
-    display_org = "US Navy"
-    cac_login_required = False
-    rotate_user_agent = True
 
     @staticmethod
     def clean(text):
@@ -198,7 +200,6 @@ class BupersSpider(GCSpider):
                     doc_name=doc_name,
                     doc_title=doc_title,
                     doc_num=doc_num,
-                    display_org=self.display_org,
                     publication_date=publication_date,
                     downloadable_items=downloadable_items,
                     version_hash_raw_data=version_hash_fields,

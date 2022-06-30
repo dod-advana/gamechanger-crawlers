@@ -9,7 +9,11 @@ exec_order_re = re.compile(
 
 
 class ExecutiveOrdersSpider(GCSpider):
-    name = "ex_orders"
+    name = "ex_orders" # Crawler name
+    display_org = "Executive Branch" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Federal Register" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
+
     start_urls = [
         "https://www.federalregister.gov/presidential-documents/executive-orders"
     ]

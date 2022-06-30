@@ -11,9 +11,10 @@ def has_digit(text):
 
 
 class MilpersmanSpider(GCSpider):
-    name = 'milpersman_crawler'
-    
-    display_org="US Navy"
+    name = 'milpersman_crawler' # Crawler name
+    display_org="US Navy" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "MyNavy HR" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
 
     start_urls = ['https://www.mynavyhr.navy.mil/References/MILPERSMAN/']
     doc_type = "MILPERSMAN"
@@ -106,7 +107,6 @@ class MilpersmanSpider(GCSpider):
                 doc_name=doc_name,
                 doc_title=doc_title,
                 doc_num=doc_num,
-                display_org = self.display_org,
                 downloadable_items=downloadable_items,
                 version_hash_raw_data=version_hash_fields,
                 source_page_url=current_url
