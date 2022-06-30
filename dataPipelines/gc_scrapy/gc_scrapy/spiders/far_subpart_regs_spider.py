@@ -14,7 +14,10 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSeleniumSpider import GCSeleniumSpider
 
 
 class FarSubpartSpider(GCSeleniumSpider):
-    name = "far_subpart_regs"
+    name = "far_subpart_regs" # Crawler name
+    display_org = "FAR" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Federal Acquisition Regulation" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
 
     start_urls = [
         'https://www.acquisition.gov/far'

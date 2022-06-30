@@ -9,7 +9,10 @@ import base64
 
 
 class NatoSpider(GCSpider):
-    name = "nato_stanag"
+    name = "nato_stanag" # Crawler name
+    display_org="NATO" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "NATO Publications" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
     rotate_user_agent = True
 
     source_page_url = "https://nso.nato.int/nso/nsdd/ListPromulg.html"

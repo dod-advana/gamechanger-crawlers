@@ -5,12 +5,11 @@ import typing as t
 
 
 class SASCSpider(GCSpider):
-    name = "SASC"
+    name = "SASC" # Crawler name
+    display_org = "Congress" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Senate Armed Services Committee Publications" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Senate Armed Services Committee" # Level 3 filter
     cac_login_required = False
-
-    display_org = "Congress"
-    data_source = "Senate Armed Services Committee Publications"
-    source_title = "Senate Armed Services Committee"
 
     base_url = "https://www.armed-services.senate.gov"
 

@@ -8,7 +8,11 @@ class CNGBISpider(GCSpider):
         Parser for Chief National Guard Bureau Instructions
     """
 
-    name = "National_Guard"
+    name = "National_Guard" # Crawler name
+    display_org = "National Guard" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "National Guard Bureau Publications & Forms Library" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
+
     allowed_domains = ['ngbpmc.ng.mil']
     start_urls = [
         'https://www.ngbpmc.ng.mil/publications1/cngbi/'

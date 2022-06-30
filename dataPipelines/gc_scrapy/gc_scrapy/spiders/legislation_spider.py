@@ -8,7 +8,10 @@ bill_version_re = re.compile(r'\((.*)\)')
 
 
 class LegislationSpider(GCSpider):
-    name = "legislation_pubs"
+    name = "legislation_pubs" # Crawler name
+    display_org = "Congress" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Congressional Legislation" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
     cac_login_required = False
     rotate_user_agent = True
 

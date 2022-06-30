@@ -6,7 +6,10 @@ doc_type_num_re = re.compile(r'(.*)\s(\d+.*)')
 
 
 class JcsPubsSpider(GCSpider):
-    name = 'jcs_pubs'
+    name = 'jcs_pubs' # Crawler name
+    display_org = "Joint Chiefs of Staff" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "CJCS Directives Library" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
 
     start_urls = ['https://www.jcs.mil/Library/']
     base_url = 'https://www.jcs.mil'

@@ -16,7 +16,11 @@ class ArmyReserveSpider(GCSpider):
     The "class" and its methods = the army_reserve "spider".
     '''
 
-    name = "Army_Reserve" # Spider name (required variable for Scrapy to locate and instantiate the spider)
+    name = "Army_Reserve" # Crawler name
+    display_org = "Dept. of the Army" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Army Publishing Directorate" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
+
     allowed_domains = ['usar.army.mil'] # Domains the spider is allowed to crawl
     start_urls = [
         'https://www.usar.army.mil/Publications/'

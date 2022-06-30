@@ -14,17 +14,21 @@ class ArmySpider(GCSpider):
     The "class" and its methods = the army_pubs "spider".
     '''
 
-    name = "army_pubs" # Spider name (required variable for Scrapy to locate and instantiate the spider)
+    name = "army_pubs" # Crawler name
+    display_org = "Dept. of the Army" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Army Publishing Directorate" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
+
     allowed_domains = ['armypubs.army.mil'] # Domains the spider is allowed to crawl
     start_urls = [
         'https://armypubs.army.mil/'
     ] # URL where the spider begins crawling
 
-    file_type = "pdf" # Define filetype for the spider to download
-
     base_url = 'https://armypubs.army.mil' # Landing page/ base URL
     pub_url = base_url + '/ProductMaps/PubForm/' # Add extension to landing page base URL to get base URL for document links
     rotate_user_agent = True
+
+    file_type = "pdf" # Define filetype for the spider to download
 
     def parse(self, response):
         '''

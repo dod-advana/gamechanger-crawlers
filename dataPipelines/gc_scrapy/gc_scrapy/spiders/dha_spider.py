@@ -5,10 +5,10 @@ display_types = ["Instruction", "Manual", "Memo", "Regulation"]
 
 
 class DHASpider(GCSpider):
-    name = "dha_pubs"
-    display_org = "Defense Health Agency"
-    data_source = "Military Health System"
-    source_title = "Defense Health Agency Publications"
+    name = "dha_pubs" # Crawler name
+    display_org = "Defense Health Agency" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Military Health System" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Defense Health Agency Publications" # Level 3 filter
 
     start_urls = [
         'https://www.health.mil/About-MHS/OASDHA/Defense-Health-Agency/Administration-and-Management/DHA-Publications'
