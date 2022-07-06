@@ -7,14 +7,16 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
 
 class BupersSpider(GCSpider):
-    name = "Bupers_Crawler" # Crawler name
-    display_org = "US Navy" # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = "MyNavy HR" # Level 2: GC app 'Source' metadata field for docs from this crawler
-    source_title = "Unlisted Source" # Level 3 filter
-    cac_login_required = False
-    rotate_user_agent = True
-    doc_type = "BUPERSINST"
+    '''
+    Class defines the behavior for crawling and extracting text-based documents from the "MyNavy HR" site, "Bureau of Naval Personnel (BUPERS) Instructions" page. 
+    This class inherits the 'GCSpider' class from GCSpider.py. The GCSpider class is Gamechanger's implementation of the standard
+    parse method used in Scrapy crawlers in order to return a response.
 
+    This class and its methods = the bupers "spider".
+    '''
+
+    name = "Bupers_Crawler" # Crawler name
+    rotate_user_agent = True # ?
     allowed_domains = ['mynavyhr.navy.mil']
     start_urls = [
         "https://www.mynavyhr.navy.mil/References/Instructions/BUPERS-Instructions/"
@@ -22,15 +24,24 @@ class BupersSpider(GCSpider):
 
     @staticmethod
     def clean(text):
+        '''
+        This function cleans unicode characters and encodes to ascii
+        '''
         return text.replace('\xa0', ' ').encode('ascii', 'ignore').decode('ascii').strip()
 
     @staticmethod
     def filter_empty(text_list):
+        '''
+        This function filters out empty strings from string lists
+        '''
         return list(filter(lambda a: a, text_list))
 
     @staticmethod
     def match_old_doc_name(text):
-        # match all these cases where the name came out different
+        '''
+        This function normalizes document names, accounting for subtle naming differences in newer 
+        versions from older ones.
+        '''
         if text == "BUPERSINST BUPERSNOTE 1401":
             return "BUPERSINST BUPERSNOTE1401"
 
@@ -50,17 +61,63 @@ class BupersSpider(GCSpider):
         else:
             return text
 
+    def populate_doc_item(self, hrefs, item_currency, doc_num, doc_title, publication_date):
+        '''
+        This functions provides both hardcoded and computed values for the variables
+        in the imported DocItem object and returns the populated metadata object
+        '''
+        display_org = "US Navy" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "MyNavy HR" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "Unlisted Source" # Level 3 filter
+        doc_type = "BUPERSINST" # The doc_type value is constant for this crawler
+        cac_login_required = False # No CAC required for any documents
+        downloadable_items = []
+        for href in hrefs: 
+            file_type = self.get_href_file_extension(href)
+            web_url = urljoin(self.start_urls[0], href).replace(' ', '%20')
+            downloadable_items.append(
+                {
+                    "doc_type": file_type,
+                    "web_url": web_url,
+                    "compression_type": None
+                }
+            )
+        version_hash_fields = {
+            "item_currency": item_currency,
+            "document_title": doc_title,
+            "document_number": doc_num
+        }
+        doc_name = self.match_old_doc_name(f"{doc_type} {doc_num}")
+        return DocItem(
+                    doc_name = doc_name,
+                    doc_title = doc_title,
+                    doc_num = doc_num,
+                    doc_type =doc_type,
+                    publication_date = publication_date,
+                    cac_login_required = cac_login_required,
+                    crawler_used = self.name,
+                    downloadable_items = downloadable_items,
+                    version_hash_raw_data = version_hash_fields,
+                    display_org = display_org,
+                    data_source = data_source,
+                    source_title = source_title,
+                )
+
     def parse(self, response):
+        '''
+        This function generates a link and metadata for each document found on "MyNavy HR" site's "Bureau of 
+        Naval Personnel Instructions" page for use by bash download script.
+        '''
         # first 3 rows are what should be header content but are just regular rows, so nth-child used
         rows = response.css("div.livehtml > table > tbody tr:nth-child(n + 4)")
 
         for row in rows:
             links_raw = row.css('td:nth-child(1) a::attr(href)').getall()
             if not len(links_raw):
-                # skip rows without anchor, no downloadable docs
+                # skip rows without anchor or any downloadable docs
                 continue
 
-            # data is nested in a variety of ways, lots of checks :/
+            # data is nested in a variety of ways, therefore lots of checks
             doc_nums_raw = []
             for selector in ['a strong::text', 'a::text', 'span::text', 'font::text']:
                 nums = row.css(f'td:nth-child(1) {selector}').getall()
@@ -79,7 +136,7 @@ class BupersSpider(GCSpider):
                 if titles is not None:
                     dates_raw += dates
 
-            # clean unicode and filter empty strings after
+            # clean unicode and filter out empty strings from lists
             doc_nums_cleaned = self.filter_empty(
                 [self.clean(text) for text in doc_nums_raw])
             doc_title = " ".join(self.filter_empty(
@@ -88,122 +145,39 @@ class BupersSpider(GCSpider):
                 [self.clean(text) for text in dates_raw])
             links_cleaned = self.filter_empty(links_raw)
 
-            # happy path, equal num of docs, links, dates
+            # happy path, equal num of docs, links, dates (??)
+            # some doc nums arent downloadable but have dates
+                # special case for equal num but should be a combined doc num with CH-1
             if ((len(doc_nums_cleaned) == len(links_cleaned) == len(dates_cleaned))
                     or (len(dates_cleaned) > len(doc_nums_cleaned))) \
                     and (not 'CH-1' in doc_nums_cleaned):
-                # some doc nums arent downloadable but have dates
-                # special case for equal num but should be a combined doc num with CH-1
-
                 for i in range(len(doc_nums_cleaned)):
                     doc_num = doc_nums_cleaned[i]
-                    href = links_cleaned[i]
-                    file_type = self.get_href_file_extension(href)
-
-                    web_url = urljoin(
-                        self.start_urls[0], href).replace(' ', '%20')
-                    downloadable_items = [
-                        {
-                            "doc_type": file_type,
-                            "web_url": web_url,
-                            "compression_type": None
-                        }
-                    ]
-
-                    version_hash_fields = {
-                        "item_currency": href.replace(' ', '%20'),
-                        "document_title": doc_title,
-                        "document_number": doc_num
-                    }
-
-                    doc_name = self.match_old_doc_name(
-                        f"{self.doc_type} {doc_num}")
-
-                    yield DocItem(
-                        doc_name=doc_name,
-                        doc_title=doc_title,
-                        doc_num=doc_num,
-                        publication_date=dates_cleaned[i],
-                        downloadable_items=downloadable_items,
-                        version_hash_raw_data=version_hash_fields,
-                    )
+                    hrefs = [links_cleaned[i]]
+                    item_currency = links_cleaned[i].replace(' ', '%20')
+                    publication_date = dates_cleaned[i]
+                    doc_item = self.populate_doc_item(hrefs, item_currency, doc_num, doc_title, publication_date)
+                    yield doc_item
 
             # doc num was split, combine them into one string
             elif (len(doc_nums_cleaned) > len(dates_cleaned) and len(links_cleaned) == len(dates_cleaned)) \
                     or (any(item in ['Vol 1', 'Vol 2', 'CH-1', 'w/CH-1'] for item in doc_nums_cleaned)):
-                # special cases for spit names of same doc
-
+                # special cases for split names of same doc
                 doc_num = " ".join(doc_nums_cleaned)
-
-                href = links_cleaned[0]
-                file_type = self.get_href_file_extension(href)
-
-                web_url = urljoin(self.start_urls[0], href).replace(' ', '%20')
-                downloadable_items = [
-                    {
-                        "doc_type": file_type,
-                        "web_url": web_url,
-                        "compression_type": None
-                    }
-                ]
-
-                version_hash_fields = {
-                    "item_currency": href,
-                    "document_title": doc_title,
-                    "document_number": doc_num
-                }
-                doc_name = self.match_old_doc_name(
-                    f"{self.doc_type} {doc_num}")
-
+                hrefs = [links_cleaned[0]]
+                item_currency = hrefs
                 publication_date = next(iter(dates_cleaned or []), None)
-
-                yield DocItem(
-                    doc_name=doc_name,
-                    doc_title=doc_title,
-                    doc_num=doc_num,
-                    publication_date=publication_date,
-                    downloadable_items=downloadable_items,
-                    version_hash_raw_data=version_hash_fields,
-                )
+                doc_item = self.populate_doc_item(hrefs, item_currency, doc_num, doc_title, publication_date)
+                yield doc_item
 
             # there are supplemental downloadable items
             elif len(links_cleaned) > len(dates_cleaned):
                 doc_num = next(iter(doc_nums_cleaned or []), None)
-                downloadable_items = []
-
-                for href in links_cleaned:
-                    file_type = self.get_href_file_extension(href)
-                    web_url = urljoin(
-                        self.start_urls[0], href).replace(' ', '%20')
-                    downloadable_items.append(
-                        {
-                            "doc_type": file_type,
-                            "web_url": web_url,
-                            "compression_type": None
-                        }
-                    )
-
+                hrefs = [href for href in links_cleaned]
                 item_currency = next(iter(links_cleaned or []), None)
-
-                version_hash_fields = {
-                    "item_currency": item_currency,
-                    "document_title": doc_title,
-                    "document_number": doc_num
-                }
-
-                doc_name = self.match_old_doc_name(
-                    f"{self.doc_type} {doc_num}")
-
                 publication_date = next(iter(dates_cleaned or []), None)
-
-                yield DocItem(
-                    doc_name=doc_name,
-                    doc_title=doc_title,
-                    doc_num=doc_num,
-                    publication_date=publication_date,
-                    downloadable_items=downloadable_items,
-                    version_hash_raw_data=version_hash_fields,
-                )
+                doc_item = self.populate_doc_item(hrefs, item_currency, doc_num, doc_title, publication_date)
+                yield doc_item
             else:
                 raise Exception(
                     'Row data not captured, doesnt match known cases', row)
