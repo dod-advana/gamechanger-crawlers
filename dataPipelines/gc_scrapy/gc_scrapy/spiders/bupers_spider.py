@@ -14,7 +14,6 @@ class BupersSpider(GCSpider):
 
     This class and its methods = the bupers "spider".
     '''
-
     name = "Bupers_Crawler" # Crawler name
     rotate_user_agent = True # ?
     allowed_domains = ['mynavyhr.navy.mil']
@@ -60,48 +59,6 @@ class BupersSpider(GCSpider):
             return doc_name
         else:
             return text
-
-    def populate_doc_item(self, hrefs, item_currency, doc_num, doc_title, publication_date):
-        '''
-        This functions provides both hardcoded and computed values for the variables
-        in the imported DocItem object and returns the populated metadata object
-        '''
-        display_org = "US Navy" # Level 1: GC app 'Source' filter for docs from this crawler
-        data_source = "MyNavy HR" # Level 2: GC app 'Source' metadata field for docs from this crawler
-        source_title = "Unlisted Source" # Level 3 filter
-        doc_type = "BUPERSINST" # The doc_type value is constant for this crawler
-        cac_login_required = False # No CAC required for any documents
-        downloadable_items = []
-        for href in hrefs: 
-            file_type = self.get_href_file_extension(href)
-            web_url = urljoin(self.start_urls[0], href).replace(' ', '%20')
-            downloadable_items.append(
-                {
-                    "doc_type": file_type,
-                    "web_url": web_url,
-                    "compression_type": None
-                }
-            )
-        version_hash_fields = {
-            "item_currency": item_currency,
-            "document_title": doc_title,
-            "document_number": doc_num
-        }
-        doc_name = self.match_old_doc_name(f"{doc_type} {doc_num}")
-        return DocItem(
-                    doc_name = doc_name,
-                    doc_title = doc_title,
-                    doc_num = doc_num,
-                    doc_type =doc_type,
-                    publication_date = publication_date,
-                    cac_login_required = cac_login_required,
-                    crawler_used = self.name,
-                    downloadable_items = downloadable_items,
-                    version_hash_raw_data = version_hash_fields,
-                    display_org = display_org,
-                    data_source = data_source,
-                    source_title = source_title,
-                )
 
     def parse(self, response):
         '''
@@ -181,3 +138,49 @@ class BupersSpider(GCSpider):
             else:
                 raise Exception(
                     'Row data not captured, doesnt match known cases', row)
+
+    def populate_doc_item(self, hrefs, item_currency, doc_num, doc_title, publication_date):
+        '''
+        This functions provides both hardcoded and computed values for the variables
+        in the imported DocItem object and returns the populated metadata object
+        '''
+        display_org = "US Navy" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "MyNavy HR" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "Unlisted Source" # Level 3 filter
+        doc_type = "BUPERSINST" # The doc_type value is constant for this crawler
+        display_doc_type = "Document" # Doc type for display on app
+        cac_login_required = False # No CAC required for any documents
+        is_revoked = False
+        downloadable_items = []
+        for href in hrefs: 
+            file_type = self.get_href_file_extension(href)
+            web_url = urljoin(self.start_urls[0], href).replace(' ', '%20')
+            downloadable_items.append(
+                {
+                    "doc_type": file_type,
+                    "web_url": web_url,
+                    "compression_type": None
+                }
+            )
+        version_hash_fields = {
+            "item_currency": item_currency,
+            "document_title": doc_title,
+            "document_number": doc_num
+        }
+        doc_name = self.match_old_doc_name(f"{doc_type} {doc_num}")
+        return DocItem(
+                    doc_name = doc_name,
+                    doc_title = doc_title,
+                    doc_num = doc_num,
+                    doc_type = doc_type,
+                    display_doc_type = display_doc_type,
+                    publication_date = publication_date,
+                    cac_login_required = cac_login_required,
+                    crawler_used = self.name,
+                    downloadable_items = downloadable_items,
+                    version_hash_raw_data = version_hash_fields,
+                    display_org = display_org,
+                    data_source = data_source,
+                    source_title = source_title,
+                    is_revoked = is_revoked,
+                )
