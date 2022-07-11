@@ -146,7 +146,7 @@ class BupersSpider(GCSpider):
         '''
         display_org = "US Navy" # Level 1: GC app 'Source' filter for docs from this crawler
         data_source = "MyNavy HR" # Level 2: GC app 'Source' metadata field for docs from this crawler
-        source_title = "Unlisted Source" # Level 3 filter
+        source_title = "Bureau of Naval Personnel Instructions" # Level 3 filter
         doc_type = "BUPERSINST" # The doc_type value is constant for this crawler
         display_doc_type = "Document" # Doc type for display on app
         cac_login_required = False # No CAC required for any documents
