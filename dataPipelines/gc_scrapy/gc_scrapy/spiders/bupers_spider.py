@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 import scrapy
 import re
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
+from datetime import datetime
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
 
 
 class BupersSpider(GCSpider):
@@ -149,8 +151,13 @@ class BupersSpider(GCSpider):
         source_title = "Bureau of Naval Personnel Instructions" # Level 3 filter
         doc_type = "BUPERSINST" # The doc_type value is constant for this crawler
         display_doc_type = "Document" # Doc type for display on app
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_num + " " + doc_title
         cac_login_required = False # No CAC required for any documents
         is_revoked = False
+        access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
+        source_page_url = self.start_urls[0]
+        source_fqdn = urlparse(source_page_url).netloc
         downloadable_items = []
         for href in hrefs: 
             file_type = self.get_href_file_extension(href)
@@ -168,19 +175,29 @@ class BupersSpider(GCSpider):
             "document_number": doc_num
         }
         doc_name = self.match_old_doc_name(f"{doc_type} {doc_num}")
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+
         return DocItem(
                     doc_name = doc_name,
                     doc_title = doc_title,
                     doc_num = doc_num,
                     doc_type = doc_type,
-                    display_doc_type = display_doc_type,
-                    publication_date = publication_date,
-                    cac_login_required = cac_login_required,
-                    crawler_used = self.name,
+                    display_doc_type_s = display_doc_type,
+                    publication_date_dt = publication_date,
+                    cac_login_required_b = cac_login_required,
+                    crawler_used_s = self.name,
                     downloadable_items = downloadable_items,
+                    source_page_url_s = source_page_url,
+                    source_fqdn_s = source_fqdn,
+                    #download_url_s = web_url, 
                     version_hash_raw_data = version_hash_fields,
-                    display_org = display_org,
-                    data_source = data_source,
-                    source_title = source_title,
-                    is_revoked = is_revoked,
+                    version_hash_s = version_hash,
+                    display_org_s = display_org,
+                    data_source_s = data_source,
+                    source_title_s = source_title,
+                    display_source_s = display_source,
+                    display_title_s = display_title,
+                    file_ext_s = doc_type,
+                    is_revoked_b = is_revoked,
+                    access_timestamp_dt = access_timestamp
                 )
