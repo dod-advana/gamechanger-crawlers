@@ -220,7 +220,11 @@ class AirForcePubsSpider(GCSeleniumSpider):
             "item_currency": item_currency,
             "certified_date": cert_date,
             "last_action": last_action,
-            "publication_date": publication_date
+            "publication_date": publication_date,
+            "is_revoked":is_revoked,    # always
+            "doc_name":doc_name,        # always
+            "doc_num":doc_num,          # always
+            "doc_title":doc_title       # always
         }
 
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
