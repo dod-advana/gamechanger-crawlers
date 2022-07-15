@@ -16,6 +16,7 @@ class DocItem(scrapy.Item):
     crawler_used_s = scrapy.Field()
     source_page_url_s = scrapy.Field()
     downloadable_items = scrapy.Field()
+    download_url_s = scrapy.Field()
     version_hash_raw_data = scrapy.Field()
     access_timestamp_dt = scrapy.Field()
     source_fqdn_s = scrapy.Field()

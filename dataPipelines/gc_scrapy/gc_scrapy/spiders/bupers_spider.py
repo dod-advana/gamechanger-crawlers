@@ -6,6 +6,7 @@ from datetime import datetime
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
+from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp
 
 
 class BupersSpider(GCSpider):
@@ -25,16 +26,12 @@ class BupersSpider(GCSpider):
 
     @staticmethod
     def clean(text):
-        '''
-        This function cleans unicode characters and encodes to ascii
-        '''
+        """This function cleans unicode characters and encodes to ascii"""
         return text.replace('\xa0', ' ').encode('ascii', 'ignore').decode('ascii').strip()
 
     @staticmethod
     def filter_empty(text_list):
-        '''
-        This function filters out empty strings from string lists
-        '''
+        """This function filters out empty strings from string lists"""
         return list(filter(lambda a: a, text_list))
 
     @staticmethod
@@ -61,6 +58,36 @@ class BupersSpider(GCSpider):
             return doc_name
         else:
             return text
+
+    @staticmethod
+    def get_pub_date(publication_date):
+        '''
+        This function convverts publication_date from DD Month YYYY format to YYYY-MM-DDTHH:MM:SS format.
+        T is a delimiter between date and time.
+        '''
+        try:
+            date = parse_timestamp(publication_date, None)
+            if date:
+                publication_date = datetime.strftime(date, '%Y-%m-%dT%H:%M:%S')
+        except:
+            publication_date = ""
+        return publication_date
+
+
+    def get_downloadables(self, hrefs):
+        """This function creates a list of downloadable_items dictionaries from a list of document links"""
+        downloadable_items = []
+        for href in hrefs: 
+            file_type = self.get_href_file_extension(href)
+            web_url = urljoin(self.start_urls[0], href).replace(' ', '%20')
+            downloadable_items.append(
+                {
+                    "doc_type": file_type,
+                    "download_url": web_url,
+                    "compression_type": None
+                }
+            )
+        return downloadable_items
 
     def parse(self, response):
         '''
@@ -155,26 +182,21 @@ class BupersSpider(GCSpider):
         display_title = doc_type + " " + doc_num + " " + doc_title
         cac_login_required = False # No CAC required for any documents
         is_revoked = False
+
         access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
+        publication_date = self.get_pub_date(publication_date)
         source_page_url = self.start_urls[0]
         source_fqdn = urlparse(source_page_url).netloc
-        downloadable_items = []
-        for href in hrefs: 
-            file_type = self.get_href_file_extension(href)
-            web_url = urljoin(self.start_urls[0], href).replace(' ', '%20')
-            downloadable_items.append(
-                {
-                    "doc_type": file_type,
-                    "web_url": web_url,
-                    "compression_type": None
-                }
-            )
+        downloadable_items = self.get_downloadables(hrefs)
+        download_url = downloadable_items[0]['download_url']
+        doc_name = self.match_old_doc_name(f"{doc_type} {doc_num}")
         version_hash_fields = {
             "item_currency": item_currency,
             "document_title": doc_title,
-            "document_number": doc_num
+            "document_number": doc_num,
+            "doc_name": doc_name,
+            "is_revoked": is_revoked
         }
-        doc_name = self.match_old_doc_name(f"{doc_type} {doc_num}")
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 
         return DocItem(
@@ -189,7 +211,7 @@ class BupersSpider(GCSpider):
                     downloadable_items = downloadable_items,
                     source_page_url_s = source_page_url,
                     source_fqdn_s = source_fqdn,
-                    #download_url_s = web_url, 
+                    download_url_s = download_url, 
                     version_hash_raw_data = version_hash_fields,
                     version_hash_s = version_hash,
                     display_org_s = display_org,

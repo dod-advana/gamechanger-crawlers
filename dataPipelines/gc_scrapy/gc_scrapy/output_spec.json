@@ -10,12 +10,12 @@
 			"downloadable_items": [
 				{
 					"doc_type": "pdf",
-					"web_url": "https://example.local/pubs/misc_pub_vol4.pdf",
+					"download_url": "https://example.local/pubs/misc_pub_vol4.pdf",
 					"compression_type": null
 				},
 				{
 					"doc_type": "xml",
-					"web_url": "https://example.local/pubs/misc_pub_vol4.xml",
+					"download_url": "https://example.local/pubs/misc_pub_vol4.xml",
 					"compression_type": null
 				}
 			],
@@ -103,7 +103,7 @@
 				"Misc Publication, Volume 4"
 			]
 		},
-		"publication_date_s": {
+		"publication_date_dt": {
 			"type": [
 				"string",
 				"null"
@@ -177,13 +177,13 @@
 			"examples": [
 				{
 					"doc_type": "pdf",
-					"web_url": "https://example.local/pubs/misc_pub_vol4.pdf",
+					"download_url": "https://example.local/pubs/misc_pub_vol4.pdf",
 					"compression_type": null
 				}
 			],
 			"required": [
 				"doc_type",
-				"web_url",
+				"download_url",
 				"compression_type"
 			],
 			"properties": {
@@ -193,9 +193,9 @@
 					"description": "The ultimate document file type when decompressed",
 					"pattern": "^[\\S]+$"
 				},
-				"web_url": {
+				"download_url": {
 					"type": "string",
-					"title": "Web Url",
+					"title": "Download Url",
 					"description": "Web url to a downloadable artifact, compressed or not",
 					"pattern": "^https?://"
 				},

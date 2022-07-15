@@ -15,7 +15,9 @@ from functools import reduce
 from urllib.parse import urljoin, urlparse
 import re
 import os
-
+import typing as t
+import datetime
+import pandas
 
 def str_to_sha256_hex_digest(_str: str) -> str:
     """Converts string to sha256 hex digest"""
@@ -250,3 +252,28 @@ def unzip_docs_as_needed(input_dir: Union[Path, str], output_dir: Union[Path, st
             os.remove(input_dir)
 
     return final_ddocs
+
+
+def parse_timestamp(ts: t.Union[str, datetime.datetime], raise_parse_error: bool = False) -> t.Optional[datetime.datetime]:
+    """Parse date/timestamp with no particular format
+    :param ts: date/timestamp string
+    :return: datetime.datetime if parsing was successful, else None
+    """
+    def _parse(ts):
+        if isinstance(ts, datetime.datetime):
+            return ts
+
+        try:
+            ts = pandas.to_datetime(ts).to_pydatetime()
+            if str(ts) == 'NaT':
+                return None
+            else:
+                return ts
+        except:
+            return None
+
+    parsed_ts = _parse(ts)
+    if parsed_ts is None and raise_parse_error:
+        raise ValueError(f"Invalid timestamp: '{ts!r}'")
+    else:
+        return parsed_ts

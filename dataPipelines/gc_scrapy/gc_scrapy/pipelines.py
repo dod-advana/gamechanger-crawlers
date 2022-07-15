@@ -119,7 +119,7 @@ class FileDownloadPipeline(MediaPipeline):
         file_item = self.get_first_supported_downloadable_item(item["downloadable_items"])
 
         if file_item:
-            url = file_item["web_url"]
+            url = file_item["download_url"]
             extension = file_item["doc_type"]
             output_file_name = f"{doc_name}.{extension}"
 
@@ -331,7 +331,7 @@ class AdditionalFieldsPipeline:
 
         if item.get("version_hash_s") is None:
             # ensure doc_name is part of hash
-            item["version_hash_raw_data"]["doc_name"] = item["doc_name"]
+            #item["version_hash_raw_data"]["doc_name"] = item["doc_name"]
             item["version_hash_s"] = dict_to_sha256_hex_digest(item["version_hash_raw_data"])
 
         if item.get("access_timestamp_dt") is None:
@@ -349,9 +349,9 @@ class AdditionalFieldsPipeline:
         if item.get("doc_num") is None:
             item["doc_num"] = ""
 
-        if item.get("is_revoked_b") is not None:
+#        if item.get("is_revoked_b") is not None:
             # ensure is_revoked is part of hash
-            item["version_hash_raw_data"]["is_revoked"] = item["is_revoked_b"]
+#           item["version_hash_raw_data"]["is_revoked"] = item["is_revoked_b"]
 
         return item
 
