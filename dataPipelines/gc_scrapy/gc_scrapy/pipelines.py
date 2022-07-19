@@ -329,10 +329,10 @@ class AdditionalFieldsPipeline:
         if item.get("source_fqdn_s") is None:
             item["source_fqdn_s"] = get_fqdn_from_web_url(source_page_url)
 
-        if item.get("version_hash_s") is None:
+ #       if item.get("version_hash_s") is None:
             # ensure doc_name is part of hash
-            #item["version_hash_raw_data"]["doc_name"] = item["doc_name"]
-            item["version_hash_s"] = dict_to_sha256_hex_digest(item["version_hash_raw_data"])
+            # item["version_hash_raw_data"]["doc_name"] = item["doc_name"]
+            # item["version_hash_s"] = dict_to_sha256_hex_digest(item["version_hash_raw_data"])
 
         if item.get("access_timestamp_dt") is None:
             item["access_timestamp_dt"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
@@ -350,7 +350,7 @@ class AdditionalFieldsPipeline:
             item["doc_num"] = ""
 
 #        if item.get("is_revoked_b") is not None:
-            # ensure is_revoked is part of hash
+#           ensure is_revoked is part of hash
 #           item["version_hash_raw_data"]["is_revoked"] = item["is_revoked_b"]
 
         return item

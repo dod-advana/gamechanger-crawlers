@@ -73,7 +73,6 @@ class BupersSpider(GCSpider):
             publication_date = ""
         return publication_date
 
-
     def get_downloadables(self, hrefs):
         """This function creates a list of downloadable_items dictionaries from a list of document links"""
         downloadable_items = []
@@ -129,7 +128,26 @@ class BupersSpider(GCSpider):
                 [self.clean(text) for text in doc_titles_raw]))
             dates_cleaned = self.filter_empty(
                 [self.clean(text) for text in dates_raw])
+            dates_cleaned = [None if date == '0' else date for date in dates_cleaned] # Filter out hidden '0' date values values
             links_cleaned = self.filter_empty(links_raw)
+
+            oops = ['5720.7G', '1750.10D Vol 2', '5530.2B', '5530.3', '5510.61D']
+            for num in doc_nums_cleaned:
+                if num in oops:
+                    print("###########################")
+                    print("doc_nums_cleaned: ")
+                    print(doc_nums_cleaned)
+                    print("###########################")
+                    print("doc_title: ")
+                    print(doc_title)
+                    print("###########################")
+                    print("dates_cleaned: ")
+                    print(dates_cleaned)
+                    print("###########################")
+                    print("links_cleaned: ")
+                    print(links_cleaned)
+                    print("###########################")
+                    input("Enter any key to continue....")
 
             # happy path, equal num of docs, links, dates (??)
             # some doc nums arent downloadable but have dates
@@ -164,6 +182,16 @@ class BupersSpider(GCSpider):
                 publication_date = next(iter(dates_cleaned or []), None)
                 doc_item = self.populate_doc_item(hrefs, item_currency, doc_num, doc_title, publication_date)
                 yield doc_item
+
+            elif len(doc_nums_cleaned) > len(links_cleaned):
+                doc_num = doc_nums_cleaned[1]
+                hrefs = links_cleaned[0]
+                item_currency = hrefs.replace(' ', '%20')
+                publication_date = dates_cleaned[1]
+                doc_item = self.populate_doc_item(hrefs, item_currency, doc_num, doc_title, publication_date)
+                yield doc_item
+
+
             else:
                 raise Exception(
                     'Row data not captured, doesnt match known cases', row)
@@ -189,13 +217,13 @@ class BupersSpider(GCSpider):
         source_fqdn = urlparse(source_page_url).netloc
         downloadable_items = self.get_downloadables(hrefs)
         download_url = downloadable_items[0]['download_url']
+        file_ext = downloadable_items[0]['doc_type']
         doc_name = self.match_old_doc_name(f"{doc_type} {doc_num}")
         version_hash_fields = {
             "item_currency": item_currency,
             "document_title": doc_title,
             "document_number": doc_num,
-            "doc_name": doc_name,
-            "is_revoked": is_revoked
+            "doc_name": doc_name
         }
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 
@@ -219,7 +247,7 @@ class BupersSpider(GCSpider):
                     source_title_s = source_title,
                     display_source_s = display_source,
                     display_title_s = display_title,
-                    file_ext_s = doc_type,
+                    file_ext_s = file_ext,
                     is_revoked_b = is_revoked,
                     access_timestamp_dt = access_timestamp
                 )

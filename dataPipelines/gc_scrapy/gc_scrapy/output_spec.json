@@ -31,14 +31,24 @@
 		"source_page_url_s",
 		"downloadable_items",
 		"version_hash_raw_data",
+		"version_hash_s",
 		"access_timestamp_dt",
+		"download_url_s",
 		"source_fqdn_s",
 		"doc_type",
+		"display_doc_type_s",
+		"display_org_s",
+		"display_source_s",
+		"display_title_s",
+		"data_source_s",
+		"source_title_s",
+		"file_ext_s",
 		"doc_num",
 		"doc_title",
 		"publication_date_dt",
 		"cac_login_required_b",
-		"crawler_used_s"
+		"crawler_used_s",
+		"is_revoked_b"
 	],
 	"properties": {
 		"doc_type": {
