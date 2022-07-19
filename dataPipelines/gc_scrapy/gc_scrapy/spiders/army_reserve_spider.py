@@ -1,6 +1,8 @@
 import scrapy
 import re
-from urllib.parse import urljoin, urlencode, parse_qs
+from urllib.parse import urljoin, urlparse, urlencode, parse_qs
+from datetime import datetime
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
@@ -55,13 +57,6 @@ class ArmyReserveSpider(GCSpider):
 
             cac_login_required = True if "usar.dod.afpims.mil" in web_url else False # Determine if CAC is required from url
 
-            downloadable_items = [
-                {
-                    "doc_type": self.file_type,
-                    "web_url": web_url,
-                    "compression_type": None
-                }
-            ] # Get document metadata
             doc_name_raw = "".join(item.css('strong::text').getall()) # Bolded portion of displayed document name as doc_name_raw
             doc_title_raw = item.css('a::text').get() # Unbolded portion of displayed document name as doc_title_raw
             
@@ -82,19 +77,71 @@ class ArmyReserveSpider(GCSpider):
                 doc_type = "USAR Doc"
                 doc_num = ""
 
-            version_hash_fields = {
-                "item_currency": web_url.split('/')[-1], # Item currency found on pdf link
-                "document_title": doc_title,
-                "document_number": doc_num
-            } # Add version hash metadata
 
             ## Instantiate DocItem class and assign document's metadata values
-            yield DocItem(
-                doc_name=doc_name,
-                doc_title=doc_title,
-                doc_num=doc_num,
-                doc_type=doc_type,
-                cac_login_required=cac_login_required,
-                downloadable_items=downloadable_items,
-                version_hash_raw_data=version_hash_fields,
-            )
+            doc_item = self.populate_doc_item(doc_name, doc_type, doc_num, doc_title, web_url, cac_login_required)
+       
+            yield doc_item
+        
+
+
+    def populate_doc_item(self, doc_name, doc_type, doc_num, doc_title, web_url, cac_login_required):
+        '''
+        This functions provides both hardcoded and computed values for the variables
+        in the imported DocItem object and returns the populated metadata object
+        '''
+        display_org = "Dept. of the Army" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "Army Publishing Directorate" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "Unlisted Source" # Level 3 filter
+
+        display_doc_type = "Document" # Doc type for display on app
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_num + " " + doc_title
+        is_revoked = False
+        access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
+        source_page_url = self.start_urls[0]
+        source_fqdn = urlparse(source_page_url).netloc
+
+        downloadable_items = [
+                {
+                    "doc_type": self.file_type,
+                    "download_url": web_url,
+                    "compression_type": None
+                }
+            ] # Get document metadata
+
+        ## Assign fields that will be used for versioning
+        version_hash_fields = {
+                "item_currency": web_url.split('/')[-1], # Item currency found on pdf link
+                "is_revoked":is_revoked,
+                "doc_name":doc_name,
+                "doc_title": doc_title,
+                "doc_num": doc_num
+            }
+
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+
+        return DocItem(
+                    doc_name = doc_name,
+                    doc_title = doc_title,
+                    doc_num = doc_num,
+                    doc_type = doc_type,
+                    display_doc_type_s = display_doc_type, #
+                    #publication_date_dt = publication_date,
+                    cac_login_required_b = cac_login_required,
+                    crawler_used_s = self.name,
+                    downloadable_items = downloadable_items,
+                    source_page_url_s = source_page_url, #
+                    source_fqdn_s = source_fqdn, #
+                    download_url_s = web_url, #
+                    version_hash_raw_data = version_hash_fields, #
+                    version_hash_s = version_hash,
+                    display_org_s = display_org, #
+                    data_source_s = data_source, #
+                    source_title_s = source_title, #
+                    display_source_s = display_source, #
+                    display_title_s = display_title, #
+                    file_ext_s = doc_type, #
+                    is_revoked_b = is_revoked, #
+                    access_timestamp_dt = access_timestamp #
+                )
