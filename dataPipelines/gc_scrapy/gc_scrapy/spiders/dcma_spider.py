@@ -76,6 +76,7 @@ class DCMASpider(GCSpider):
         doc_name=f"{doc_type} {doc_num}"
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
+        file_type = self.get_href_file_extension(href)
         version_hash_fields = {
                     "item_currency": href,
                     "document_title": doc_title
@@ -87,7 +88,6 @@ class DCMASpider(GCSpider):
                         "compression_type": None
                     }]
         publication_date = self.get_pub_date(publication_date)
-        file_type = self.get_href_file_extension(href)
         source_fqdn = urlparse(source_page_url).netloc
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
         access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
