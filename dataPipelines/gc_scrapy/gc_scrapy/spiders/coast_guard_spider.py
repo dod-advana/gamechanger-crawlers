@@ -6,6 +6,7 @@ from selenium.common.exceptions import NoSuchElementException
 from datetime import datetime
 from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
 from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp
+from urllib.parse import urlparse
 
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSeleniumSpider import GCSeleniumSpider
@@ -34,7 +35,7 @@ class CoastGuardSpider(GCSeleniumSpider):
 
 
     @staticmethod
-    def get_display_doc_type(doc_type):
+    def get_display_doc_type(display_doc_type):
         """This function returns value for display_doc_type based on doc_type -> display_doc_type mapping"""
         display_type_dict = {"cngbi": "Instruction",
             "cim": "Manual",
@@ -42,7 +43,7 @@ class CoastGuardSpider(GCSeleniumSpider):
             "cn": "Notice",
             "ccn": "Notice",
             "dcmsi": "Instruction"}
-        return display_type_dict.get(doc_type)
+        return display_type_dict.get(display_doc_type.lower())
 
     @staticmethod
     def get_pub_date(publication_date):
@@ -103,50 +104,16 @@ class CoastGuardSpider(GCSeleniumSpider):
             if doc_type_raw == 'COMDTINST':
                 doc_type_raw = 'CI'
 
-            doc_num = doc_num_raw.replace('_', '.')
-
             doc_title_raw = row.css('td:nth-child(2) a::text').get()
-            doc_title = self.ascii_clean(doc_title_raw)
-
             office_primary_resp_raw = row.css('td:nth-child(3)::text').get()
-            office_primary_resp = self.ascii_clean(office_primary_resp_raw)
-
             href_raw = row.css('td:nth-child(2) a::attr(href)').get()
-
-            web_url = self.ensure_full_href_url(href_raw, driver.current_url)
-
+            download_url = self.ensure_full_href_url(href_raw, driver.current_url)
             publication_date = row.css('td:nth-child(5)::text').get()
 
-            version_hash_fields = {
-                "item_currency": href_raw,
-                "document_title": doc_title
-            }
+            doc_item = self.populate_doc_item(doc_type_raw, doc_num_raw, doc_title_raw, href_raw, download_url, publication_date, office_primary_resp_raw)
+            yield doc_item
 
-            file_type = self.get_href_file_extension(href_raw)
-
-            downloadable_items = [
-                {
-                    "doc_type": file_type,
-                    "web_url": web_url.replace(' ', '%20'),
-                    "compression_type": None
-                }
-            ]
-
-            yield DocItem(
-                doc_type=doc_type_raw,
-                doc_name=f"{doc_type_raw} {doc_num}",
-                doc_title=doc_title,
-                doc_num=doc_num,
-                publication_date=publication_date,
-                downloadable_items=downloadable_items,
-                version_hash_raw_data=version_hash_fields,
-                source_page_url=driver.current_url,
-                office_primary_resp=office_primary_resp,
-            )
-
-# ############################
-
-    def populate_doc_item(self, hrefs, item_currency, doc_num, doc_type, doc_title, publication_date):
+    def populate_doc_item(self, doc_type_raw, doc_num_raw, doc_title_raw, href_raw, download_url, publication_date, office_primary_resp_raw):
         '''
         This functions provides both hardcoded and computed values for the variables
         in the imported DocItem object and returns the populated metadata object
@@ -157,26 +124,29 @@ class CoastGuardSpider(GCSeleniumSpider):
         cac_login_required = False # No CAC required for any documents
         is_revoked = False
 
-        display_doc_type = get_display_doc_type(doc_type)
+        doc_num = doc_num_raw.replace('_', '.')
+        doc_title = self.ascii_clean(doc_title_raw)
+        display_doc_type = self.get_display_doc_type(doc_type_raw)
+        doc_type = self.get_href_file_extension(href_raw)
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
-
-        
-
         access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
         publication_date = self.get_pub_date(publication_date)
-        source_page_url = self.start_urls[0]
-        source_fqdn = urlparse(source_page_url).netloc
-        downloadable_items = self.get_downloadables(hrefs)
-        download_url = downloadable_items[0]['download_url']
-        file_ext = downloadable_items[0]['doc_type']
-        doc_name = self.match_old_doc_name(f"{doc_type} {doc_num}")
+        doc_name = f"{doc_type_raw} {doc_num}"
         version_hash_fields = {
-            "item_currency": item_currency,
-            "document_title": doc_title,
-            "document_number": doc_num,
-            "doc_name": doc_name
-        }
+                "doc_name": doc_name,
+                "doc_num": doc_num,
+                "publication_date": publication_date,
+                "download_url": download_url
+            }
+        downloadable_items = [{
+                "doc_type": doc_type,
+                "download_url": download_url.replace(' ', '%20'),
+                "compression_type": None
+            }]
+        office_primary_resp = self.ascii_clean(office_primary_resp_raw)
+        source_page_url = download_url
+        source_fqdn = urlparse(source_page_url).netloc
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 
         return DocItem(
@@ -199,7 +169,8 @@ class CoastGuardSpider(GCSeleniumSpider):
                     source_title_s = source_title,
                     display_source_s = display_source,
                     display_title_s = display_title,
-                    file_ext_s = file_ext,
+                    file_ext_s = doc_type,
+                    office_primary_resp = office_primary_resp,
                     is_revoked_b = is_revoked,
                     access_timestamp_dt = access_timestamp
                 )
