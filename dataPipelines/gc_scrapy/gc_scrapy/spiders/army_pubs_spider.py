@@ -94,22 +94,15 @@ class ArmySpider(GCSpider):
                     "compression_type": None
                 }
                 downloadable_items.append(di)
-        version_hash_fields = {
-            "publication_date": publication_date,
-            "pub_pin": rows.css("span#MainContent_PubForm_PIN::text").get(),
-            "pub_status": rows.css("span#MainContent_PubForm_Status::text").get(),
-            "product_status": rows.css("span#MainContent_Product_Status::text").get(),
-            "replaced_info": rows.css("span#MainContent_PubForm_Superseded::text").get()
-        } # Add version hash metadata
 
         doc_item = self.populate_doc_item(self.ascii_clean(doc_name_raw), self.ascii_clean(doc_type_raw), self.ascii_clean(doc_num_raw), self.ascii_clean(doc_title), 
-                                               response.url, downloadable_items, self.ascii_clean(publication_date), version_hash_fields, cac_login_required, proponent)
+                                               response.url, downloadable_items, self.ascii_clean(publication_date), cac_login_required, proponent)
        
         yield doc_item
         
 
 
-    def populate_doc_item(self, doc_name, doc_type, doc_num, doc_title, web_url, downloadable_items, publication_date, version_hash_fields, cac_login_required, office_primary_resp):
+    def populate_doc_item(self, doc_name, doc_type, doc_num, doc_title, web_url, downloadable_items, publication_date, cac_login_required, office_primary_resp):
         '''
         This functions provides both hardcoded and computed values for the variables
         in the imported DocItem object and returns the populated metadata object
@@ -129,10 +122,13 @@ class ArmySpider(GCSpider):
         source_fqdn = urlparse(source_page_url).netloc
 
         ## Assign fields that will be used for versioning
-        version_hash_fields["is_revoked"] = is_revoked
-        version_hash_fields["doc_name"] = doc_name
-        version_hash_fields["doc_num"] = doc_num
-        version_hash_fields["doc_title"] = doc_title
+        
+        version_hash_fields = {
+            "doc_name":doc_name,
+            "doc_num": doc_num,
+            "publication_date": publication_date,
+            #"download_url": web_url
+        }
 
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 
