@@ -1,19 +1,31 @@
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
+from datetime import datetime
+from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
+from urllib.parse import urlparse
 
 
 class DCMASpider(GCSpider):
     name = "DCMA" # Crawler name
-    display_org = "Dept. of Defense" # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = "Defense Contract Management Agency Policy Publications" # Level 2: GC app 'Source' metadata field for docs from this crawler
-    source_title = "DCMA Policy" # Level 3 filter
-
     start_urls = [
         "https://www.dcma.mil/Policy/"
     ]
-
-    cac_login_required = False
     rotate_user_agent = True
+
+    @staticmethod
+    def get_pub_date(publication_date):
+        '''
+        This function convverts publication_date from DD Month YYYY format to YYYY-MM-DDTHH:MM:SS format.
+        T is a delimiter between date and time.
+        '''
+        try:
+            date = parse_timestamp(publication_date, None)
+            if date:
+                publication_date = datetime.strftime(date, '%Y-%m-%dT%H:%M:%S')
+        except:
+            publication_date = ""
+        return publication_date
 
     def parse(self, response):
         sections = response.css('div#accGen div table tbody')
@@ -29,32 +41,16 @@ class DCMASpider(GCSpider):
                     'td:nth-child(3)::text').get(default="")
                 published_raw = row.css(
                     'td:nth-child(4)::text').get(default="")
-                href_raw = row.css(
+                href = row.css(
                     'td:nth-child(5) a::attr(href)').get(default="")
 
-                if not href_raw:
+                if not href:
                     continue
 
                 doc_title = self.ascii_clean(title_raw)
-                print(doc_title)
                 doc_type = self.ascii_clean(doc_type_raw)
                 doc_num = self.ascii_clean(policy_no_raw)
                 publication_date = self.ascii_clean(published_raw)
-
-                file_type = self.get_href_file_extension(href_raw)
-
-                version_hash_fields = {
-                    "item_currency": href_raw,
-                    "document_title": doc_title
-                }
-
-                downloadable_items = [
-                    {
-                        "doc_type": file_type,
-                        "web_url": f"https://www.dcma.mil{href_raw}",
-                        "compression_type": None
-                    }
-                ]
 
                 if doc_type == "DPS" or doc_type == "PTM":
                     display_doc_type = "Memo"
@@ -62,15 +58,61 @@ class DCMASpider(GCSpider):
                     display_doc_type = doc_type
 
                 doc_type = f"DCMA {doc_type}"
+                source_page_url = response.url
+                doc_item = self.populate_doc_item(doc_num, doc_type, display_doc_type, doc_title, publication_date, href, source_page_url)
+                yield doc_item
 
-                yield DocItem(
-                    doc_name=f"{doc_type} {doc_num}",
-                    doc_type=doc_type,
-                    display_doc_type=display_doc_type,
-                    doc_title=doc_title,
-                    doc_num=doc_num,
-                    publication_date=publication_date,
-                    downloadable_items=downloadable_items,
-                    version_hash_raw_data=version_hash_fields,
-                    source_page_url=response.url
+    def populate_doc_item(self, doc_num, doc_type, display_doc_type, doc_title, publication_date, href, source_page_url):
+        '''
+        This functions provides both hardcoded and computed values for the variables
+        in the imported DocItem object and returns the populated metadata object
+        '''
+        display_org = "Dept. of Defense" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "Defense Contract Management Agency Policy Publications" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "DCMA Policy" # Level 3 filter
+        cac_login_required = False # No CAC required for any documents
+        is_revoked = False
+
+        doc_name=f"{doc_type} {doc_num}"
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_num + " " + doc_title
+        version_hash_fields = {
+                    "item_currency": href,
+                    "document_title": doc_title
+                }
+        download_url = f"https://www.dcma.mil{href}",
+        downloadable_items = [{
+                        "doc_type": file_type,
+                        "download_url": download_url,
+                        "compression_type": None
+                    }]
+        publication_date = self.get_pub_date(publication_date)
+        file_type = self.get_href_file_extension(href)
+        source_fqdn = urlparse(source_page_url).netloc
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+        access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
+
+        return DocItem(
+                    doc_name = doc_name,
+                    doc_title = doc_title,
+                    doc_num = doc_num,
+                    doc_type = doc_type,
+                    display_doc_type_s = display_doc_type,
+                    publication_date_dt = publication_date,
+                    cac_login_required_b = cac_login_required,
+                    crawler_used_s = self.name,
+                    downloadable_items = downloadable_items,
+                    source_page_url_s = source_page_url,
+                    source_fqdn_s = source_fqdn,
+                    download_url_s = download_url, 
+                    version_hash_raw_data = version_hash_fields,
+                    version_hash_s = version_hash,
+                    display_org_s = display_org,
+                    data_source_s = data_source,
+                    source_title_s = source_title,
+                    display_source_s = display_source,
+                    display_title_s = display_title,
+                    file_ext_s = file_type,
+                    is_revoked_b = is_revoked,
+                    access_timestamp_dt = access_timestamp
                 )
