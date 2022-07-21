@@ -4,8 +4,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import Chrome
 from selenium.common.exceptions import NoSuchElementException
 from datetime import datetime
-from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
-from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp
+from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp, dict_to_sha256_hex_digest
 from urllib.parse import urlparse
 
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem

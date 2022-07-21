@@ -1,8 +1,7 @@
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from datetime import datetime
-from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp
-from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
+from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp, dict_to_sha256_hex_digest
 from urllib.parse import urlparse
 
 
@@ -81,7 +80,7 @@ class DCMASpider(GCSpider):
                     "item_currency": href,
                     "document_title": doc_title
                 }
-        download_url = f"https://www.dcma.mil{href}",
+        download_url = f'https://www.dcma.mil{href}'
         downloadable_items = [{
                         "doc_type": file_type,
                         "download_url": download_url,
