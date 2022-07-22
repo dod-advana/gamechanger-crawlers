@@ -77,13 +77,13 @@ class FileDownloadPipeline(MediaPipeline):
                     continue
 
                 jdoc = json.loads(line)
-                crawler_used = jdoc.get("crawler_used_s")
+                crawler_used = jdoc.get("crawler_used")
                 # covers old manifest items with no crawler info
                 if not crawler_used:
-                    self.previous_hashes.add(jdoc["version_hash_s"])
+                    self.previous_hashes.add(jdoc["version_hash"])
                 # skips adding hashes for other spiders for combined manifest files with that info
                 elif crawler_used == spider_name:
-                    self.previous_hashes.add(jdoc["version_hash_s"])
+                    self.previous_hashes.add(jdoc["version_hash"])
 
         num_hashes = len(self.previous_hashes)
         print(f"Previous manifest loaded, will filter {num_hashes} hashes")
@@ -104,13 +104,13 @@ class FileDownloadPipeline(MediaPipeline):
         # self.waiting = defaultdict(list)
 
         doc_name = item["doc_name"]
-        if item["version_hash_s"] in self.previous_hashes:
+        if item["version_hash"] in self.previous_hashes:
             # dont download anything just send item to crawl output
             print(f"Skipping download of {item.get('doc_name')} because it was in previous_hashes")
             info.spider.increment_in_previous_hashes()
             return item
 
-        if item["cac_login_required_b"]:
+        if item["cac_login_required"]:
             print(f"Skipping download of {item.get('doc_name')} because it requires cac login")
             info.spider.increment_required_cac()
             return item
@@ -183,10 +183,10 @@ class FileDownloadPipeline(MediaPipeline):
                 f.write(
                     json.dumps(
                         {
-                            "version_hash_s": item["version_hash_s"],
+                            "version_hash": item["version_hash"],
                             "doc_name": item["doc_name"],
-                            "crawler_used_s": item["crawler_used_s"],
-                            "access_timestamp_dt": item["access_timestamp_dt"],
+                            "crawler_used": item["crawler_used"],
+                            "access_timestamp": item["access_timestamp"],
                         }
                     )
                 )
@@ -303,45 +303,45 @@ class DeduplicaterPipeline:
 class AdditionalFieldsPipeline:
     def process_item(self, item, spider):
 
-        if getattr(spider, "display_org_s", None): # If DocItem.display_org_s = None, propogate value with value of spider class variable display_org
-            item["display_org_s"] = spider.display_org
+        if getattr(spider, "display_org", None): # If DocItem.display_org= None, propogate value with value of spider class variable display_org
+            item["display_org"] = spider.display_org
 
-        if getattr(spider, "data_source_s", None): # If DocItem.data_source_s = None, propogate value with value of spider class variable data_source
-            item["data_source_s"] = spider.data_source
+        if getattr(spider, "data_source", None): # If DocItem.data_source = None, propogate value with value of spider class variable data_source
+            item["data_source"] = spider.data_source
         
-        if getattr(spider, "source_title_s", None): # If DocItem.source_title_s = None, propogate value with value of spider class variable source_title
-            item["source_title_s"] = spider.source_title
+        if getattr(spider, "source_title", None): # If DocItem.source_title = None, propogate value with value of spider class variable source_title
+            item["source_title"] = spider.source_title
 
-        if getattr(spider, "display_source_s", None):
-            item["display_source_s"] = spider.display_source
+        if getattr(spider, "display_source", None):
+            item["display_source"] = spider.display_source
 
-        if item.get("crawler_used_s") is None:
-            item["crawler_used_s"] = spider.name
+        if item.get("crawler_used") is None:
+            item["crawler_used"] = spider.name
 
-        source_page_url = item.get("source_page_url_s")
+        source_page_url = item.get("source_page_url")
         if source_page_url is None:
-            if getattr(spider, "source_page_url_s", None):
-                item["source_page_url_s"] = spider.source_page_url_s
+            if getattr(spider, "source_page_url", None):
+                item["source_page_url"] = spider.source_page_url
             else:
                 source_page_url = spider.start_urls[0]
-                item["source_page_url_s"] = source_page_url
+                item["source_page_url"] = source_page_url
 
-        if item.get("source_fqdn_s") is None:
-            item["source_fqdn_s"] = get_fqdn_from_web_url(source_page_url)
+        if item.get("source_fqdn") is None:
+            item["source_fqdn"] = get_fqdn_from_web_url(source_page_url)
 
- #       if item.get("version_hash_s") is None:
+ #       if item.get("version_hash") is None:
             # ensure doc_name is part of hash
             # item["version_hash_raw_data"]["doc_name"] = item["doc_name"]
-            # item["version_hash_s"] = dict_to_sha256_hex_digest(item["version_hash_raw_data"])
+            # item["version_hash"] = dict_to_sha256_hex_digest(item["version_hash_raw_data"])
 
-        if item.get("access_timestamp_dt") is None:
-            item["access_timestamp_dt"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
+        if item.get("access_timestamp") is None:
+            item["access_timestamp"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
 
-        if item.get("publication_date_dt") is None:
-            item["publication_date_dt"] = "N/A"
+        if item.get("publication_date") is None:
+            item["publication_date"] = "N/A"
 
-        if item.get("cac_login_required_b") is None:
-            item["cac_login_required_b"] = spider.cac_login_required
+        if item.get("cac_login_required") is None:
+            item["cac_login_required"] = spider.cac_login_required
 
         if item.get("doc_type") is None:
             item["doc_type"] = getattr(spider, "doc_type", "")
@@ -349,9 +349,9 @@ class AdditionalFieldsPipeline:
         if item.get("doc_num") is None:
             item["doc_num"] = ""
 
-#        if item.get("is_revoked_b") is not None:
+#        if item.get("is_revoked") is not None:
 #           ensure is_revoked is part of hash
-#           item["version_hash_raw_data"]["is_revoked"] = item["is_revoked_b"]
+#           item["version_hash_raw_data"]["is_revoked"] = item["is_revoked"]
 
         return item
 

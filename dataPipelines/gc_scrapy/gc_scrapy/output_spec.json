@@ -6,7 +6,7 @@
 	"examples": [
 		{
 			"doc_name": "Misc Publication, Volume 4",
-			"source_page_url_s": "https://example.local/page_2.html",
+			"source_page_url": "https://example.local/page_2.html",
 			"downloadable_items": [
 				{
 					"doc_type": "pdf",
@@ -22,33 +22,33 @@
 			"version_hash_raw_data": {
 				"pub_date": "2020-06-01"
 			},
-			"access_timestamp_dt": "2020-06-28T22:59:57.274200",
-			"source_fqdn_s": "example.local"
+			"access_timestamp": "2020-06-28T22:59:57.274200",
+			"source_fqdn": "example.local"
 		}
 	],
 	"required": [
 		"doc_name",
-		"source_page_url_s",
+		"source_page_url",
 		"downloadable_items",
 		"version_hash_raw_data",
-		"version_hash_s",
-		"access_timestamp_dt",
-		"download_url_s",
-		"source_fqdn_s",
+		"version_hash",
+		"access_timestamp",
+		"download_url",
+		"source_fqdn",
 		"doc_type",
-		"display_doc_type_s",
-		"display_org_s",
-		"display_source_s",
-		"display_title_s",
-		"data_source_s",
-		"source_title_s",
-		"file_ext_s",
+		"display_doc_type",
+		"display_org",
+		"display_source",
+		"display_title",
+		"data_source",
+		"source_title",
+		"file_ext",
 		"doc_num",
 		"doc_title",
-		"publication_date_dt",
-		"cac_login_required_b",
-		"crawler_used_s",
-		"is_revoked_b"
+		"publication_date",
+		"cac_login_required",
+		"crawler_used",
+		"is_revoked"
 	],
 	"properties": {
 		"doc_type": {
@@ -59,7 +59,7 @@
 				"Title"
 			]
 		},
-		"display_doc_type_s": {
+		"display_doc_type": {
 			"type": "string",
 			"title": "Document Display Type",
 			"description": "Document Type to show on front end",
@@ -70,7 +70,7 @@
 				"Legislation"
 			]
 		},
-		"display_org_s": {
+		"display_org": {
 			"type": "string",
 			"title": "Display Org",
 			"description": "Organization to show on front end",
@@ -79,7 +79,7 @@
 				"Congress"
 			]
 		},
-		"display_source_s": {
+		"display_source": {
 			"type": "string",
 			"title": "Display Source",
 			"description": "Source to show on front end",
@@ -113,7 +113,7 @@
 				"Misc Publication, Volume 4"
 			]
 		},
-		"publication_date_dt": {
+		"publication_date": {
 			"type": [
 				"string",
 				"null"
@@ -125,17 +125,17 @@
 			],
 			"default": null
 		},
-		"cac_login_required_b": {
+		"cac_login_required": {
 			"type": "boolean",
 			"title": "Restricted Document",
 			"description": "Access level of the document derived from context"
 		},
-		"crawler_used_s": {
+		"crawler_used": {
 			"type": "string",
 			"title": "Crawler Used",
 			"description": "Name of the crawler the scraped the data"
 		},
-		"source_page_url_s": {
+		"source_page_url": {
 			"type": "string",
 			"title": "Source Page URL",
 			"description": "URL at which the document links and other context was found.",
@@ -161,7 +161,7 @@
 				}
 			]
 		},
-		"access_timestamp_dt": {
+		"access_timestamp": {
 			"type": "string",
 			"title": "The access_timestamp schema",
 			"description": "An explanation about the purpose of this instance.",
@@ -170,7 +170,7 @@
 			],
 			"pattern": "\\d{4}-\\d{2}-\\d{2}[T]\\d{2}:\\d{2}:\\d{2}[.]\\d+"
 		},
-		"source_fqdn_s": {
+		"source_fqdn": {
 			"type": "string",
 			"title": "Source FQDN",
 			"description": "Fully-qualified domain name of the website where document links were located.",
