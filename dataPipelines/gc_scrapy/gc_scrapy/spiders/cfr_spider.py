@@ -129,12 +129,10 @@ class CFRSpider(GCSpider):
 
         ## Assign fields that will be used for versioning
         version_hash_fields = {
-            "publication_date": publication_date,
-            "item_currency": web_url,
-            "is_revoked":is_revoked,
             "doc_name":doc_name,
-            "doc_title": doc_title,
-            "doc_num": doc_num
+            "doc_num": doc_num,
+            "publication_date": publication_date,
+            "download_url": web_url
         }
 
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)

@@ -184,11 +184,11 @@ class AirForcePubsSpider(GCSeleniumSpider):
 
             ## Instantiate DocItem class and assign document's metadata values
             doc_item = self.populate_doc_item(doc_name, doc_type, doc_num, re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title), 
-                                               web_url, cert_date, last_action, publication_date, cac_login_required)
+                                               web_url, publication_date, cac_login_required)
             yield doc_item
 
 
-    def populate_doc_item(self, doc_name, doc_type, doc_num, doc_title, web_url, cert_date, last_action, publication_date, cac_login_required):
+    def populate_doc_item(self, doc_name, doc_type, doc_num, doc_title, web_url, publication_date, cac_login_required):
         '''
         This functions provides both hardcoded and computed values for the variables
         in the imported DocItem object and returns the populated metadata object
@@ -206,7 +206,6 @@ class AirForcePubsSpider(GCSeleniumSpider):
         access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
         source_page_url = self.start_urls[0]
         source_fqdn = urlparse(source_page_url).netloc
-        item_currency = web_url.split('/')[-1],
         
         downloadable_items = [{
                 "doc_type": self.file_type,
@@ -216,15 +215,10 @@ class AirForcePubsSpider(GCSeleniumSpider):
 
         ## Assign fields that will be used for versioning
         version_hash_fields = {
-            # version metadata found on pdf links
-            "item_currency": item_currency,
-            "certified_date": cert_date,
-            "last_action": last_action,
+            "doc_name":doc_name,
+            "doc_num": doc_num,
             "publication_date": publication_date,
-            "is_revoked":is_revoked,    # always
-            "doc_name":doc_name,        # always
-            "doc_num":doc_num,          # always
-            "doc_title":doc_title       # always
+            "download_url": web_url.split('/')[-1]
         }
 
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
