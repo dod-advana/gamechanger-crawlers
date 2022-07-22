@@ -120,7 +120,7 @@ class DoDSpider(GCSpider):
                         base_url, cell.a['href']).replace(' ', '%20')
                     pdf_di = {
                         "doc_type": 'pdf',
-                        "web_url": pdf_url,
+                        "download_url": pdf_url,
                         "compression_type": None
                     }
 
@@ -160,27 +160,22 @@ class DoDSpider(GCSpider):
                 cac_login_required = True if any(x in pdf_url for x in cac_required) \
                     or any(x in doc_title for x in cac_required) else False
 
-                fields = {
-                    doc_name: doc_name,
-                    doc_num: doc_num,
-                    doc_title: doc_title,
-                    doc_type: doc_type,
-                    cac_login_required: cac_login_required,
-                    page_url: page_url,
-                    pdf_url: pdf_url,
-                    pdf_di: pdf_di,
-                    publication_date: publication_date,
-                    chapter_date: chapter_date,
-                    office_primary_resp: office_primary_resp
-                }
-                doc_item = self.populate_doc_item(fields)
-
-                print("############################")
-                print(doc_item)
-                print("############################")
-                input("press any key to continue...")
-
-                yield doc_item
+            fields = {
+                "doc_name": doc_name,
+                "doc_num": doc_num,
+                "doc_title": doc_title,
+                "doc_type": doc_type,
+                "cac_login_required": cac_login_required,
+                "page_url": page_url,
+                "pdf_url": pdf_url,
+                "pdf_di": pdf_di,
+                "publication_date": publication_date,
+                "chapter_date": chapter_date,
+                "office_primary_resp": office_primary_resp
+            }
+            doc_item = self.populate_doc_item(fields)
+            
+            yield doc_item
 
     def populate_doc_item(self, fields):
         '''
@@ -191,31 +186,30 @@ class DoDSpider(GCSpider):
         data_source = "WHS DoD Directives Division" # Level 2: GC app 'Source' metadata field for docs from this crawler
         source_title = "Unlisted Source" # Level 3 filter
         is_revoked = False
-        cac_login_required = fields.get(cac_login_required)
-        source_page_url = fields.get(page_url)
-        office_primary_resp = fields.get(office_primary_resp)
+        cac_login_required = fields.get("cac_login_required")
+        source_page_url = fields.get("page_url")
+        office_primary_resp = fields.get("office_primary_resp")
 
-        doc_name = self.ascii_clean(fields.get(doc_name).strip())
-        doc_title = self.ascii_clean(re.sub('\\"', '', fields.get(doc_title)))
-        doc_num = self.ascii_clean(fields.get(doc_num.strip()))
-        doc_type = self.ascii_clean(fields.get(doc_type).strip())
-        publication_date = self.ascii_clean(fields.get(publication_date.strip()))
+        doc_name = self.ascii_clean(fields.get("doc_name").strip())
+        doc_title = self.ascii_clean(re.sub('\\"', '', fields.get("doc_title")))
+        doc_num = self.ascii_clean(fields.get("doc_num").strip())
+        doc_type = self.ascii_clean(fields.get("doc_type").strip())
+        publication_date = self.ascii_clean(fields.get("publication_date").strip())
         publication_date = self.get_pub_date(publication_date)
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
-        display_doc_type = self.get_display_doc_type(doc_type)
-        file_type = self.get_href_file_extension(fields.get(pdf_url))
-        download_url = fields.get(pdf_url).split('/')[-1]
-        downloadable_items = [fields.get(pdf_di)]
+        display_doc_type = self.get_display_doc_type(doc_type.lower())
+        download_url = fields.get("pdf_url")
+        file_type = self.get_href_file_extension(download_url)
+        downloadable_items = [fields.get("pdf_di")]
         version_hash_fields = {
                 "download_url": download_url,
                 "pub_date": publication_date,
-                "change_date": fields.get(chapter_date).strip(),
+                "change_date": fields.get("chapter_date").strip(),
                 "doc_num": doc_num,
-                "doc_name": fields.doc_name
+                "doc_name": doc_name
             }
         source_fqdn = urlparse(source_page_url).netloc
-        office_primary_resp = fields.office_primary_resp
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
         access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
 
