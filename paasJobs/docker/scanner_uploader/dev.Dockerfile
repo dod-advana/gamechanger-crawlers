@@ -17,12 +17,6 @@ RUN curl -LfSo /tmp/awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-
     && unzip -q /tmp/awscliv2.zip -d /opt \
     && /opt/aws/install
 
-# AV malware signature db
-RUN \
-    mkdir -p /var/lib/clamav/ \
-    && curl -ko /var/lib/clamav/daily.cvd http://database.clamav.net/daily.cvd
-
-COPY parallel-dlp-scanner.py dirty-words.regex dlp-scanner.sh /srv/dlp-scanner/
 
 ENV AWS_DEFAULT_REGION=us-gov-west-1
 
