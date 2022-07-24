@@ -25,20 +25,15 @@ dev)
   ;;
 esac
 
->&2 echo -e "\n[INFO] CORE_DOWNLOADER_IMAGE NAME: $CORE_DOWNLOADER_IMAGE\n"
+>&2 echo -e "\n[INFO] CRAWL_DOWNLOAD_UPLOAD_IMAGE NAME: $CRAWL_DOWNLOAD_UPLOAD_IMAGE\n"
 # Set job vars
 JOB_TS="$(date +%FT%T)"
 JOB_TS_SIMPLE="$(date --date="$JOB_TS" +%Y%m%d_%H%M%S)"
 case "${1:?ERROR: Missing job name arg}" in
-gc_crawl_and_download)
-  JOB_NAME="gc_crawl_and_download"
-  CRAWLER_CONTAINER_IMAGE="$CORE_DOWNLOADER_IMAGE"
+gc_crawl_download_upload)
+  JOB_NAME="gc_crawl_download_upload"
+  CRAWLER_CONTAINER_IMAGE="$CRAWL_DOWNLOAD_UPLOAD_IMAGE"
   SCANNER_UPLOADER_S3PATH="/bronze/gamechanger/external-uploads/crawler-downloader/$JOB_TS"
-  ;;
-gc_crawl_and_download_covid)
-  JOB_NAME="gc_crawl_and_download_covid"
-  CRAWLER_CONTAINER_IMAGE="$COVID_DOWNLOADER_IMAGE"
-  SCANNER_UPLOADER_S3PATH="/bronze/gamechanger/external-uploads/covid-crawler-downloader/$JOB_TS"
   ;;
 *)
   echo >&2 "ERROR: Pass valid job name to the script."
