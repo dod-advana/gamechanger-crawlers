@@ -63,7 +63,6 @@ function run_crawler() {
 function run_upload() {
   S3_UPLOAD_BASE_PATH="${S3_UPLOAD_BASE_PATH#/}"
   S3_UPLOAD_BASE_PATH="${S3_UPLOAD_BASE_PATH%/}"
-  KEY="${S3_UPLOAD_BASE_PATH#/}/$(basename "$FILE")"
   aws s3 cp "${LOCAL_DOWNLOAD_DIRECTORY_PATH}" "${S3_UPLOAD_BASE_PATH}" --recursive && rc=$? || rc=$?
 
   if [[ "$rc" -ne 0 ]]; then
