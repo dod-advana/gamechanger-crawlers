@@ -18,7 +18,7 @@ source "$SETTINGS_CONF_PATH"
 ## ## SETUP FUNCTIONS
 #####
 
-def setup_local_vars_and_dirs() {
+function setup_local_vars_and_dirs() {
   S3_UPLOAD_BASE_PATH="${S3_UPLOAD_BASE_PATH:?"[ARG ERROR] Missing S3_UPLOAD_BASE_PATH env var. Set it to S3 base path for final uploads sans bucket name"}"
   BUCKET="${BUCKET:?"[ARG ERROR] Missing BUCKET env var. Set it to a valid S3 bucket name"}"
   LOCAL_CRAWLER_OUTPUT_FILE_PATH="$LOCAL_DOWNLOAD_DIRECTORY_PATH/crawler_output.json"
