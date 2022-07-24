@@ -113,7 +113,7 @@ function update_manifest() {
     || >&2 echo -e "\n[WARNING] FAILED TO UPDATE CUMULATIVE MANIFEST\n"
 }
 
-function run_crawler_downloader() {
+function run_crawl_download_upload() {
   local container_name="$JOB_NAME"
   docker rm --force "$container_name" || true
 
@@ -134,30 +134,6 @@ function run_crawler_downloader() {
 	${LOCAL_SPIDER_LIST_FILE:+ -e "LOCAL_SPIDER_LIST_FILE=$CRAWLER_CONTAINER_SPIDER_LIST_FILE"} \
 	${LOCAL_SPIDER_LIST_FILE:+ -v "${LOCAL_SPIDER_LIST_FILE}:${CRAWLER_CONTAINER_SPIDER_LIST_FILE}:z"} \
     "${CRAWLER_CONTAINER_IMAGE}"
-
-  local docker_run_status=$?
-  return $docker_run_status
-}
-
-function run_scanner_uploader() {
-  printf "\n\n>>> RUNNING SCANNER CONTAINER <<<\n"
-  printf "\tHost scan dir is %s \n" "$HOST_JOB_DL_DIR"
-  printf "\tMounted in scanner container at %s \n\n" "$SCANNER_SCAN_DIR"
-
-  docker run \
-    --rm \
-    -u "$(id -u):$(id -g)" \
-    -v "${HOST_JOB_DL_DIR}:${SCANNER_SCAN_DIR}:z" \
-    -e "AWS_DEFAULT_REGION=${SCANNER_UPLOADER_AWS_DEFAULT_REGION}" \
-    -e "BUCKET=${SCANNER_UPLOADER_BUCKET}" \
-    -e "S3_UPLOAD_BASE_PATH=${SCANNER_UPLOADER_S3PATH}" \
-    -e "DELETE_AFTER_UPLOAD=no" \
-    -e "SKIP_S3_UPLOAD=${SKIP_S3_UPLOAD:-no}" \
-    --entrypoint="python3" \
-    "${SCANNER_UPLOADER_CONTAINER_IMAGE}" \
-      "/srv/dlp-scanner/parallel-dlp-scanner.py" \
-        --input-path "${SCANNER_SCAN_DIR}" \
-        --scanner-path "/srv/dlp-scanner/dlp-scanner.sh"
 
   local docker_run_status=$?
   return $docker_run_status
@@ -189,7 +165,7 @@ EOF
 # make sure we have a fresh dir to put files into
 recreate_host_dl_dir
 # grab the previous manifest from s3, download files, and scan files & upload to s3
-grab_manifest && run_crawler_downloader && run_scanner_uploader && update_manifest
+grab_manifest && run_crawl_download_upload && update_manifest
 
 cat <<EOF
   FINISHED JOB - $JOB_NAME
