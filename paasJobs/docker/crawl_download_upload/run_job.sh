@@ -18,7 +18,9 @@ source "$SETTINGS_CONF_PATH"
 ## ## SETUP FUNCTIONS
 #####
 
-function setup_local_vars_and_dirs() {
+def setup_local_vars_and_dirs() {
+  S3_UPLOAD_BASE_PATH="${S3_UPLOAD_BASE_PATH:?"[ARG ERROR] Missing S3_UPLOAD_BASE_PATH env var. Set it to S3 base path for final uploads sans bucket name"}"
+  BUCKET="${BUCKET:?"[ARG ERROR] Missing BUCKET env var. Set it to a valid S3 bucket name"}"
   LOCAL_CRAWLER_OUTPUT_FILE_PATH="$LOCAL_DOWNLOAD_DIRECTORY_PATH/crawler_output.json"
   LOCAL_JOB_LOG_PATH="$LOCAL_DOWNLOAD_DIRECTORY_PATH/job.log"
   LOCAL_PREVIOUS_MANIFEST_LOCATION="${LOCAL_PREVIOUS_MANIFEST_LOCATION:-$SCRIPT_PARENT_DIR/previous-manifest.json}"
@@ -56,6 +58,18 @@ function run_crawler() {
 
   set -o pipefail
 
+}
+
+function run_upload() {
+  S3_UPLOAD_BASE_PATH="${S3_UPLOAD_BASE_PATH#/}"
+  S3_UPLOAD_BASE_PATH="${S3_UPLOAD_BASE_PATH%/}"
+  KEY="${S3_UPLOAD_BASE_PATH#/}/$(basename "$FILE")"
+  aws s3 cp "${LOCAL_DOWNLOAD_DIRECTORY_PATH}" "${S3_UPLOAD_BASE_PATH}" --recursive && rc=$? || rc=$?
+
+  if [[ "$rc" -ne 0 ]]; then
+    >&2 echo -e "\n[ERROR] FAILED TO GRAB MANIFEST\n"
+    exit 11
+  fi
 }
 
 function create_cumulative_manifest() {
@@ -105,6 +119,8 @@ EOF
 duration=$SECONDS
 echo -e "\n $(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed." 2>&1 | tee -a "$LOCAL_JOB_LOG_PATH"
 
+# run the upload
+run_upload
 # register additional files in manifest
 register_log_in_manifest
 register_crawl_log_in_manifest
