@@ -48,6 +48,6 @@ fi
 
 # the crawl_download_upload image builds off of GC_CRAWLER, adding the code to run everything
 echo "Rebuilding CRAWL_AND_DOWNLOAD image"
-docker build -f "$REPO_DIR/paasJobs/docker/crawl_and_download/Dockerfile" \
+docker build -f "$REPO_DIR/paasJobs/docker/crawl_download_upload/Dockerfile" \
   -t "$CRAWL_DOWNLOAD_UPLOAD_IMAGE" \
   "$REPO_DIR"
