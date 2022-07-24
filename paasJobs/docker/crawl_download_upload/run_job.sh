@@ -63,7 +63,8 @@ function run_crawler() {
 function run_upload() {
   S3_UPLOAD_BASE_PATH="${S3_UPLOAD_BASE_PATH#/}"
   S3_UPLOAD_BASE_PATH="${S3_UPLOAD_BASE_PATH%/}"
-  aws s3 cp "${LOCAL_DOWNLOAD_DIRECTORY_PATH}" "${S3_UPLOAD_BASE_PATH}" --recursive && rc=$? || rc=$?
+  S3FULLPATH="s3://${BUCKET}/${S3_UPLOAD_BASE_PATH}"
+  aws s3 cp "${LOCAL_DOWNLOAD_DIRECTORY_PATH}" "${S3FULLPATH}" --recursive && rc=$? || rc=$?
 
   if [[ "$rc" -ne 0 ]]; then
     >&2 echo -e "\n[ERROR] FAILED TO GRAB MANIFEST\n"
