@@ -81,7 +81,12 @@ RUN pip3 install --no-cache-dir --upgrade pip wheel setuptools
 ## ## Chrome & ChromeDriver Setup
 #####
 
-# get chrome browser
+## Installing AWS CLI
+RUN curl -LfSo /tmp/awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" \
+    && unzip -q /tmp/awscliv2.zip -d /opt \
+    && /opt/aws/install
+
+## Getting chrome browser
 COPY ./docker/google-chrome.repo /etc/yum.repos.d/google-chrome.repo
 RUN \
     curl https://dl-ssl.google.com/linux/linux_signing_key.pub -o /tmp/google_key.pub \
@@ -91,7 +96,7 @@ RUN \
     && yum clean all \
     && rm -rf /var/cache/yum
 
-# get chrome driver
+## Getting chrome driver
 RUN \
     wget -O /tmp/chromedriver.zip \
         https://chromedriver.storage.googleapis.com/$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip \
