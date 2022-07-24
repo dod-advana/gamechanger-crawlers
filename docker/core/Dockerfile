@@ -87,7 +87,7 @@ RUN curl -LfSo /tmp/awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-
     && /opt/aws/install
 
 ## Getting chrome browser
-COPY ./docker/google-chrome.repo /etc/yum.repos.d/google-chrome.repo
+COPY ./docker/core/google-chrome.repo /etc/yum.repos.d/google-chrome.repo
 RUN \
     curl https://dl-ssl.google.com/linux/linux_signing_key.pub -o /tmp/google_key.pub \
         && rpm --import /tmp/google_key.pub \
@@ -107,7 +107,7 @@ RUN \
 ## ## Python packages
 #####
 
-COPY ./docker/minimal-requirements.txt /tmp/requirements.txt
+COPY ./docker/core/minimal-requirements.txt /tmp/requirements.txt
 RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
 
 #####
