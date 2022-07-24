@@ -67,7 +67,7 @@ function run_upload() {
   aws s3 cp "${LOCAL_DOWNLOAD_DIRECTORY_PATH}" "${S3FULLPATH}" --recursive && rc=$? || rc=$?
 
   if [[ "$rc" -ne 0 ]]; then
-    >&2 echo -e "\n[ERROR] FAILED TO GRAB MANIFEST\n"
+    >&2 echo -e "\n[ERROR] FAILED TO UPLOAD DOCS\n"
     exit 11
   fi
 }
