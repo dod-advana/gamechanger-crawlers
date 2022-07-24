@@ -22,4 +22,4 @@ WORKDIR "${APP_REPO_DIR}"
 COPY . "${APP_REPO_DIR}"
 ENV PYTHONPATH="${APP_REPO_DIR}"
 
-ENTRYPOINT ["/bin/bash", "/app/paasJobs/docker/crawl_download_upload/run_job.sh"]
+ENTRYPOINT ["/bin/bash", "/app/docker/crawl_download_upload/run_job.sh"]
