@@ -4,11 +4,10 @@ from textwrap import dedent
 from scrapy.crawler import CrawlerRunner
 import importlib
 import os
-from pathlib import Path
 from scrapy.utils.project import get_project_settings
 from scrapy.utils.spider import iter_spider_classes
 from twisted.internet import reactor, defer
-from notification import slack
+from dataPipelines.notification import slack
 import copy
 from pathlib import Path
 

@@ -8,9 +8,6 @@ FROM advana/gc-crawler:latest
 # where temporary files stored by tools like mktemp
 ENV TMPDIR="/var/tmp"
 
-# where the output of the container run is stored
-ENV DLDIR="$TMPDIR/dl"
-
 # setup workdir
 ENV APP_REPO_DIR="/app"
 RUN mkdir -p "${APP_REPO_DIR}"
@@ -25,4 +22,4 @@ WORKDIR "${APP_REPO_DIR}"
 COPY . "${APP_REPO_DIR}"
 ENV PYTHONPATH="${APP_REPO_DIR}"
 
-ENTRYPOINT ["/bin/bash", "/app/paasJobs/docker/crawl_and_download_covid/run_job.sh"]
+ENTRYPOINT ["/bin/bash", "/app/docker/crawl_download_upload/run_job.sh"]
