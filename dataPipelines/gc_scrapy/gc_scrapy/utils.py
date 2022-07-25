@@ -44,6 +44,18 @@ def dict_to_sha256_hex_digest(_dict: Dict[Any, Any]) -> str:
 
     return str_to_sha256_hex_digest(value_string)
 
+def get_pub_date(publication_date):
+        '''
+        This function convverts publication_date from DD Month YYYY format to YYYY-MM-DDTHH:MM:SS format.
+        T is a delimiter between date and time.
+        '''
+        try:
+            date = parse_timestamp(publication_date, None)
+            if date:
+                publication_date = datetime.strftime(date, '%Y-%m-%dT%H:%M:%S')
+        except:
+            publication_date = ""
+        return publication_date
 
 def is_valid_web_url(url_string: str) -> bool:
     """Checks if given string is a valid URI"""
