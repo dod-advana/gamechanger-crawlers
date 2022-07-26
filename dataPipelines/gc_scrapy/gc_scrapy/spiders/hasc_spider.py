@@ -4,13 +4,13 @@ from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 import scrapy
 import typing as t
 
+from urllib.parse import urljoin, urlparse
+from datetime import datetime
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
+
 
 class HASCSpider(GCSpider):
     name = "HASC" # Crawler name
-    display_org = "Congress" # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = "House Armed Services Committee Publications" # Level 2: GC app 'Source' metadata field for docs from this crawler
-    source_title = "House Armed Services Committee" # Level 3 filter
-    cac_login_required = False
 
     base_url = "https://armedservices.house.gov"
 
@@ -75,14 +75,6 @@ class HASCSpider(GCSpider):
             permalink = response.css(
                 'div#copy-content div.foot p.permalink a::attr(href)').get()
 
-            downloadable_items = [
-                {
-                    "doc_type": 'html',
-                    "web_url": permalink,
-                    "compression_type": None
-                }
-            ]
-
             doc_type = "HASC Hearing"
             doc_name = f"{doc_type} - {date} - {title}"
 
@@ -90,16 +82,87 @@ class HASCSpider(GCSpider):
                 'item_currency': permalink,
             }
 
-            yield DocItem(
-                doc_name=doc_name,
-                doc_title=title,
-                doc_type=doc_type,
-                display_doc_type="Hearing",
-                publication_date=date,
-                source_page_url=permalink,
-                version_hash_raw_data=version_hash_raw_data,
-                downloadable_items=downloadable_items
-            )
+            fields = {
+                'doc_name': doc_name,
+                #'doc_num': doc_num, # No doc num for this crawler
+                'doc_title': title,
+                'doc_type': doc_type,
+                'cac_login_required': False,
+                'download_url': permalink,
+                'publication_date': date
+            }
+            ## Instantiate DocItem class and assign document's metadata values
+            doc_item = self.populate_doc_item(fields)
+        
+            yield doc_item
 
         except Exception as e:
             print(e)
+
+
+
+    def populate_doc_item(self, fields):
+        '''
+        This functions provides both hardcoded and computed values for the variables
+        in the imported DocItem object and returns the populated metadata object
+        '''
+        display_org = "Congress" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "House Armed Services Committee Publications" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "House Armed Services Committee" # Level 3 filter
+
+        doc_name = fields['doc_name']
+        #doc_num = fields['doc_num']
+        doc_title = fields['doc_title']
+        doc_type = fields['doc_type']
+        cac_login_required = fields['cac_login_required']
+        download_url = fields['download_url']
+        publication_date = get_pub_date(fields['publication_date'])
+
+        display_doc_type = "Hearing" # Doc type for display on app
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_title
+        is_revoked = False
+        access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
+        source_page_url = self.start_urls[0]
+        source_fqdn = urlparse(source_page_url).netloc
+
+        downloadable_items = [{
+                "doc_type": "html",
+                "download_url": download_url,
+                "compression_type": None,
+            }]
+
+        ## Assign fields that will be used for versioning
+        version_hash_fields = {
+            "doc_name":doc_name,
+            #"doc_num": doc_num,
+            "publication_date": publication_date,
+            "download_url": download_url
+        }
+
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+
+        return DocItem(
+                    doc_name = doc_name,
+                    doc_title = doc_title,
+                    #doc_num = doc_num,
+                    doc_type = doc_type,
+                    display_doc_type = display_doc_type, #
+                    publication_date = publication_date,
+                    cac_login_required = cac_login_required,
+                    crawler_used = self.name,
+                    downloadable_items = downloadable_items,
+                    source_page_url = source_page_url, #
+                    source_fqdn = source_fqdn, #
+                    download_url = download_url, #
+                    version_hash_raw_data = version_hash_fields, #
+                    version_hash = version_hash,
+                    display_org = display_org, #
+                    data_source = data_source, #
+                    source_title = source_title, #
+                    display_source = display_source, #
+                    display_title = display_title, #
+                    file_ext = doc_type, #
+                    is_revoked = is_revoked, #
+                    access_timestamp = access_timestamp #
+                )

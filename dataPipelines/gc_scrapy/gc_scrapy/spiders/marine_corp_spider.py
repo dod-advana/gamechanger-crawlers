@@ -4,6 +4,10 @@ import re
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
+from urllib.parse import urljoin, urlparse
+from datetime import datetime
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
+
 
 general_num_re = re.compile(
     r"(?<!ch )(?<!vol )(?<!\W )(\d[\w\.\-]*)", flags=re.IGNORECASE)
@@ -348,19 +352,88 @@ class MarineCorpSpider(GCSpider):
         if not href_raw or not self.is_valid_url(href_raw):
             return
 
-        doc_item['version_hash_raw_data'].update({
-            "item_currency": href_raw
-        })
-
         doc_type = self.get_href_file_extension(href_raw)
         web_url = self.url_encode_spaces(href_raw)
 
-        doc_item['downloadable_items'] = [
-            {
-                "doc_type": doc_type,
-                "web_url": web_url,
-                "compression_type": None
-            }
-        ]
-
+        fields = {
+            'doc_name': doc_item['doc_name'],
+            'doc_num': doc_item['doc_num'],
+            'doc_title': doc_item['doc_title'],
+            'doc_type': doc_type,
+            'cac_login_required': doc_item['cac_login_required'],
+            'source_page_url': doc_item['source_page_url'],
+            'download_url': web_url
+            #'publication_date': publication_date No date for this doc
+        }
+        ## Instantiate DocItem class and assign document's metadata values
+        doc_item = self.populate_doc_item(fields)
+    
         yield doc_item
+    
+
+
+    def populate_doc_item(self, fields):
+        '''
+        This functions provides both hardcoded and computed values for the variables
+        in the imported DocItem object and returns the populated metadata object
+        '''
+        display_org="US Navy Medicine" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "Navy Medicine" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "Unlisted Source" # Level 3 filter
+
+        doc_name = fields['doc_name']
+        doc_num = fields['doc_num']
+        doc_title = fields['doc_title']
+        doc_type = fields['doc_type']
+        cac_login_required = fields['cac_login_required']
+        download_url = fields['download_url']
+        #publication_date = get_pub_date(fields['publication_date'])
+
+        display_doc_type = "Document" # Doc type for display on app
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_num + " " + doc_title
+        is_revoked = False
+        access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
+        source_page_url = self.start_urls[0]
+        source_fqdn = urlparse(source_page_url).netloc
+
+        downloadable_items = [{
+                "doc_type": doc_type,
+                "download_url": download_url,
+                "compression_type": None,
+            }]
+
+        ## Assign fields that will be used for versioning
+        version_hash_fields = {
+            "doc_name":doc_name,
+            "doc_num": doc_num,
+            #"publication_date": publication_date,
+            "download_url": download_url
+        }
+
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+
+        return DocItem(
+                    doc_name = doc_name,
+                    doc_title = doc_title,
+                    doc_num = doc_num,
+                    doc_type = doc_type,
+                    display_doc_type = display_doc_type, #
+                    #publication_date = publication_date,
+                    cac_login_required = cac_login_required,
+                    crawler_used = self.name,
+                    downloadable_items = downloadable_items,
+                    source_page_url = source_page_url, #
+                    source_fqdn = source_fqdn, #
+                    download_url = download_url, #
+                    version_hash_raw_data = version_hash_fields, #
+                    version_hash = version_hash,
+                    display_org = display_org, #
+                    data_source = data_source, #
+                    source_title = source_title, #
+                    display_source = display_source, #
+                    display_title = display_title, #
+                    file_ext = doc_type, #
+                    is_revoked = is_revoked, #
+                    access_timestamp = access_timestamp #
+                )
