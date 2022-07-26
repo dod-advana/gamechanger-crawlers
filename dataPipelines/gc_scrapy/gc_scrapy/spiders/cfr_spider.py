@@ -3,9 +3,10 @@ from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 import json
 import re
 import scrapy
+
 from urllib.parse import urljoin, urlparse
 from datetime import datetime
-from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
 
 bill_version_re = re.compile(r'\((.*)\)')
 
@@ -93,14 +94,24 @@ class CFRSpider(GCSpider):
 
         web_url = self.get_pdf_file_download_url_from_id(package_id)
 
+        fields = {
+                'doc_name': package_id,
+                'doc_num': doc_num,
+                'doc_title': doc_title,
+                'doc_type': doc_type,
+                'cac_login_required': False,
+                'download_url': web_url,
+                'publication_date': publication_date
+            }
+
         ## Instantiate DocItem class and assign document's metadata values
-        doc_item = self.populate_doc_item(package_id, doc_type, doc_num, doc_title, web_url, publication_date)
+        doc_item = self.populate_doc_item(fields)
     
         return doc_item
         
 
 
-    def populate_doc_item(self, doc_name, doc_type, doc_num, doc_title, web_url, publication_date):
+    def populate_doc_item(self, fields):
         '''
         This functions provides both hardcoded and computed values for the variables
         in the imported DocItem object and returns the populated metadata object
@@ -109,7 +120,13 @@ class CFRSpider(GCSpider):
         data_source = "U.S. Government Publishing Office" # Level 2: GC app 'Source' metadata field for docs from this crawler
         source_title = "Unlisted Source" # Level 3 filter
 
-        cac_login_required = False
+        doc_name = fields['doc_name']
+        doc_num = fields['doc_num']
+        doc_title = fields['doc_title']
+        doc_type = fields['doc_type']
+        cac_login_required = fields['cac_login_required']
+        download_url = fields['download_url']
+        publication_date = get_pub_date(fields['publication_date'])
 
         display_doc_type = "Document" # Doc type for display on app
         display_source = data_source + " - " + source_title
@@ -122,7 +139,7 @@ class CFRSpider(GCSpider):
         downloadable_items = [
             {
                 "doc_type": "pdf",
-                "download_url": web_url,
+                "download_url": download_url,
                 "compression_type": None,
             }
         ]
@@ -132,7 +149,7 @@ class CFRSpider(GCSpider):
             "doc_name":doc_name,
             "doc_num": doc_num,
             "publication_date": publication_date,
-            "download_url": web_url
+            "download_url": download_url
         }
 
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
@@ -142,23 +159,23 @@ class CFRSpider(GCSpider):
                     doc_title = doc_title,
                     doc_num = doc_num,
                     doc_type = doc_type,
-                    display_doc_type_s = display_doc_type, #
-                    publication_date_dt = publication_date,
-                    cac_login_required_b = cac_login_required,
-                    crawler_used_s = self.name,
+                    display_doc_type = display_doc_type, #
+                    publication_date = publication_date,
+                    cac_login_required = cac_login_required,
+                    crawler_used = self.name,
                     downloadable_items = downloadable_items,
-                    source_page_url_s = source_page_url, #
-                    source_fqdn_s = source_fqdn, #
-                    download_url_s = web_url, #
+                    source_page_url = source_page_url, #
+                    source_fqdn = source_fqdn, #
+                    download_url = download_url, #
                     version_hash_raw_data = version_hash_fields, #
-                    version_hash_s = version_hash,
-                    display_org_s = display_org, #
-                    data_source_s = data_source, #
-                    source_title_s = source_title, #
-                    display_source_s = display_source, #
-                    display_title_s = display_title, #
-                    file_ext_s = doc_type, #
-                    is_revoked_b = is_revoked, #
-                    access_timestamp_dt = access_timestamp #
+                    version_hash = version_hash,
+                    display_org = display_org, #
+                    data_source = data_source, #
+                    source_title = source_title, #
+                    display_source = display_source, #
+                    display_title = display_title, #
+                    file_ext = doc_type, #
+                    is_revoked = is_revoked, #
+                    access_timestamp = access_timestamp #
                 )
 
