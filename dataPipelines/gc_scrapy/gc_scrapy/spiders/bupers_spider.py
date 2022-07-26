@@ -98,6 +98,14 @@ class BupersSpider(GCSpider):
 
         for row in rows:
             links_raw = row.css('td:nth-child(1) a::attr(href)').getall()
+
+
+            print("###########################")
+            print("links_raw: ")
+            print(links_raw)
+            input("press any key to continue...")
+
+
             if not len(links_raw):
                 # skip rows without anchor or any downloadable docs
                 continue
@@ -109,17 +117,38 @@ class BupersSpider(GCSpider):
                 if nums is not None:
                     doc_nums_raw += nums
 
+
+            print("###########################")
+            print("doc_nums_raw: ")
+            print(doc_nums_raw)
+            input("press any key to continue...")
+
+
             doc_titles_raw = []
             for selector in ['strong::text', 'span::text', 'font::text']:
                 titles = row.css(f'td:nth-child(2) {selector}').getall()
                 if titles is not None:
                     doc_titles_raw += titles
 
+
+            print("###########################")
+            print("doc_titles_raw: ")
+            print(doc_titles_raw)
+            input("press any key to continue...")
+
+
             dates_raw = []
             for selector in ['strong::text', 'span::text', 'font::text']:
                 dates = row.css(f'td:nth-child(3) {selector}').getall()
                 if titles is not None:
                     dates_raw += dates
+
+
+            print("###########################")
+            print("dates_raw: ")
+            print(dates_raw)
+            input("press any key to continue...")
+
 
             # clean unicode and filter out empty strings from lists
             doc_nums_cleaned = self.filter_empty(
@@ -161,6 +190,13 @@ class BupersSpider(GCSpider):
                     item_currency = links_cleaned[i].replace(' ', '%20')
                     publication_date = dates_cleaned[i]
                     doc_item = self.populate_doc_item(hrefs, item_currency, doc_num, doc_title, publication_date)
+
+
+                    print("###########################")
+                    print(doc_item)
+                    input("Enter any key to continue....")
+
+
                     yield doc_item
 
             # doc num was split, combine them into one string
@@ -172,6 +208,13 @@ class BupersSpider(GCSpider):
                 item_currency = hrefs
                 publication_date = next(iter(dates_cleaned or []), None)
                 doc_item = self.populate_doc_item(hrefs, item_currency, doc_num, doc_title, publication_date)
+
+
+                print("###########################")
+                print(doc_item)
+                input("Enter any key to continue....")
+
+
                 yield doc_item
 
             # there are supplemental downloadable items
@@ -181,6 +224,13 @@ class BupersSpider(GCSpider):
                 item_currency = next(iter(links_cleaned or []), None)
                 publication_date = next(iter(dates_cleaned or []), None)
                 doc_item = self.populate_doc_item(hrefs, item_currency, doc_num, doc_title, publication_date)
+
+
+                print("###########################")
+                print(doc_item)
+                input("Enter any key to continue....")
+
+
                 yield doc_item
 
             elif len(doc_nums_cleaned) > len(links_cleaned):
@@ -232,22 +282,22 @@ class BupersSpider(GCSpider):
                     doc_title = doc_title,
                     doc_num = doc_num,
                     doc_type = doc_type,
-                    display_doc_type_s = display_doc_type,
-                    publication_date_dt = publication_date,
-                    cac_login_required_b = cac_login_required,
-                    crawler_used_s = self.name,
+                    display_doc_type = display_doc_type,
+                    publication_date = publication_date,
+                    cac_login_required = cac_login_required,
+                    crawler_used = self.name,
                     downloadable_items = downloadable_items,
-                    source_page_url_s = source_page_url,
-                    source_fqdn_s = source_fqdn,
-                    download_url_s = download_url, 
+                    source_page_url = source_page_url,
+                    source_fqdn = source_fqdn,
+                    download_url = download_url, 
                     version_hash_raw_data = version_hash_fields,
-                    version_hash_s = version_hash,
-                    display_org_s = display_org,
-                    data_source_s = data_source,
-                    source_title_s = source_title,
-                    display_source_s = display_source,
-                    display_title_s = display_title,
-                    file_ext_s = file_ext,
-                    is_revoked_b = is_revoked,
-                    access_timestamp_dt = access_timestamp
+                    version_hash = version_hash,
+                    display_org = display_org,
+                    data_source = data_source,
+                    source_title = source_title,
+                    display_source = display_source,
+                    display_title = display_title,
+                    file_ext = file_ext,
+                    is_revoked = is_revoked,
+                    access_timestamp = access_timestamp
                 )
