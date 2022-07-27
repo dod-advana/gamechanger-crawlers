@@ -99,7 +99,7 @@ class ExecutiveOrdersSpider(GCSpider):
                 meta={"doc": data}
             )
         else:
-            yield self.make_doc_item_from_dict(data)
+            yield self.populate_doc_item(data)
 
     def get_exec_order_num_from_text(self, response):
         raw_text = str(response.body)
@@ -109,13 +109,13 @@ class ExecutiveOrdersSpider(GCSpider):
         if exec_order_num_groups:
             exec_order_num = exec_order_num_groups.group(1)
             doc.update({"executive_order_number": exec_order_num})
-            yield self.make_doc_item_from_dict(doc)
+            yield self.populate_doc_item(doc)
 
         else:
             # still no number found, just use title
             # 1 known example
             # "Closing of departments and agencies on April 27, 1994, in memory of President Richard Nixon"
-            yield self.make_doc_item_from_dict(doc)
+            yield self.populate_doc_item(doc)
 
     def populate_doc_item(self, doc: dict) -> DocItem:
         '''

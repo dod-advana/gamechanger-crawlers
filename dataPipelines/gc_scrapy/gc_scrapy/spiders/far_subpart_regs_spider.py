@@ -87,10 +87,9 @@ class FarSubpartSpider(GCSeleniumSpider):
 
             href_raw = row.css('td:nth-child(2) a::attr(href)').get()
             doc_num = doc_title.split()[0] + ' ' + doc_title.split()[1]
-            doc_name = self.doc_type + " " + doc_num
+            
             web_url = self.ensure_full_href_url(href_raw, self.start_urls[0])
             fields = {
-                "doc_name": doc_name,
                 "doc_num": doc_num,
                 "doc_title": doc_title,
                 "publication_date": pub_date,
@@ -120,13 +119,13 @@ class FarSubpartSpider(GCSeleniumSpider):
         cac_login_required = False
         is_revoked = False
 
-        doc_title = fields.get('title')
+        doc_title = fields.get('doc_title')
         publication_date = fields.get('publication_date', '')
         publication_date = self.get_pub_date(publication_date)
         source_page_url = self.start_urls[0]
         download_url = fields.get("download_url")
         doc_num = fields.get('doc_num')
-        doc_name = fields.get('doc_name')
+        doc_name = doc_type + " " + doc_num
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
         downloadable_items = [{
