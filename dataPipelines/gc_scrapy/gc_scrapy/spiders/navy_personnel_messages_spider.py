@@ -10,11 +10,10 @@ from scrapy.selector import Selector
 
 
 class TRADOCSpider(GCSpider):
-    name = 'navy_personnel_messages'
-
-    display_org = 'US Navy'
-    data_source = 'MyNavy HR'
-    source_title = 'Bureau of Naval Personnel Messages'
+    name = 'navy_personnel_messages' # Crawler name
+    display_org = 'US Navy'  # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = 'MyNavy HR' # Level 2: GC app 'Source' metadata field for docs from this crawler 
+    source_title = 'Bureau of Naval Personnel Messages' # Level 3 filter
 
     allowed_domains = ['mynavyhr.navy.mil']
     start_urls = [
@@ -22,6 +21,7 @@ class TRADOCSpider(GCSpider):
     ]
 
     cac_login_required = False
+    rotate_user_agent = True
 
     def parse(self, response: TextResponse):
         links = response.css('div.afMenuLinkHeader > a::attr(href)').getall()
@@ -76,9 +76,6 @@ class TRADOCSpider(GCSpider):
                 doc_type=self.ascii_clean(doc_type),
                 publication_date=publication_date,
                 source_page_url=response.url,
-                display_org=self.display_org,
-                data_source=self.data_source,
-                source_title=self.source_title,
                 downloadable_items=downloadable_items,
                 version_hash_raw_data=version_hash_fields,
                 is_revoked=is_revoked,

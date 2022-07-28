@@ -16,7 +16,11 @@ from time import sleep
 
 
 class NavyReserveSpider(GCSeleniumSpider):
-    name = "navy_reserves"
+    name = "navy_reserves" # Crawler name
+    display_org = 'US Navy Reserve'  # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = 'U.S. Navy Reserve' # Level 2: GC app 'Source' metadata field for docs from this crawler 
+    source_title = "Unlisted Source" # Level 3 filter
+    
     allowed_domains = ['navyreserve.navy.mil']
     start_urls = [
         'https://www.navyreserve.navy.mil/'
@@ -24,7 +28,7 @@ class NavyReserveSpider(GCSeleniumSpider):
 
     file_type = 'pdf'
     cac_login_required = False
-
+    
     tables_selector = 'table.dnnGrid'
 
     def parse(self, response):

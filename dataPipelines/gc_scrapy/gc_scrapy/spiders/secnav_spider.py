@@ -11,7 +11,10 @@ json_re = re.compile("var WPQ3ListData = (?P<json>{.*?});", flags=re.M | re.S)
 
 
 class SecNavSpider(GCSpider):
-    name = "secnav_pubs"
+    name = "secnav_pubs" # Crawler name
+    display_org = "US Navy" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Dept. of the Navy Issuances" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
 
     start_urls = [
         "https://www.secnav.navy.mil/doni/default.aspx",

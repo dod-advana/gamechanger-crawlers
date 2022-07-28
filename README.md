@@ -70,7 +70,7 @@ See LICENSE.md (including licensing intent - INTENT.md) and CONTRIBUTING.md
      ```shell
      touch "$CRAWLER_DATA_ROOT/prev-manifest.json"
      ```
-5. Run the desired crawler spider from the `dataPipelines/gc_scrapy/gc_scrapy/spiders` directory (in this example we will use the `executive_orders_spider.py`):
+5. Run the desired crawler spider from the `gamechanger-crawlers` directory (in this example we will use the `executive_orders_spider.py`):
      ```shell
      scrapy runspider dataPipelines/gc_scrapy/gc_scrapy/spiders/executive_orders_spider.py \
        -a download_output_dir="$CRAWLER_DATA_ROOT" \

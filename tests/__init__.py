@@ -1,6 +1,5 @@
-import pathlib
+from pathlib import Path
+from dataPipelines import REPO_ROOT as _REPO_ROOT
 
-REPO_ROOT = pathlib.Path(".").resolve()
-TEST_ROOT = REPO_ROOT / "tests"
-
-TEST_RESOURCES = TEST_ROOT / "resources"
+TEST_ROOT = _REPO_ROOT / "tests"
+TEST_RESOURCES_ROOT = TEST_ROOT / "resources"

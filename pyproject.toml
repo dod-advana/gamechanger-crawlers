@@ -2,7 +2,7 @@
 name = "gamechanger-crawlers"
 version = "0.1.0"
 description = ""
-authors = ["Gabriella Melki <gabriellamelki@gmail.com>"]
+authors = ["Gamechanger <gamechanger@bah.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"

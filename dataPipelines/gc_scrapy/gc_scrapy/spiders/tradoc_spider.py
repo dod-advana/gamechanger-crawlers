@@ -10,11 +10,10 @@ from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 
 
 class TRADOCSpider(GCSpider):
-    name = 'tradoc'
-
-    display_org = 'United States Army Training and Doctrine Command'
-    data_source = 'TRADOC'
-    source_title = 'TRADOC Administrative Publications'
+    name = 'tradoc' # Crawler name
+    display_org = 'United States Army Training and Doctrine Command' # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = 'TRADOC' # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = 'TRADOC Administrative Publications' # Level 3
 
     office_primary_resp = "Training and Doctrine Command"
 
@@ -24,6 +23,7 @@ class TRADOCSpider(GCSpider):
     ]
 
     cac_login_required = False
+    rotate_user_agent = True
 
     _doc_num_rgx = re.compile(r'^(?P<num>[-0-9a-zA-Z]+)?(?: with )?(?:Change (?P<change>\d+))?$',
                               re.IGNORECASE)
@@ -112,9 +112,6 @@ class TRADOCSpider(GCSpider):
                     doc_type=self.ascii_clean(doc_category),
                     publication_date=publication_date,
                     source_page_url=response.url,
-                    display_org=self.display_org,
-                    data_source=self.data_source,
-                    source_title=self.source_title,
                     downloadable_items=downloadable_items,
                     version_hash_raw_data=version_hash_fields,
                     office_primary_resp=self.office_primary_resp,

@@ -31,4 +31,4 @@ mkdir -p "$HOST_JOB_TMP_DIR"
 mkdir -p "$(dirname "$JOB_LOG_FILE")"
 touch "$JOB_LOG_FILE"
 
-"$SCRIPT_PARENT_DIR/gc_crawl_then_upload.sh" gc_crawl_and_download 2>&1 | tee "$JOB_LOG_FILE"
+"$SCRIPT_PARENT_DIR/gc_crawl_then_upload.sh" gc_crawl_download_upload 2>&1 | tee "$JOB_LOG_FILE"

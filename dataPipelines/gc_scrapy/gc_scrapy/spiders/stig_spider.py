@@ -3,7 +3,10 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 import re
 
 class StigSpider(GCSpider):
-    name = "stig_pubs"
+    name = "stig_pubs" # Crawler name
+    display_org = "Security Technical Implementation Guides" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Security Technical Implementation Guides" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
 
     start_urls = [
         "https://public.cyber.mil/stigs/downloads/"
@@ -12,9 +15,8 @@ class StigSpider(GCSpider):
     download_base_url = 'https://public.cyber.mil/'
     doc_type = "STIG"
     cac_login_required = False
-    source_title = "Security Technical Implementation Guides"
-    display_org = "Defense Information Systems Agency"
-    data_source = "Federal Registry"
+    rotate_user_agent = True
+
 
     @staticmethod
     def extract_doc_number(doc_title):
@@ -77,9 +79,6 @@ class StigSpider(GCSpider):
                 doc_name=doc_name,
                 doc_num=doc_num,
                 doc_title=doc_title,
-                data_source=self.data_source,
-                source_title=self.source_title,
-                display_org=self.display_org,
                 display_doc_type=display_doc_type,
                 publication_date=publication_date,
                 source_page_url=source_page_url,

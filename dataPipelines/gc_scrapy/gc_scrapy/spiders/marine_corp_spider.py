@@ -227,7 +227,11 @@ class MarineCorpSpider(GCSpider):
         Parser for Marine Corp EPEL
     """
 
-    name = "marine_pubs"
+    name = "marine_pubs" # Crawler name
+    display_org = "US Marine Corps" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = 'Marine Corps Publications Electronic Library' # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
+
     allowed_domains = ['marines.mil']
     base_url = 'https://www.marines.mil/News/Publications/MCPEL/?Page='
     current_page = 1
