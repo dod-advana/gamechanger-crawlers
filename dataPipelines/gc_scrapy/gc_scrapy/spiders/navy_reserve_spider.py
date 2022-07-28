@@ -30,6 +30,19 @@ class NavyReserveSpider(GCSeleniumSpider):
     
     tables_selector = 'table.dnnGrid'
 
+    @staticmethod
+    def get_display_doc_type(doc_type):
+        if doc_type.strip().lower().endswith("inst"):
+            print(doc_type)
+            input("press any key to continue...")
+            return "Instruction"
+        elif doc_type.endswith("note"):
+            print(doc_type)
+            input("press any key to continue...")
+            return "Notice"
+        else:
+            return "Document"
+
     def parse(self, response):
         driver: Chrome = response.meta["driver"]
 
@@ -159,6 +172,7 @@ class NavyReserveSpider(GCSeleniumSpider):
         doc_title = fields.get('doc_title')
         doc_num = fields.get('doc_num')
         doc_type = fields.get('doc_type')
+        display_doc_type = self.get_display_doc_type(doc_type)
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
 
@@ -175,7 +189,7 @@ class NavyReserveSpider(GCSeleniumSpider):
         downloadable_items = [
             {
                 "doc_type": file_type,
-                "download_url_url": download_url,
+                "download_url": download_url,
                 "compression_type": None
             }
         ]
