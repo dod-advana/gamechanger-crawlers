@@ -1,18 +1,18 @@
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
+from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp, dict_to_sha256_hex_digest
+from urllib.parse import urlparse
+from datetime import datetime
 import json
 import re
 import scrapy
+
 
 bill_version_re = re.compile(r'\((.*)\)')
 
 
 class LegislationSpider(GCSpider):
     name = "legislation_pubs" # Crawler name
-    display_org = "Congress" # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = "Congressional Legislation" # Level 2: GC app 'Source' metadata field for docs from this crawler
-    source_title = "Unlisted Source" # Level 3 filter
-    cac_login_required = False
     rotate_user_agent = True
 
     start_urls = [
@@ -39,6 +39,36 @@ class LegislationSpider(GCSpider):
 
     def start_requests(self):
         yield scrapy.Request(url=self.start_urls[0], method='GET', headers=self.headers)
+
+    @staticmethod
+    def get_display_doc_type(doc_type):
+        legislation_types = [
+            "h.con.res.",
+            "h.j.res.",
+            "h.r.",
+            "h. res.",
+            "s.",
+            "s. con. res.",
+            "s.j. res.",
+            "s. res."]
+        if doc_type.strip().lower() in legislation_types:
+            return "Legislation"
+        else:
+            return "Document"
+    
+    @staticmethod
+    def get_pub_date(publication_date):
+        '''
+        This function convverts publication_date from DD Month YYYY format to YYYY-MM-DDTHH:MM:SS format.
+        T is a delimiter between date and time.
+        '''
+        try:
+            date = parse_timestamp(publication_date, None)
+            if date:
+                publication_date = datetime.strftime(date, '%Y-%m-%dT%H:%M:%S')
+        except:
+            publication_date = ""
+        return publication_date
 
     @staticmethod
     def get_visible_detail_url(package_id: str) -> str:
@@ -153,31 +183,81 @@ class LegislationSpider(GCSpider):
         bill_version = bill_version_re.search(bill_version_raw).group(1)
         doc_name = f"{doc_type} {doc_num} {bill_version} {congress_num_str}"
 
-        last_action_date = detail_data.get("Last Action Date Listed")
+        #last_action_date = detail_data.get("Last Action Date Listed")
 
-        downloadable_items = [{
-            "doc_type": 'pdf',
+        #source_page_url = self.get_visible_detail_url(package_id)
+        fields = {
+            "doc_name": doc_name.strip(),
+            "doc_title": doc_title.strip(),
+            "doc_num": doc_num.strip(),
+            "doc_type": doc_type,
+            "source_page_url": self.get_visible_detail_url(package_id),
             "web_url": web_url,
-            "compression_type": None
-        }]
-
-        version_hash_fields = {
-            "last_action_date": last_action_date,
-            "item_currency": web_url,
+            "publication_date": detail_data.get("Last Action Date Listed"),
             "sponsors": self.ascii_clean(detail_data.get("Sponsors", " ")),
             "cosoponsors": self.ascii_clean(detail_data.get("Cosponsors", " ")),
-            "committees": self.ascii_clean(detail_data.get("Committees", " ")),
-        }
+            "committees": self.ascii_clean(detail_data.get("Committees", " "))
+            }
 
-        source_page_url = self.get_visible_detail_url(package_id)
+        yield self.populate_doc_item(fields)
 
-        yield DocItem(
-            doc_name=doc_name,
-            doc_title=doc_title,
-            doc_num=doc_num,
-            doc_type=doc_type,
-            publication_date=last_action_date,
-            source_page_url=source_page_url,
-            downloadable_items=downloadable_items,
-            version_hash_raw_data=version_hash_fields
-        )
+    def populate_doc_item(self, fields:dict) -> DocItem:
+        display_org = "Congress" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "Congressional Legislation" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "Unlisted Source" # Level 3 filter
+        file_type = 'pdf'
+        cac_login_required = False
+        is_revoked = False
+
+        doc_name = fields.get('doc_name')
+        doc_title = fields.get('doc_title')
+        doc_num = fields.get('doc_num')
+        doc_type = fields.get('doc_type')
+        display_doc_type = self.get_display_doc_type(doc_type)
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_num + " " + doc_title
+        web_url = fields.get("web_url")
+        download_url = web_url.replace(' ', '%20')
+        source_page_url = fields.get('source_page_url')
+        publication_date = fields.get("publication_date")
+        publication_date = self.get_pub_date(publication_date)
+        downloadable_items = [{
+                "doc_type": file_type,
+                "download_url": web_url,
+                "compression_type": None
+            }]
+        version_hash_fields = {
+            "publication_date": publication_date,
+            "download_url": web_url,
+            "sponsors": fields.get("sponsors"),
+            "cosoponsors": fields.get("cosponsors"),
+            "committees": fields.get("committees"),
+            }
+        source_fqdn = urlparse(source_page_url).netloc
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+        access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
+
+        return DocItem(
+            doc_name = doc_name,
+            doc_title = doc_title,
+            doc_num = doc_num,
+            doc_type = doc_type,
+            display_doc_type = display_doc_type,
+            publication_date = publication_date,
+            cac_login_required = cac_login_required,
+            crawler_used = self.name,
+            downloadable_items = downloadable_items,
+            source_page_url = source_page_url,
+            source_fqdn = source_fqdn,
+            download_url = download_url, 
+            version_hash_raw_data = version_hash_fields,
+            version_hash = version_hash,
+            display_org = display_org,
+            data_source = data_source,
+            source_title = source_title,
+            display_source = display_source,
+            display_title = display_title,
+            file_ext = file_type,
+            is_revoked = is_revoked,
+            access_timestamp = access_timestamp
+            )

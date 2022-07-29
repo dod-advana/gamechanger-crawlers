@@ -33,12 +33,8 @@ class NavyReserveSpider(GCSeleniumSpider):
     @staticmethod
     def get_display_doc_type(doc_type):
         if doc_type.strip().lower().endswith("inst"):
-            print(doc_type)
-            input("press any key to continue...")
             return "Instruction"
-        elif doc_type.endswith("note"):
-            print(doc_type)
-            input("press any key to continue...")
+        elif doc_type.strip().lower().endswith("note"):
             return "Notice"
         else:
             return "Document"
