@@ -2,14 +2,15 @@ import re
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 
+from urllib.parse import urljoin, urlparse
+from datetime import datetime
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
+
 doc_type_num_re = re.compile(r'(.*)\s(\d+.*)')
 
 
 class JcsPubsSpider(GCSpider):
     name = 'jcs_pubs' # Crawler name
-    display_org = "Joint Chiefs of Staff" # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = "CJCS Directives Library" # Level 2: GC app 'Source' metadata field for docs from this crawler
-    source_title = "Unlisted Source" # Level 3 filter
 
     start_urls = ['https://www.jcs.mil/Library/']
     base_url = 'https://www.jcs.mil'
@@ -51,38 +52,26 @@ class JcsPubsSpider(GCSpider):
 
             web_url = self.ensure_full_href_url(href_raw, self.base_url)
 
-            downloadable_items = [
-                {
-                    "doc_type": 'pdf',
-                    "web_url": web_url.replace(' ', '%20'),
-                    "compression_type": None
-                }
-            ]
-
-            version_hash_fields = {
-                "item_currency": href_raw,
-                "current_of_date": current_of_date
-            }
-
             doc_name = f"{doc_type} {doc_num}"
 
             # set boolean if CAC is required to view document
             cac_login_required = True if any(x in href_raw for x in self.cac_required_options) \
                 or any(x in doc_title for x in self.cac_required_options) else False
 
-            source_page_url = response.url
-
-            yield DocItem(
-                doc_name=doc_name,
-                doc_title=doc_title,
-                doc_type=doc_type,
-                doc_num=doc_num,
-                publication_date=publication_date,
-                source_page_url=source_page_url,
-                cac_login_required=cac_login_required,
-                downloadable_items=downloadable_items,
-                version_hash_raw_data=version_hash_fields,
-            )
+            fields = {
+                'doc_name': doc_name,
+                'doc_num': doc_num,
+                'doc_title': doc_title,
+                'doc_type': doc_type,
+                'cac_login_required': cac_login_required,
+                'download_url': web_url,
+                'source_page_url':response.url,
+                'publication_date': publication_date
+            }
+            ## Instantiate DocItem class and assign document's metadata values
+            doc_item = self.populate_doc_item(fields)
+        
+            yield doc_item
 
         try:
             nav_table = response.css('table.dnnFormItem')[1]
@@ -94,3 +83,69 @@ class JcsPubsSpider(GCSpider):
                                   callback=self.parse_doc_table_page)
         except:
             pass
+
+    def populate_doc_item(self, fields):
+        '''
+        This functions provides both hardcoded and computed values for the variables
+        in the imported DocItem object and returns the populated metadata object
+        '''
+        display_org = "Joint Chiefs of Staff" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "CJCS Directives Library" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "Unlisted Source" # Level 3 filter
+
+        doc_name = fields['doc_name']
+        doc_num = fields['doc_num']
+        doc_title = fields['doc_title']
+        doc_type = fields['doc_type']
+        cac_login_required = fields['cac_login_required']
+        download_url = fields['download_url']
+        publication_date = get_pub_date(fields['publication_date'])
+
+        display_doc_type = "Document" # Doc type for display on app
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_num + " " + doc_title
+        is_revoked = False
+        access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
+        source_page_url = fields['source_page_url']
+        source_fqdn = urlparse(source_page_url).netloc
+
+        downloadable_items = [{
+                "doc_type": "pdf",
+                "download_url": download_url.replace(' ', '%20'),
+                "compression_type": None,
+            }]
+
+        ## Assign fields that will be used for versioning
+        version_hash_fields = {
+            "doc_name":doc_name,
+            "doc_num": doc_num,
+            "publication_date": publication_date,
+            "download_url": download_url
+        }
+
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+
+        return DocItem(
+                    doc_name = doc_name,
+                    doc_title = doc_title,
+                    doc_num = doc_num,
+                    doc_type = doc_type,
+                    display_doc_type = display_doc_type, #
+                    publication_date = publication_date,
+                    cac_login_required = cac_login_required,
+                    crawler_used = self.name,
+                    downloadable_items = downloadable_items,
+                    source_page_url = source_page_url, #
+                    source_fqdn = source_fqdn, #
+                    download_url = download_url, #
+                    version_hash_raw_data = version_hash_fields, #
+                    version_hash = version_hash,
+                    display_org = display_org, #
+                    data_source = data_source, #
+                    source_title = source_title, #
+                    display_source = display_source, #
+                    display_title = display_title, #
+                    file_ext = doc_type, #
+                    is_revoked = is_revoked, #
+                    access_timestamp = access_timestamp #
+                )
