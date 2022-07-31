@@ -227,6 +227,8 @@ class LegislationSpider(GCSpider):
                 "compression_type": None
             }]
         version_hash_fields = {
+            "doc_num": doc_num,
+            "doc_name": doc_name,
             "publication_date": publication_date,
             "download_url": web_url,
             "sponsors": fields.get("sponsors"),
