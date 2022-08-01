@@ -2,29 +2,40 @@ from typing import Iterator, List
 
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
+from dataPipelines.gc_scrapy.gc_scrapy.GCSeleniumSpider import GCSeleniumSpider
+from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp, dict_to_sha256_hex_digest
+from urllib.parse import urlparse
 
+from datetime import datetime
 from scrapy import Selector
 from scrapy.http import TextResponse
 from selenium.webdriver import Chrome
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import TimeoutException
 
-from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
-from dataPipelines.gc_scrapy.gc_scrapy.GCSeleniumSpider import GCSeleniumSpider
-
 
 class FarSubpartSpider(GCSeleniumSpider):
     name = "far_subpart_regs" # Crawler name
-    display_org = "FAR" # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = "Federal Acquisition Regulation" # Level 2: GC app 'Source' metadata field for docs from this crawler
-    source_title = "Unlisted Source" # Level 3 filter
 
     start_urls = [
         'https://www.acquisition.gov/far'
     ]
-    cac_login_required = False
+    
     randomly_delay_request = True
-    doc_type = "FAR"
+
+    @staticmethod
+    def get_pub_date(publication_date):
+        '''
+        This function convverts publication_date from DD Month YYYY format to YYYY-MM-DDTHH:MM:SS format.
+        T is a delimiter between date and time.
+        '''
+        try:
+            date = parse_timestamp(publication_date, None)
+            if date:
+                publication_date = datetime.strftime(date, '%Y-%m-%dT%H:%M:%S')
+        except:
+            publication_date = ""
+        return publication_date
 
     def parse(self, response: TextResponse):
         pub_date = self.parse_pub_date(response)
@@ -75,36 +86,84 @@ class FarSubpartSpider(GCSeleniumSpider):
             #     break
 
             href_raw = row.css('td:nth-child(2) a::attr(href)').get()
-
             doc_num = doc_title.split()[0] + ' ' + doc_title.split()[1]
-            doc_name = self.doc_type + " " + doc_num
-
+            
             web_url = self.ensure_full_href_url(href_raw, self.start_urls[0])
-
-            downloadable_items = [
-                {
-                    "doc_type": 'html',
-                    "web_url": web_url.replace(' ', '%20'),
-                    "compression_type": 'zip'
-                }
-            ]
-
-            version_hash_fields = {
-                "item_currency": href_raw,
-                "pub_date": pub_date
+            fields = {
+                "doc_num": doc_num,
+                "doc_title": doc_title,
+                "publication_date": pub_date,
+                "href_raw": href_raw,
+                "download_url": web_url.replace(' ', '%20')
             }
 
-            yield DocItem(
-                doc_name=doc_name,
-                doc_num=doc_num,
-                doc_title=doc_title,
-                publication_date=pub_date,
-                downloadable_items=downloadable_items,
-                version_hash_raw_data=version_hash_fields,
-            )
+            doc_item = self.populate_doc_item(fields)
+            
+            yield doc_item
+
 
     def parse_pub_date(self, response: TextResponse) -> str:
         meta_table = response.css('table.usa-table:nth-of-type(1)')
         pub_date_raw = meta_table.css('tbody > tr > td:nth-child(2)::text').get()
         pub_date = self.ascii_clean(pub_date_raw)
         return pub_date
+
+
+    def populate_doc_item(self, fields: dict) -> DocItem:
+        display_org = "FAR" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "Federal Acquisition Regulation" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "Unlisted Source" # Level 3 filter
+        doc_type = "FAR"
+        file_type = "html"
+        display_doc_type = "Regulation"
+        cac_login_required = False
+        is_revoked = False
+
+        doc_title = fields.get('doc_title')
+        publication_date = fields.get('publication_date', '')
+        publication_date = self.get_pub_date(publication_date)
+        source_page_url = self.start_urls[0]
+        download_url = fields.get("download_url")
+        doc_num = fields.get('doc_num')
+        doc_name = doc_type + " " + doc_num
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_num + " " + doc_title
+        downloadable_items = [{
+                "doc_type": file_type,
+                "download_url": download_url,
+                "compression_type": 'zip'
+            }]
+        version_hash_fields = {
+                "download_url": fields.get("href_raw"),
+                "doc_name": doc_name,
+                "doc_num": doc_num,
+                "publication_date": publication_date
+            }
+        source_fqdn = urlparse(source_page_url).netloc
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+        access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
+
+        return DocItem(
+            doc_name = doc_name,
+            doc_title = doc_title,
+            doc_num = doc_num,
+            doc_type = doc_type,
+            display_doc_type = display_doc_type,
+            publication_date = publication_date,
+            cac_login_required = cac_login_required,
+            crawler_used = self.name,
+            downloadable_items = downloadable_items,
+            source_page_url = source_page_url,
+            source_fqdn = source_fqdn,
+            download_url = download_url, 
+            version_hash_raw_data = version_hash_fields,
+            version_hash = version_hash,
+            display_org = display_org,
+            data_source = data_source,
+            source_title = source_title,
+            display_source = display_source,
+            display_title = display_title,
+            file_ext = file_type,
+            is_revoked = is_revoked,
+            access_timestamp = access_timestamp
+            )
