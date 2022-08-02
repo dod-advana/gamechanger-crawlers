@@ -6,10 +6,10 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
 
 class OmbSpider(GCSpider):
-    name = 'omb_pubs'
-    source_title = "Office of Management and Budget Memoranda"
-    display_org = "OMB"
-    data_source = "Executive Office of the President"
+    name = 'omb_pubs' # Crawler name
+    display_org = "OMB" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Executive Office of the President" # Level 2: GC app 'Source' metadata field for docs from this crawler 
+    source_title = "Office of Management and Budget Memoranda" # Level 3 filter
     rotate_user_agent = True
 
     start_urls = [
@@ -73,8 +73,7 @@ class OmbSpider(GCSpider):
                     version_hash_fields = {
                         # version metadata found on pdf links
                         "item_currency": pdf_url.split('/')[-1],
-                        "pub_date": publication_date.strip(),
-                        "display_org": self.display_org
+                        "pub_date": publication_date.strip()
                     }
                     parsed_title = self.ascii_clean(re.sub('\\"', '', doc_title))
                     parsed_num = doc_num.strip()
@@ -83,9 +82,6 @@ class OmbSpider(GCSpider):
                             doc_name=doc_name.strip(),
                             doc_title=parsed_title,
                             doc_num=parsed_num,
-                            data_source=self.data_source,
-                            source_title=self.source_title,
-                            display_org=self.display_org,
                             doc_type=doc_type.strip(),
                             display_doc_type=doc_type.strip(),
                             publication_date=publication_date,

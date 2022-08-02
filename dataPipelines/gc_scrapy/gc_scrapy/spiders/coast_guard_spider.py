@@ -13,7 +13,12 @@ class CoastGuardSpider(GCSeleniumSpider):
         Parser for Coast Guard Commandant Instruction Manuals
     """
 
-    name = 'Coast_Guard'
+    name = 'Coast_Guard' # Crawler name
+    display_org = "Coast Guard" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Coast Guard Deputy Commandant for Mission Support" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
+    cac_login_required = False
+
     allowed_domains = ['dcms.uscg.mil']
     start_urls = [
         'https://www.dcms.uscg.mil/Our-Organization/Assistant-Commandant-for-C4IT-CG-6/The-Office-of-Information-Management-CG-61/About-CG-Directives-System/'
@@ -25,8 +30,6 @@ class CoastGuardSpider(GCSeleniumSpider):
         'https://www.dcms.uscg.mil/Our-Organization/Assistant-Commandant-for-C4IT-CG-6/The-Office-of-Information-Management-CG-61/About-CG-Directives-System/Commandant-Change-Notices/',
         'https://www.dcms.uscg.mil/Our-Organization/Assistant-Commandant-for-C4IT-CG-6/The-Office-of-Information-Management-CG-61/About-CG-Directives-System/DCMS-Instructions/'
     ]
-
-    cac_login_required = False
     current_page_selector = 'div.numericDiv ul li.active a.Page'
     next_page_selector = 'div.numericDiv ul li.active + li a'
     rows_selector = "table.Dashboard tbody tr"

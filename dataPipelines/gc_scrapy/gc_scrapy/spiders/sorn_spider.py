@@ -5,14 +5,17 @@ import scrapy
 
 
 class SornSpider(GCSpider):
-    name = "SORN"
+    name = "SORN" # Crawler name
+    display_org = "Dept. of Defense" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Unlisted Source" # Level 2: value TBD for this crawler
+    source_title = "Unlisted Source" # Level 3 filter
+    
     start_urls = [
         "https://www.federalregister.gov/api/v1/agencies/defense-department"
     ]
     cac_login_required = False
     rotate_user_agent = True
     doc_type = "SORN"
-    display_org = "Dept. of Defense"
     display_source = "Federal Registry"
 
     def parse(self, response):

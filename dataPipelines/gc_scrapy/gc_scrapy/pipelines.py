@@ -351,8 +351,14 @@ class DeduplicaterPipeline:
 class AdditionalFieldsPipeline:
     def process_item(self, item, spider):
 
-        if getattr(spider, "display_org", None):
+        if getattr(spider, "display_org", None): # If DocItem.display_org = None, propogate value with value of spider class variable display_org
             item["display_org"] = spider.display_org
+
+        if getattr(spider, "data_source", None): # If DocItem.data_source = None, propogate value with value of spider class variable data_source
+            item["data_source"] = spider.data_source
+        
+        if getattr(spider, "source_title", None): # If DocItem.source_title = None, propogate value with value of spider class variable source_title
+            item["source_title"] = spider.source_title
 
         if getattr(spider, "display_source", None):
             item["display_source"] = spider.display_source

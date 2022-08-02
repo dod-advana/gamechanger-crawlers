@@ -11,9 +11,10 @@ import time
 
 
 class NavyMedSpider(GCSeleniumSpider):
-    name = "navy_med_pubs"
-    
-    display_org = "US Navy Medicine"
+    name = "navy_med_pubs" # Crawler name
+    display_org="US Navy Medicine" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Navy Medicine" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
 
     start_urls = [
         "https://www.med.navy.mil/Directives/"
@@ -194,7 +195,6 @@ class NavyMedSpider(GCSeleniumSpider):
                 doc_num=doc_num,
                 doc_type=doc_type,
                 doc_title=doc_title,
-                display_org=self.display_org,
                 publication_date=publication_date,
                 cac_login_required=cac_login_required,
                 downloadable_items=downloadable_items,

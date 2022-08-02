@@ -8,7 +8,10 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 
 class DoDSpider(GCSpider):
-    name = 'dfars_pgi'
+    name = 'dfars_pgi' # Crawler name
+    display_org = "DFARS" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Defense Federal Acquisition Regulation" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
 
     start_urls = ['https://www.acq.osd.mil/dpap/dars/dfarspgi/current']
     allowed_domains = ['www.acq.osd.mil']

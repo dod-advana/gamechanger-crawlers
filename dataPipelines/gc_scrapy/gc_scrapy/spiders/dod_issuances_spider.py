@@ -7,7 +7,10 @@ from dataPipelines.gc_scrapy.gc_scrapy.utils import abs_url
 
 
 class DoDSpider(GCSpider):
-    name = 'dod_issuances'
+    name = 'dod_issuances' # Crawler name
+    display_org = "Dept. of Defense" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "WHS DoD Directives Division" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
 
     start_urls = ['https://www.esd.whs.mil/DD/DoD-Issuances/DTM/']
     allowed_domains = ['www.esd.whs.mil']

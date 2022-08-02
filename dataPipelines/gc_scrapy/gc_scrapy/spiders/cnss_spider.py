@@ -62,10 +62,11 @@ def directive(doc_type_num) -> t.Tuple[str, str, str]:
 
 
 class CNSSSpider(GCSpider):
-    name = "CNSS"
+    name = "CNSS" # Crawler name
+    display_org = "Dept. of Defense" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Committee on National Security Systems Library" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
     cac_login_required = False
-    display_org = "Dept. of Defense"
-    data_source = "Committee on National Security Systems Library"
 
     start_urls = [
         "https://www.cnss.gov/CNSS/index.cfm"
