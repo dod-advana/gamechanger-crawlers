@@ -109,10 +109,19 @@ class CoastGuardSpider(GCSeleniumSpider):
             download_url = self.ensure_full_href_url(href_raw, driver.current_url)
             publication_date = row.css('td:nth-child(5)::text').get()
 
-            doc_item = self.populate_doc_item(doc_type_raw, doc_num_raw, doc_title_raw, href_raw, download_url, publication_date, office_primary_resp_raw)
-            yield doc_item
+            fields = {
+                "doc_type_raw": doc_type_raw,
+                "doc_num_raw": doc_num_raw,
+                "doc_title_raw": doc_title_raw,
+                "href_raw": href_raw,
+                "download_url": download_url,
+                "publication_date": publication_date,
+                "office_primary_resp_raw": office_primary_resp_raw
+            }
 
-    def populate_doc_item(self, doc_type_raw, doc_num_raw, doc_title_raw, href_raw, download_url, publication_date, office_primary_resp_raw):
+            yield self.populate_doc_item(fields)
+
+    def populate_doc_item(self, fields):
         '''
         This functions provides both hardcoded and computed values for the variables
         in the imported DocItem object and returns the populated metadata object
@@ -123,15 +132,17 @@ class CoastGuardSpider(GCSeleniumSpider):
         cac_login_required = False # No CAC required for any documents
         is_revoked = False
 
-        doc_num = doc_num_raw.replace('_', '.')
-        doc_title = self.ascii_clean(doc_title_raw)
-        display_doc_type = self.get_display_doc_type(doc_type_raw)
-        doc_type = self.get_href_file_extension(href_raw)
+        doc_num = fields.get("doc_num_raw").replace('_', '.')
+        doc_type = fields.get("doc_type_raw")
+        doc_title = self.ascii_clean(fields.get("doc_title_raw"))
+        display_doc_type = self.get_display_doc_type(doc_type)
+        file_ext = self.get_href_file_extension(fields.get("href_raw")) #########
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
         access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
-        publication_date = self.get_pub_date(publication_date)
-        doc_name = f"{doc_type_raw} {doc_num}"
+        publication_date = self.get_pub_date(fields.get("publication_date"))
+        doc_name = f"{doc_type} {doc_num}"
+        download_url = fields.get("download_url").replace(' ', '%20')
         version_hash_fields = {
                 "doc_name": doc_name,
                 "doc_num": doc_num,
@@ -140,11 +151,11 @@ class CoastGuardSpider(GCSeleniumSpider):
             }
         downloadable_items = [{
                 "doc_type": doc_type,
-                "download_url": download_url.replace(' ', '%20'),
+                "download_url": download_url,
                 "compression_type": None
             }]
-        office_primary_resp = self.ascii_clean(office_primary_resp_raw)
-        source_page_url = download_url
+        office_primary_resp = self.ascii_clean(fields.get("office_primary_resp_raw"))
+        source_page_url = fields.get("download_url")
         source_fqdn = urlparse(source_page_url).netloc
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 
@@ -153,23 +164,23 @@ class CoastGuardSpider(GCSeleniumSpider):
                     doc_title = doc_title,
                     doc_num = doc_num,
                     doc_type = doc_type,
-                    display_doc_type_s = display_doc_type,
-                    publication_date_dt = publication_date,
-                    cac_login_required_b = cac_login_required,
-                    crawler_used_s = self.name,
+                    display_doc_type = display_doc_type,
+                    publication_date = publication_date,
+                    cac_login_required = cac_login_required,
+                    crawler_used = self.name,
                     downloadable_items = downloadable_items,
-                    source_page_url_s = source_page_url,
-                    source_fqdn_s = source_fqdn,
-                    download_url_s = download_url, 
+                    source_page_url = source_page_url,
+                    source_fqdn = source_fqdn,
+                    download_url = download_url, 
                     version_hash_raw_data = version_hash_fields,
-                    version_hash_s = version_hash,
-                    display_org_s = display_org,
-                    data_source_s = data_source,
-                    source_title_s = source_title,
-                    display_source_s = display_source,
-                    display_title_s = display_title,
-                    file_ext_s = doc_type,
+                    version_hash = version_hash,
+                    display_org = display_org,
+                    data_source = data_source,
+                    source_title = source_title,
+                    display_source = display_source,
+                    display_title = display_title,
+                    file_ext = file_ext,
                     office_primary_resp = office_primary_resp,
-                    is_revoked_b = is_revoked,
-                    access_timestamp_dt = access_timestamp
+                    is_revoked = is_revoked,
+                    access_timestamp = access_timestamp
                 )
