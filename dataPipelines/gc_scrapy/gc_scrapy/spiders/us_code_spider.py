@@ -22,7 +22,6 @@ class USCodeSpider(GCSpider):
     doc_type = "Title"
     cac_login_required = False
     rotate_user_agent = True
-    test_title_42 = False
 
     GCSpider.custom_settings["ITEM_PIPELINES"][
         "dataPipelines.gc_scrapy.gc_scrapy.pipelines.USCodeFileDownloadPipeline"
@@ -60,10 +59,6 @@ class USCodeSpider(GCSpider):
 
             doc_title = doc_title.replace(",", "").replace("'", "")
             doc_name = f"{self.doc_type} {doc_num}{PART}{doc_title}"
-
-            # TODO: remove this - testing title 42
-            if self.test_title_42 and not ("42" == doc_num):
-                continue
 
             item_currency_raw = row.css("div.itemcurrency::text").get()
             item_currency = self.ascii_clean(item_currency_raw)
