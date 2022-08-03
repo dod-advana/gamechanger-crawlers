@@ -1,6 +1,7 @@
 attrs==19.3.0
 Automat==20.2.0
 beautifulsoup4==4.9.1
+boto3==1.23.10
 certifi==2020.4.5.1
 cffi==1.14.6
 chardet==3.0.4
@@ -8,6 +9,7 @@ Click==7.0
 constantly==15.1.0
 cryptography==3.4.8
 cssselect==1.1.0
+python-dotenv==0.20.0
 hyperlink==21.0.0
 idna==2.9
 importlib-metadata==1.6.0
