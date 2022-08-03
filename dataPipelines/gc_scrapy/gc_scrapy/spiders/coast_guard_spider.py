@@ -58,6 +58,11 @@ class CoastGuardSpider(GCSeleniumSpider):
             publication_date = ""
         return publication_date
 
+    def get_office_primary_resp(self, office_primary_resp):
+        if office_primary_resp:
+            return self.ascii_clean(office_primary_resp)
+        else:
+            return None
 
     def parse(self, response):
         driver: Chrome = response.meta["driver"]
@@ -106,7 +111,8 @@ class CoastGuardSpider(GCSeleniumSpider):
             doc_title_raw = row.css('td:nth-child(2) a::text').get()
             office_primary_resp_raw = row.css('td:nth-child(3)::text').get()
             href_raw = row.css('td:nth-child(2) a::attr(href)').get()
-            download_url = self.ensure_full_href_url(href_raw, driver.current_url)
+            source_page_url = driver.current_url
+            download_url = self.ensure_full_href_url(href_raw, source_page_url)
             publication_date = row.css('td:nth-child(5)::text').get()
 
             fields = {
@@ -115,6 +121,7 @@ class CoastGuardSpider(GCSeleniumSpider):
                 "doc_title_raw": doc_title_raw,
                 "href_raw": href_raw,
                 "download_url": download_url,
+                "source_page_url": source_page_url,
                 "publication_date": publication_date,
                 "office_primary_resp_raw": office_primary_resp_raw
             }
@@ -126,9 +133,9 @@ class CoastGuardSpider(GCSeleniumSpider):
         This functions provides both hardcoded and computed values for the variables
         in the imported DocItem object and returns the populated metadata object
         '''
-        display_org = "US Navy" # Level 1: GC app 'Source' filter for docs from this crawler
-        data_source = "MyNavy HR" # Level 2: GC app 'Source' metadata field for docs from this crawler
-        source_title = "Bureau of Naval Personnel Instructions" # Level 3 filter
+        display_org = "Coast Guard" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "Coast Guard Deputy Commandant for Mission Support" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "Unlisted Source" # Level 3 filter
         cac_login_required = False # No CAC required for any documents
         is_revoked = False
 
@@ -154,8 +161,8 @@ class CoastGuardSpider(GCSeleniumSpider):
                 "download_url": download_url,
                 "compression_type": None
             }]
-        office_primary_resp = self.ascii_clean(fields.get("office_primary_resp_raw"))
-        source_page_url = fields.get("download_url")
+        office_primary_resp = self.get_office_primary_resp(fields.get("office_primary_resp_raw"))
+        source_page_url = fields.get("source_page_url")
         source_fqdn = urlparse(source_page_url).netloc
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 

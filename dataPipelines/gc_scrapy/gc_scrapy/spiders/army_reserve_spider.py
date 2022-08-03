@@ -4,9 +4,9 @@ from datetime import datetime
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
-from urllib.parse import urljoin, urlparse #, urlencode, parse_qs
+from urllib.parse import urljoin, urlparse
 from datetime import datetime
-from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest #, get_pub_date
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
 
 type_and_num_regex = re.compile(r"([a-zA-Z].*) (\d.*)") # Get 'type' (alphabetic) value and 'num' (numeric) value from 'doc_name' string
 
@@ -54,7 +54,6 @@ class ArmyReserveSpider(GCSpider):
             # Join relative urls to base
             web_url = urljoin(self.start_urls[0], pdf_url) if pdf_url.startswith(
                 '/') else pdf_url
-            # Encode spaces from pdf names
             web_url = web_url.replace(" ", "%20") # Add document to base url, encoding spaces (with %20)
 
             cac_login_required = True if "usar.dod.afpims.mil" in web_url else False # Determine if CAC is required from url
@@ -87,7 +86,6 @@ class ArmyReserveSpider(GCSpider):
                 'doc_type': doc_type,
                 'cac_login_required': cac_login_required,
                 'download_url': web_url
-                #'publication_date': publication_date
             }
 
             ## Instantiate DocItem class and assign document's metadata values
@@ -95,8 +93,7 @@ class ArmyReserveSpider(GCSpider):
        
             yield doc_item
         
-
-
+        
     def populate_doc_item(self, fields):
         '''
         This functions provides both hardcoded and computed values for the variables
@@ -105,6 +102,8 @@ class ArmyReserveSpider(GCSpider):
         display_org = "Dept. of the Army" # Level 1: GC app 'Source' filter for docs from this crawler
         data_source = "Army Publishing Directorate" # Level 2: GC app 'Source' metadata field for docs from this crawler
         source_title = "Unlisted Source" # Level 3 filter
+        display_doc_type = "Document" # Doc type for display on app
+        is_revoked = False
 
         doc_name = fields['doc_name']
         doc_num = fields['doc_num']
@@ -112,16 +111,11 @@ class ArmyReserveSpider(GCSpider):
         doc_type = fields['doc_type']
         cac_login_required = fields['cac_login_required']
         download_url = fields['download_url']
-        #publication_date = get_pub_date(fields['publication_date'])
-
-        display_doc_type = "Document" # Doc type for display on app
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
-        is_revoked = False
         access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
         source_page_url = self.start_urls[0]
         source_fqdn = urlparse(source_page_url).netloc
-
         downloadable_items = [
                 {
                     "doc_type": self.file_type,
@@ -129,15 +123,11 @@ class ArmyReserveSpider(GCSpider):
                     "compression_type": None
                 }
             ] # Get document metadata
-
-        ## Assign fields that will be used for versioning
         version_hash_fields = {
             "doc_name":doc_name,
             "doc_num": doc_num,
-            #"publication_date": publication_date,
             "download_url": download_url.split('/')[-1]
-        }
-
+        } # Assign fields used for versioning
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 
         return DocItem(
@@ -145,22 +135,22 @@ class ArmyReserveSpider(GCSpider):
                     doc_title = doc_title,
                     doc_num = doc_num,
                     doc_type = doc_type,
-                    display_doc_type = display_doc_type, #
-                    #publication_date = publication_date,
+                    display_doc_type = display_doc_type,
+                    #publication_date = publication_date, # Publication dates not available from website, link, or filename
                     cac_login_required = cac_login_required,
                     crawler_used = self.name,
                     downloadable_items = downloadable_items,
-                    source_page_url = source_page_url, #
-                    source_fqdn = source_fqdn, #
-                    download_url = download_url, #
-                    version_hash_raw_data = version_hash_fields, #
+                    source_page_url = source_page_url,
+                    source_fqdn = source_fqdn,
+                    download_url = download_url,
+                    version_hash_raw_data = version_hash_fields,
                     version_hash = version_hash,
-                    display_org = display_org, #
-                    data_source = data_source, #
-                    source_title = source_title, #
-                    display_source = display_source, #
-                    display_title = display_title, #
-                    file_ext = doc_type, #
-                    is_revoked = is_revoked, #
-                    access_timestamp = access_timestamp #
+                    display_org = display_org,
+                    data_source = data_source,
+                    source_title = source_title,
+                    display_source = display_source,
+                    display_title = display_title,
+                    file_ext = doc_type,
+                    is_revoked = is_revoked,
+                    access_timestamp = access_timestamp 
                 )
