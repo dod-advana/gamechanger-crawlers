@@ -6,8 +6,8 @@ Wrappers/Containers for batch pipeline jobs meant to be executed by the PaaS tea
 1. Checkout appropriate repository/branch into deployment directory
 2. Kill any running gc-crawler containers `docker rm --force <...>`
 3. Rebuild base and crawler containers `paasJobs/scripts/rebuild_prod_crawlers_and_base.sh`
-4. (if only running) Run job interactively with `paasJobs/scripts/run_prod_gc_crawler_downloader.sh`
-5. (if deploying) Setup cron job to launch appropriate `run_prod_...` script on schedule
+4. (if only running) Run job interactively with `paasJobs/scripts/crawl_then_upload.py`
+5. (if deploying) Setup cron job to launch script on schedule
 
 ## How-to run in dev
 - Build the crawler base image `dev/docker/gc_crawler/Dockerfile`, context is repo root
