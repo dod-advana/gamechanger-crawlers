@@ -19,7 +19,7 @@ readonly REPO_DIR="$( cd "$SCRIPT_PARENT_DIR/../../"  >/dev/null 2>&1 && pwd )"
 ## BASE JOB_CONF
 
 JOB_NAME="${JOB_NAME:-Crawler-Downloader Job}"
-JOB_SCRIPT="${REPO_DIR}/paasJobs/scripts/run_prod_gc_crawler_downloader.sh"
+JOB_SCRIPT="${REPO_DIR}/paasJobs/scripts/crawl_then_upload.py"
 SEND_NOTIFICATIONS="${SEND_NOTIFICATIONS:-yes}"
 UPLOAD_LOGS="${UPLOAD_LOGS:-yes}"
 SLACK_HOOK_CHANNEL="${SLACK_HOOK_CHANNEL}"
