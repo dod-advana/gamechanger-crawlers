@@ -150,7 +150,7 @@ class CoastGuardSpider(GCSeleniumSpider):
                 "download_url": download_url
             }
         downloadable_items = [{
-                "doc_type": doc_type,
+                "doc_type": file_ext,
                 "download_url": download_url,
                 "compression_type": None
             }]
