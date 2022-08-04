@@ -3,12 +3,14 @@ from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 import scrapy
 import typing as t
 
+from urllib.parse import urljoin, urlparse
+from datetime import datetime
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
+
 
 class SASCSpider(GCSpider):
     name = "SASC" # Crawler name
-    display_org = "Congress" # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = "Senate Armed Services Committee Publications" # Level 2: GC app 'Source' metadata field for docs from this crawler
-    source_title = "Senate Armed Services Committee" # Level 3 filter
+    
     cac_login_required = False
 
     base_url = "https://www.armed-services.senate.gov"
@@ -67,14 +69,15 @@ class SASCSpider(GCSpider):
         downloadable_items = [
             {
                 "doc_type": 'pdf',
-                "web_url": redirect_doc_href,
+                "download_url": redirect_doc_href,
                 "compression_type": None
             }
         ]
 
         doc = response.meta['doc']
         doc['downloadable_items'] = downloadable_items
-        doc['version_hash_raw_data']['item_currency'] = redirect_doc_href
+        doc['download_url'] = redirect_doc_href
+        doc['version_hash_raw_data']['download_url'] = redirect_doc_href
 
         yield doc
 
@@ -100,21 +103,26 @@ class SASCSpider(GCSpider):
             downloadable_items = [
                 {
                     "doc_type": 'html',
-                    "web_url": response.url,
+                    "download_url": response.url,
                     "compression_type": None
                 }
             ]
 
-            yield DocItem(
-                doc_name=base_doc_name,
-                doc_title=title,
-                doc_type=hearing_type,
-                display_doc_type='Hearing',
-                publication_date=date,
-                source_page_url=response.url,
-                version_hash_raw_data={},
-                downloadable_items=downloadable_items
-            )
+            fields = {
+                'doc_name': base_doc_name,
+                'doc_title': title,
+                'doc_type': hearing_type,
+                'display_doc_type':'Hearing',
+                'cac_login_required': False,
+                'download_url': response.url,
+                'source_page_url':response.url,
+                'downloadable_items':downloadable_items,
+                'publication_date': date
+            }
+            ## Instantiate DocItem class and assign document's metadata values
+            doc_item = self.populate_doc_item(fields)
+        
+            yield doc_item
 
             #########################################################
             # Get transcript files from hearing
@@ -124,15 +132,19 @@ class SASCSpider(GCSpider):
                 aside_href = aside.css('a::attr(href)').get()
                 aside_doc_name = f"{base_doc_name} - {aside_text}"
 
-                aside_doc = DocItem(
-                    doc_name=aside_doc_name,
-                    doc_title=title,
-                    doc_type=hearing_type,
-                    display_doc_type='Transcript',
-                    publication_date=date,
-                    source_page_url=response.url,
-                    version_hash_raw_data={},
-                )
+                fields = {
+                    'doc_name': aside_doc_name,
+                    'doc_title': title,
+                    'doc_type': hearing_type,
+                    'display_doc_type':'Transcript',
+                    'cac_login_required': False,
+                    'download_url': '',
+                    'source_page_url':response.url,
+                    'downloadable_items':[],
+                    'publication_date': date
+                }
+                ## Instantiate DocItem class and assign document's metadata values
+                aside_doc = self.populate_doc_item(fields)
 
                 yield scrapy.Request(aside_href, callback=self.follow_pdf_redirect, meta={'doc': aside_doc})
 
@@ -157,17 +169,84 @@ class SASCSpider(GCSpider):
 
                     full_witness_doc_type = f"{self.name} {hearing_type} {wit_doc_type}"
 
-                    witness_doc = DocItem(
-                        doc_name=witness_doc_name,
-                        doc_title=witness_doc_name,
-                        doc_type=full_witness_doc_type,
-                        display_doc_type=wit_doc_type,
-                        publication_date=date,
-                        source_page_url=response.url,
-                        version_hash_raw_data={},
-                    )
+                    fields = {
+                        'doc_name': witness_doc_name,
+                        'doc_title': witness_doc_name,
+                        'doc_type': full_witness_doc_type,
+                        'display_doc_type':wit_doc_type,
+                        'cac_login_required': False,
+                        'download_url': '',
+                        'source_page_url':response.url,
+                        'downloadable_items':[],
+                        'publication_date': date
+                    }
+
+                    witness_doc = self.populate_doc_item(fields)
 
                     yield scrapy.Request(witness_href, callback=self.follow_pdf_redirect, meta={'doc': witness_doc})
 
         except Exception as e:
             print(e)
+
+
+    def populate_doc_item(self, fields):
+        '''
+        This functions provides both hardcoded and computed values for the variables
+        in the imported DocItem object and returns the populated metadata object
+        '''
+        display_org = "Congress" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "Senate Armed Services Committee Publications" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "Senate Armed Services Committee" # Level 3 filter
+
+        doc_name = fields['doc_name']
+        #doc_num = fields['doc_num']
+        doc_title = fields['doc_title']
+        doc_type = fields['doc_type']
+        cac_login_required = fields['cac_login_required']
+        download_url = fields['download_url']
+        publication_date = get_pub_date(fields['publication_date'])
+
+        display_doc_type = fields['display_doc_type'] # Doc type for display on app
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_title #doc_type + " " + doc_num + " " + doc_title
+        is_revoked = False
+        access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
+        source_page_url = fields['source_page_url']
+        source_fqdn = urlparse(source_page_url).netloc
+
+        downloadable_items = fields['downloadable_items']
+
+        ## Assign fields that will be used for versioning
+        version_hash_fields = {
+            "doc_name":doc_name,
+            #"doc_num": doc_num,
+            "publication_date": publication_date,
+            "download_url": download_url
+        }
+
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+
+        return DocItem(
+                    doc_name = doc_name,
+                    doc_title = doc_title,
+                    #doc_num = doc_num,
+                    doc_type = doc_type,
+                    display_doc_type = display_doc_type, #
+                    publication_date = publication_date,
+                    cac_login_required = cac_login_required,
+                    crawler_used = self.name,
+                    downloadable_items = downloadable_items,
+                    source_page_url = source_page_url, #
+                    source_fqdn = source_fqdn, #
+                    download_url = download_url, #
+                    version_hash_raw_data = version_hash_fields, #
+                    version_hash = version_hash,
+                    display_org = display_org, #
+                    data_source = data_source, #
+                    source_title = source_title, #
+                    display_source = display_source, #
+                    display_title = display_title, #
+                    file_ext = doc_type, #
+                    is_revoked = is_revoked, #
+                    access_timestamp = access_timestamp #
+                )
