@@ -34,7 +34,7 @@ class CoastGuardSpider(GCSeleniumSpider):
 
 
     @staticmethod
-    def get_display_doc_type(display_doc_type):
+    def get_display_doc_type(doc_type):
         """This function returns value for display_doc_type based on doc_type -> display_doc_type mapping"""
         display_type_dict = {"cngbi": "Instruction",
             "cim": "Manual",
@@ -42,7 +42,7 @@ class CoastGuardSpider(GCSeleniumSpider):
             "cn": "Notice",
             "ccn": "Notice",
             "dcmsi": "Instruction"}
-        return display_type_dict.get(display_doc_type.lower())
+        return display_type_dict.get(doc_type.lower())
 
     @staticmethod
     def get_pub_date(publication_date):
