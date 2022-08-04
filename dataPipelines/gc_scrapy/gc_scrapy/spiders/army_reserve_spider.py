@@ -49,10 +49,8 @@ class ArmyReserveSpider(GCSpider):
         "usar reg": "Regulation"
         }
         if doc_type.lower() in display_type_dict.keys():
-            print(display_type_dict[doc_type.lower()])
             return display_type_dict[doc_type.lower()]
         else:
-            print("Document")
             return "Document"
 
     def parse(self, response):
