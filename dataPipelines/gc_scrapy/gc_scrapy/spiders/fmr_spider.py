@@ -71,9 +71,11 @@ class FmrSpider(GCSpider):
                 'doc_name': doc_name,
                 'doc_num': doc_num,
                 'doc_title': doc_title,
-                'doc_type': file_type,
+                'doc_type': self.doc_type,
+                'file_type': file_type,
                 'cac_login_required': False,
                 'download_url': web_url,
+                'source_page_url':response.url,
                 'publication_date': publication_date
             }
             ## Instantiate DocItem class and assign document's metadata values
@@ -105,12 +107,12 @@ class FmrSpider(GCSpider):
         display_title = doc_type + " " + doc_num + " " + doc_title
         is_revoked = False
         access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
-        source_page_url = self.start_urls[0]
+        source_page_url = fields['source_page_url']
         source_fqdn = urlparse(source_page_url).netloc
 
         downloadable_items = [
             {
-                "doc_type": doc_type,
+                "doc_type": fields['file_type'],
                 "download_url": download_url.replace(' ', '%20'),
                 "compression_type": None
             }
