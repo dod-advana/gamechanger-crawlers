@@ -150,7 +150,7 @@ class ArmyReserveSpider(GCSpider):
             doc_num = doc_num,
             doc_type = doc_type,
             display_doc_type = display_doc_type,
-            #publication_date = publication_date, # Publication dates not available from website, link, or filename
+            publication_date = None, # Publication dates not available from website, link, or filename
             cac_login_required = cac_login_required,
             crawler_used = self.name,
             downloadable_items = downloadable_items,
