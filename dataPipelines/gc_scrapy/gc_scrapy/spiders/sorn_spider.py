@@ -3,17 +3,18 @@ from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 import json
 import scrapy
 
+from urllib.parse import urljoin, urlparse
+from datetime import datetime
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
 
 class SornSpider(GCSpider):
     name = "SORN" # Crawler name
-    display_org = "Dept. of Defense" # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = "Unlisted Source" # Level 2: value TBD for this crawler
-    source_title = "Unlisted Source" # Level 3 filter
+    
     
     start_urls = [
         "https://www.federalregister.gov/api/v1/agencies/defense-department"
     ]
-    cac_login_required = False
+
     rotate_user_agent = True
     doc_type = "SORN"
     display_source = "Federal Registry"
@@ -37,31 +38,92 @@ class SornSpider(GCSpider):
 
         for sorn in sorns_list:
 
-            downloadable_items = [
-                {
-                    "doc_type": "pdf",
-                    "web_url": sorn["pdf_url"],
-                    "compression_type": None
-                }
-            ]
-
-            version_hash_raw_data = {
-                "item_currency": sorn["publication_date"],
-                "public_inspection": sorn["public_inspection_pdf_url"],
-                "title": sorn["title"],
-                "type": sorn["type"]
+            fields = {
+                'doc_name': "SORN " + sorn["document_number"],
+                'doc_num': sorn["document_number"],
+                'doc_title': sorn["title"],
+                'doc_type': "SORN",
+                'display_doc_type':"Notice",
+                'cac_login_required': False,
+                'download_url': sorn["pdf_url"],
+                'source_page_url':sorn["html_url"],
+                'publication_date': sorn["publication_date"]
             }
+            ## Instantiate DocItem class and assign document's metadata values
+            doc_item = self.populate_doc_item(fields)
+        
+            yield doc_item
 
-            yield DocItem(
-                doc_type="SORN",
-                doc_name="SORN " + sorn["document_number"],
-                doc_title=sorn["title"],
-                doc_num=sorn["document_number"],
-                display_doc_type="Notice",
-                publication_date=sorn["publication_date"],
-                downloadable_items=downloadable_items,
-                version_hash_raw_data=version_hash_raw_data,
-                source_page_url=sorn["html_url"]
-            )
         if 'next_page_url' in response_json:
             yield scrapy.Request(url=response_json['next_page_url'], callback=self.parse_data)
+
+
+
+        
+
+
+    def populate_doc_item(self, fields):
+        '''
+        This functions provides both hardcoded and computed values for the variables
+        in the imported DocItem object and returns the populated metadata object
+        '''
+        display_org = "Dept. of Defense" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "Unlisted Source" # Level 2: value TBD for this crawler
+        source_title = "Unlisted Source" # Level 3 filter
+
+        doc_name = fields['doc_name']
+        doc_num = fields['doc_num']
+        doc_title = fields['doc_title']
+        doc_type = fields['doc_type']
+        cac_login_required = fields['cac_login_required']
+        download_url = fields['download_url']
+        publication_date = get_pub_date(fields['publication_date'])
+
+        display_doc_type = fields['display_doc_type'] # Doc type for display on app
+        display_source = "Federal Registry"
+        display_title = doc_type + " " + doc_num + " " + doc_title
+        is_revoked = False
+        access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
+        source_page_url = fields['source_page_url']
+        source_fqdn = urlparse(source_page_url).netloc
+
+        downloadable_items = [{
+                "doc_type": "pdf",
+                "download_url": download_url,
+                "compression_type": None,
+            }]
+
+        ## Assign fields that will be used for versioning
+        version_hash_fields = {
+            "doc_name":doc_name,
+            "doc_num": doc_num,
+            "publication_date": publication_date,
+            "download_url": download_url
+        }
+
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+
+        return DocItem(
+                    doc_name = doc_name,
+                    doc_title = doc_title,
+                    doc_num = doc_num,
+                    doc_type = doc_type,
+                    display_doc_type = display_doc_type, #
+                    publication_date = publication_date,
+                    cac_login_required = cac_login_required,
+                    crawler_used = self.name,
+                    downloadable_items = downloadable_items,
+                    source_page_url = source_page_url, #
+                    source_fqdn = source_fqdn, #
+                    download_url = download_url, #
+                    version_hash_raw_data = version_hash_fields, #
+                    version_hash = version_hash,
+                    display_org = display_org, #
+                    data_source = data_source, #
+                    source_title = source_title, #
+                    display_source = display_source, #
+                    display_title = display_title, #
+                    file_ext = doc_type, #
+                    is_revoked = is_revoked, #
+                    access_timestamp = access_timestamp #
+                )
