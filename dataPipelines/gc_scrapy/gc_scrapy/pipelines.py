@@ -338,7 +338,7 @@ class AdditionalFieldsPipeline:
             item["access_timestamp"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
 
         if item.get("publication_date") is None:
-            item["publication_date"] = "N/A"
+            item["publication_date"] = ""
 
         if item.get("cac_login_required") is None:
             item["cac_login_required"] = spider.cac_login_required

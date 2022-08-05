@@ -48,7 +48,7 @@ class BrickSetSpider(GCSpider):
 
             doc_item = self.populate_doc_item(re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_name), re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type), 
                                                 re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num), re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title), 
-                                                url, "N/A")
+                                                url, "")
     
             yield doc_item
         
