@@ -5,7 +5,7 @@ import time
 from dataPipelines.gc_scrapy.gc_scrapy.utils import abs_url
 
 from urllib.parse import urljoin, urlparse
-import datetime
+from datetime import datetime
 from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
 
 class ArmySpider(GCSpider):
@@ -64,7 +64,6 @@ class ArmySpider(GCSpider):
         doc_type_raw = doc_name_raw.split()[0] # Get alphabetic portion of document name as doc_type
         publication_date = rows.css(
             "span#MainContent_PubForm_Date::text").get() # Get document publication date
-        print(publication_date)
         dist_stm = rows.css("span#MainContent_PubForm_Dist_Rest::text").get() # Get document distribution statment (re: doc accessibility)
         proponent = self.ascii_clean(rows.css(
             "span#MainContent_PubForm_Proponent::text").get(default="")) # Get document "Proponent"

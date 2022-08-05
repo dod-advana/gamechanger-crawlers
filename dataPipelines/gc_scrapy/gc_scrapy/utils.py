@@ -52,7 +52,7 @@ def get_pub_date(publication_date):
         try:
             date = parse_timestamp(publication_date, None)
             if date:
-                publication_date = datetime.datetime.strftime(date, '%Y-%m-%dT%H:%M:%S')
+                publication_date = date.strftime("%Y-%m-%dT%H:%M:%S")
         except:
             publication_date = None
         return publication_date

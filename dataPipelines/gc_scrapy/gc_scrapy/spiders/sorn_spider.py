@@ -123,7 +123,7 @@ class SornSpider(GCSpider):
                     source_title = source_title, #
                     display_source = display_source, #
                     display_title = display_title, #
-                    file_ext = doc_type, #
+                    file_ext = "pdf", #
                     is_revoked = is_revoked, #
                     access_timestamp = access_timestamp #
                 )
