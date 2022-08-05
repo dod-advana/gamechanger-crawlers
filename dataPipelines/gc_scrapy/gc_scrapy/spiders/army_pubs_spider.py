@@ -5,7 +5,7 @@ import time
 from dataPipelines.gc_scrapy.gc_scrapy.utils import abs_url
 
 from urllib.parse import urljoin, urlparse
-from datetime import datetime
+import datetime
 from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
 
 class ArmySpider(GCSpider):
@@ -64,6 +64,7 @@ class ArmySpider(GCSpider):
         doc_type_raw = doc_name_raw.split()[0] # Get alphabetic portion of document name as doc_type
         publication_date = rows.css(
             "span#MainContent_PubForm_Date::text").get() # Get document publication date
+        print(publication_date)
         dist_stm = rows.css("span#MainContent_PubForm_Dist_Rest::text").get() # Get document distribution statment (re: doc accessibility)
         proponent = self.ascii_clean(rows.css(
             "span#MainContent_PubForm_Proponent::text").get(default="")) # Get document "Proponent"
@@ -94,22 +95,21 @@ class ArmySpider(GCSpider):
                     "compression_type": None
                 }
                 downloadable_items.append(di)
-
+        source_page_url=response.url
         fields = {
                 'doc_name': self.ascii_clean(doc_name_raw),
                 'doc_num': self.ascii_clean(doc_num_raw),
                 'doc_title': self.ascii_clean(doc_title),
                 'doc_type': self.ascii_clean(doc_type_raw),
                 'cac_login_required': cac_login_required,
-                'download_url': response.url,
+                'download_url': downloadable_items[0]['download_url'],
                 'publication_date': self.ascii_clean(publication_date),
-                'downloadable_items': downloadable_items
+                'downloadable_items': downloadable_items,
+                'source_page_url': source_page_url
             }
         ## Instantiate DocItem class and assign document's metadata values
         doc_item = self.populate_doc_item(fields)
-       
         yield doc_item
-        
 
 
     def populate_doc_item(self, fields):
@@ -129,13 +129,14 @@ class ArmySpider(GCSpider):
         download_url = fields['download_url']
         publication_date = get_pub_date(fields['publication_date'])
         downloadable_items = fields['downloadable_items']
+        file_ext = downloadable_items[0]['doc_type']
 
         display_doc_type = "Document" # Doc type for display on app
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
         is_revoked = False
         access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
-        source_page_url = self.start_urls[0]
+        source_page_url = fields['source_page_url']
         source_fqdn = urlparse(source_page_url).netloc
 
         ## Assign fields that will be used for versioning
@@ -168,7 +169,7 @@ class ArmySpider(GCSpider):
                     source_title = source_title, #
                     display_source = display_source, #
                     display_title = display_title, #
-                    file_ext = doc_type, #
+                    file_ext = file_ext, #
                     is_revoked = is_revoked, #
                     access_timestamp = access_timestamp #
                 )
