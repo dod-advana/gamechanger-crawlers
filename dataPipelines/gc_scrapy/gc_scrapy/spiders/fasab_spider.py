@@ -11,7 +11,7 @@ from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
 
 
 class BrickSetSpider(GCSpider):
-    name = 'FASAB' # Crawler name
+    name = 'FASAB Crawler' # Crawler name
     display_org = "Uncategorized" # Level 1: value TBD for this crawler
     data_source = "Unlisted Source" # Level 2: value TBD for this crawler
     source_title = "Unlisted Source" # Level 3 filter
@@ -96,24 +96,24 @@ class BrickSetSpider(GCSpider):
                     doc_title = doc_title,
                     doc_num = doc_num,
                     doc_type = doc_type,
-                    display_doc_type_s = display_doc_type, #
-                    publication_date_dt = publication_date,
-                    cac_login_required_b = cac_login_required,
-                    crawler_used_s = self.name,
+                    display_doc_type = display_doc_type, #
+                    publication_date = publication_date,
+                    cac_login_required = cac_login_required,
+                    crawler_used = self.name,
                     downloadable_items = downloadable_items,
-                    source_page_url_s = source_page_url, #
-                    source_fqdn_s = source_fqdn, #
-                    download_url_s = web_url, #
+                    source_page_url = source_page_url, #
+                    source_fqdn = source_fqdn, #
+                    download_url = web_url, #
                     version_hash_raw_data = version_hash_fields, #
-                    version_hash_s = version_hash,
-                    display_org_s = display_org, #
-                    data_source_s = data_source, #
-                    source_title_s = source_title, #
-                    display_source_s = display_source, #
-                    display_title_s = display_title, #
-                    file_ext_s = doc_type, #
-                    is_revoked_b = is_revoked, #
-                    access_timestamp_dt = access_timestamp #
+                    version_hash = version_hash,
+                    display_org = display_org, #
+                    data_source = data_source, #
+                    source_title = source_title, #
+                    display_source = display_source, #
+                    display_title = display_title, #
+                    file_ext = "pdf", #
+                    is_revoked = is_revoked, #
+                    access_timestamp = access_timestamp #
                 )
 
 
