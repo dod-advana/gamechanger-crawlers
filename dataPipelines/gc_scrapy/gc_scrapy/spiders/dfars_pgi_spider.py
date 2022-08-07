@@ -39,6 +39,7 @@ class DoDSpider(GCSpider):
         prev_title = 'DEFENSE FEDERAL ACQUISITION REGULATION SUPPLEMENT'
         row: Selector
         for row in rows:
+            source_page_url = response.url
             if row.attrib['class'] == 'rule':
                 part_and_title_raw: str = row.css('td:nth-child(1)::text').get()
                 if part_and_title_raw is None:
@@ -85,6 +86,7 @@ class DoDSpider(GCSpider):
                         'doc_title': doc_title,
                         'doc_type': 'DFARS',
                         'cac_login_required': False,
+                        'source_page_url': source_page_url,
                         'download_url': dfars_pdf_href,
                         'publication_date': publication_date
                     }
@@ -107,6 +109,7 @@ class DoDSpider(GCSpider):
                         'doc_title': doc_title,
                         'doc_type': 'PGI',
                         'cac_login_required': False,
+                        'source_page_url': source_page_url,
                         'download_url': pgi_pdf_href,
                         'publication_date': publication_date
                     }
@@ -145,6 +148,7 @@ class DoDSpider(GCSpider):
         doc_title = fields['doc_title']
         doc_type = fields['doc_type']
         cac_login_required = fields['cac_login_required']
+        source_page_url = fields['source_page_url']
         download_url = fields['download_url']
         publication_date = get_pub_date(fields['publication_date'])
 
@@ -153,7 +157,6 @@ class DoDSpider(GCSpider):
         display_title = doc_type + " " + doc_num + " " + doc_title
         is_revoked = False
         access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
-        source_page_url = self.start_urls[0]
         source_fqdn = urlparse(source_page_url).netloc
 
         downloadable_items = [
@@ -163,7 +166,7 @@ class DoDSpider(GCSpider):
                 "compression_type": None,
             }
         ]
-
+        file_ext = downloadable_items[0]["doc_type"]
         ## Assign fields that will be used for versioning
         version_hash_fields = {
             "doc_name":doc_name,
@@ -194,7 +197,7 @@ class DoDSpider(GCSpider):
                     source_title = source_title, #
                     display_source = display_source, #
                     display_title = display_title, #
-                    file_ext = doc_type, #
+                    file_ext = file_ext, #
                     is_revoked = is_revoked, #
                     access_timestamp = access_timestamp #
                 )

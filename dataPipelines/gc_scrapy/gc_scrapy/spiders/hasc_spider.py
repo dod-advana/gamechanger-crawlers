@@ -88,6 +88,7 @@ class HASCSpider(GCSpider):
                 'doc_title': title,
                 'doc_type': doc_type,
                 'cac_login_required': False,
+                'source_page_url': permalink,
                 'download_url': permalink,
                 'publication_date': date
             }
@@ -123,7 +124,7 @@ class HASCSpider(GCSpider):
         display_title = doc_type + " " + doc_title
         is_revoked = False
         access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
-        source_page_url = self.start_urls[0]
+        source_page_url = fields['source_page_url']
         source_fqdn = urlparse(source_page_url).netloc
 
         downloadable_items = [{
@@ -131,7 +132,7 @@ class HASCSpider(GCSpider):
                 "download_url": download_url,
                 "compression_type": None,
             }]
-
+        file_ext = downloadable_items[0]["doc_type"]
         ## Assign fields that will be used for versioning
         version_hash_fields = {
             "doc_name":doc_name,
@@ -162,7 +163,7 @@ class HASCSpider(GCSpider):
                     source_title = source_title, #
                     display_source = display_source, #
                     display_title = display_title, #
-                    file_ext = doc_type, #
+                    file_ext = file_ext, #
                     is_revoked = is_revoked, #
                     access_timestamp = access_timestamp #
                 )
