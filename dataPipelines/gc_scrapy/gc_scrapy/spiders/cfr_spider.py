@@ -143,7 +143,7 @@ class CFRSpider(GCSpider):
                 "compression_type": None,
             }
         ]
-
+        file_ext = downloadable_items[0]["doc_type"]
         ## Assign fields that will be used for versioning
         version_hash_fields = {
             "doc_name":doc_name,
@@ -174,7 +174,7 @@ class CFRSpider(GCSpider):
                     source_title = source_title, #
                     display_source = display_source, #
                     display_title = display_title, #
-                    file_ext = doc_type, #
+                    file_ext = file_ext, #
                     is_revoked = is_revoked, #
                     access_timestamp = access_timestamp #
                 )
