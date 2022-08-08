@@ -307,7 +307,8 @@ class USCodeFileDownloadPipeline(FileDownloadPipeline):
                                 self.add_to_manifest(unzipped_item)
 
                                 metadata_download_path = Path(self.output_dir, unzipped_item["doc_name"])
-                                metadata_download_path = metadata_download_path.with_suffix(metadata_download_path.suffix + ".metadata")
+                                suffix_doc_type = f'{unzipped_item["downloadable_items"][0]["doc_type"]}'
+                                metadata_download_path = metadata_download_path.with_suffix(f'.{suffix_doc_type}.metadata')
 
                                 with open(metadata_download_path, "w") as f:
                                     try:
