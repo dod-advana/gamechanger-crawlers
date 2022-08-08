@@ -16,6 +16,19 @@ class IcPoliciesSpider(GCSpider):
     ]
     rotate_user_agent = True
 
+    @staticmethod
+    def get_display_doc_type(doc_type):
+        """This function returns value for display_doc_type based on doc_type -> display_doc_type mapping"""
+        display_type_dict = {
+        "icd": 'Directive',
+        "icpg": 'Guide',
+        "icpm": 'Manual'
+        }
+        if doc_type.lower() in display_type_dict.keys():
+            return display_type_dict[doc_type.lower()]
+        else:
+            return "Document"
+
     def parse(self, response):
         base_url = 'https://www.dni.gov'
         links = response.css('div[itemprop="articleBody"]').css('ul')[
@@ -109,7 +122,7 @@ class IcPoliciesSpider(GCSpider):
         download_url = fields['download_url']
         publication_date = get_pub_date(fields['publication_date'])
 
-        display_doc_type = "Document" # Doc type for display on app
+        display_doc_type = self.get_display_doc_type(doc_type)
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
         is_revoked = False
