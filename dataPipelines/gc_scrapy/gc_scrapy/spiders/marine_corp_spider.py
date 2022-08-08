@@ -247,6 +247,17 @@ class MarineCorpSpider(GCSpider):
 
     cac_required_options = ["placeholder", "FOUO", "for_official_use_only"]
 
+    @staticmethod
+    def get_display_doc_type(doc_type):
+        """This function returns value for display_doc_type based on doc_type -> display_doc_type mapping"""
+        display_type_dict = {
+            "secnavinst": 'Instruction'
+        }
+        if doc_type.lower() in display_type_dict.keys():
+            return display_type_dict[doc_type.lower()]
+        else:
+            return "Document"
+
     def parse(self, response):
         source_page_url = response.url
         rows = response.css('div.alist-more-here div.litem')
@@ -363,7 +374,7 @@ class MarineCorpSpider(GCSpider):
             'cac_login_required': doc_item['cac_login_required'],
             'source_page_url': doc_item['source_page_url'],
             'download_url': web_url
-            #'publication_date': publication_date No date for this doc
+            #'publication_date': publication_date No date for this crawler
         }
         ## Instantiate DocItem class and assign document's metadata values
         doc_item = self.populate_doc_item(fields)
@@ -389,7 +400,7 @@ class MarineCorpSpider(GCSpider):
         download_url = fields['download_url']
         #publication_date = get_pub_date(fields['publication_date'])
 
-        display_doc_type = "Document" # Doc type for display on app
+        display_doc_type = self.get_display_doc_type(doc_type)
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
         is_revoked = False
@@ -402,7 +413,7 @@ class MarineCorpSpider(GCSpider):
                 "download_url": download_url,
                 "compression_type": None,
             }]
-
+        file_ext = downloadable_items[0]["doc_type"]
         ## Assign fields that will be used for versioning
         version_hash_fields = {
             "doc_name":doc_name,
@@ -433,7 +444,7 @@ class MarineCorpSpider(GCSpider):
                     source_title = source_title, #
                     display_source = display_source, #
                     display_title = display_title, #
-                    file_ext = doc_type, #
+                    file_ext = file_ext, #
                     is_revoked = is_revoked, #
                     access_timestamp = access_timestamp #
                 )

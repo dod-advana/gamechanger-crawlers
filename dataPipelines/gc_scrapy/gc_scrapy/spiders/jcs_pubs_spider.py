@@ -19,6 +19,20 @@ class JcsPubsSpider(GCSpider):
         'CAC', 'PKI certificate required', 'placeholder', 'FOUO']
     rotate_user_agent = True
 
+    @staticmethod
+    def get_display_doc_type(doc_type):
+        """This function returns value for display_doc_type based on doc_type -> display_doc_type mapping"""
+        display_type_dict = {
+            "cjcs": 'Notice',
+            "cjcsi": 'Instruction',
+            "cjcsm": 'Manual',
+            "cjcsg": 'Guide'
+        }
+        if doc_type.lower() in display_type_dict.keys():
+            return display_type_dict[doc_type.lower()]
+        else:
+            return "Document"
+
     def parse(self, response):
         doc_links = [
             a for a in response.css('div.librarylinkscontainer a') if 'CJCS' in a.css('::attr(href)').get()
@@ -101,7 +115,7 @@ class JcsPubsSpider(GCSpider):
         download_url = fields['download_url']
         publication_date = get_pub_date(fields['publication_date'])
 
-        display_doc_type = "Document" # Doc type for display on app
+        display_doc_type = self.get_display_doc_type(doc_type)
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
         is_revoked = False
