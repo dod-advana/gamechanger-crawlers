@@ -306,9 +306,8 @@ class USCodeFileDownloadPipeline(FileDownloadPipeline):
                             for unzipped_item in self.create_items_from_nested_zip(unzipped_files, item):
                                 self.add_to_manifest(unzipped_item)
 
-                                metadata_download_path = Path(self.output_dir, unzipped_item["doc_name"]).with_suffix(
-                                    ".metadata"
-                                )
+                                metadata_download_path = Path(self.output_dir, unzipped_item["doc_name"])
+                                metadata_download_path = metadata_download_path.with_suffix(metadata_download_path.suffix + ".metadata")
 
                                 with open(metadata_download_path, "w") as f:
                                     try:
