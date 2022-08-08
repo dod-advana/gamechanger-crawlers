@@ -363,17 +363,14 @@ class MarineCorpSpider(GCSpider):
         if not href_raw or not self.is_valid_url(href_raw):
             return
 
-        doc_type = self.get_href_file_extension(href_raw)
-        web_url = self.url_encode_spaces(href_raw)
-
         fields = {
             'doc_name': doc_item['doc_name'],
             'doc_num': doc_item['doc_num'],
             'doc_title': doc_item['doc_title'],
-            'doc_type': doc_type,
+            'doc_type': doc_item['doc_type'],
             'cac_login_required': doc_item['cac_login_required'],
             'source_page_url': doc_item['source_page_url'],
-            'download_url': web_url
+            'href': href_raw
             #'publication_date': publication_date No date for this crawler
         }
         ## Instantiate DocItem class and assign document's metadata values
@@ -397,8 +394,7 @@ class MarineCorpSpider(GCSpider):
         doc_title = fields['doc_title']
         doc_type = fields['doc_type']
         cac_login_required = fields['cac_login_required']
-        download_url = fields['download_url']
-        #publication_date = get_pub_date(fields['publication_date'])
+        publication_date = None
 
         display_doc_type = self.get_display_doc_type(doc_type)
         display_source = data_source + " - " + source_title
@@ -407,13 +403,15 @@ class MarineCorpSpider(GCSpider):
         access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
         source_page_url = self.start_urls[0]
         source_fqdn = urlparse(source_page_url).netloc
+        href = fields['href']
+        file_ext = self.get_href_file_extension(href)
+        download_url = self.url_encode_spaces(href)
 
         downloadable_items = [{
-                "doc_type": doc_type,
+                "doc_type": file_ext,
                 "download_url": download_url,
                 "compression_type": None,
             }]
-        file_ext = downloadable_items[0]["doc_type"]
         ## Assign fields that will be used for versioning
         version_hash_fields = {
             "doc_name":doc_name,
@@ -430,7 +428,7 @@ class MarineCorpSpider(GCSpider):
                     doc_num = doc_num,
                     doc_type = doc_type,
                     display_doc_type = display_doc_type, #
-                    #publication_date = publication_date,
+                    publication_date = publication_date,
                     cac_login_required = cac_login_required,
                     crawler_used = self.name,
                     downloadable_items = downloadable_items,

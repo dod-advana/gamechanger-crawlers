@@ -50,32 +50,17 @@ class TRADOCSpider(GCSpider):
 
             # there seem to be some dead hidden links to the BUPERS site so ignore
             doc_url = table_row.css('td:nth-child(2) a:not([href*="/bupers-npc/"])::attr(href)').get()
-
             doc_date = self.join_text(table_row.css('td:nth-child(3) *::text').getall())
             publication_date = self.parse_date(doc_date)
-
             doc_name = f'{doc_type} {doc_num}'
-
             web_url = urljoin(response.url, doc_url)
-            downloadable_items = [
-                {
-                    "doc_type": "txt",
-                    "web_url": web_url,
-                    "compression_type": None
-                }
-            ]
-
-            version_hash_fields = {
-                "item_currency": downloadable_items[0]["web_url"].split('/')[-1],
-                "document_title": doc_title,
-                "publication_date": publication_date,
-            }
 
             fields = {
                 'doc_name': self.clean_name(doc_name),
                 'doc_num': self.ascii_clean(doc_num),
                 'doc_title': self.ascii_clean(doc_title),
                 'doc_type': self.ascii_clean(doc_type),
+                "file_ext" : self.get_href_file_extension(doc_url),
                 'cac_login_required': False,
                 'download_url': web_url,
                 'publication_date': publication_date
@@ -139,9 +124,10 @@ class TRADOCSpider(GCSpider):
         access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
         source_page_url = self.start_urls[0]
         source_fqdn = urlparse(source_page_url).netloc
+        file_ext = fields['file_ext']
 
         downloadable_items = [{
-                "doc_type": "pdf",
+                "doc_type": "txt",
                 "download_url": download_url,
                 "compression_type": None,
             }]
@@ -151,7 +137,7 @@ class TRADOCSpider(GCSpider):
             "doc_name":doc_name,
             "doc_num": doc_num,
             "publication_date": publication_date,
-            "download_url": download_url
+            "download_url": download_url.split('/')[-1]
         }
 
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
@@ -176,7 +162,7 @@ class TRADOCSpider(GCSpider):
                     source_title = source_title, #
                     display_source = display_source, #
                     display_title = display_title, #
-                    file_ext = doc_type, #
+                    file_ext = file_ext, #
                     is_revoked = is_revoked, #
                     access_timestamp = access_timestamp #
                 )
