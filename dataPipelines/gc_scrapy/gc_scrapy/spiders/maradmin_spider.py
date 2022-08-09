@@ -60,7 +60,7 @@ class MARADMINSpider(GCSeleniumSpider):
                     ## Instantiate DocItem class and assign document's metadata values
                     doc_item = self.populate_doc_item(fields)
                 
-                    yield doc_item
+                    yield from doc_item
                 except Exception as e:
                     print('error in processing row: ' + str(e))
 
@@ -122,7 +122,7 @@ class MARADMINSpider(GCSeleniumSpider):
 
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 
-        return DocItem(
+        yield DocItem(
                     doc_name = doc_name,
                     doc_title = doc_title,
                     doc_num = doc_num,

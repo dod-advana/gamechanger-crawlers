@@ -66,18 +66,14 @@ class MilpersmanSpider(GCSpider):
 
             href_raw = row.css("td:nth-child(1) a::attr(href)").get()
             web_url = self.ensure_full_href_url(href_raw, current_url)
-
-            version_hash_fields = {
-                "item_currency": href_raw,
-                "document_title": doc_title
-            }
+            download_url = self.url_encode_spaces(web_url)
 
             file_type = self.get_href_file_extension(href_raw)
 
             downloadable_items = [
                 {
                     "doc_type": file_type,
-                    "download_url": self.url_encode_spaces(web_url),
+                    "download_url": download_url,
                     "compression_type": None
                 }
             ]
@@ -110,8 +106,8 @@ class MilpersmanSpider(GCSpider):
                 'doc_type': file_type,
                 'cac_login_required': False,
                 'source_page_url':current_url,
-                'download_url': web_url,
-                'downloadable_items': downloadable_items#,
+                'download_url': download_url,
+                'downloadable_items': downloadable_items,
                 #'publication_date': publication_date
             }
             ## Instantiate DocItem class and assign document's metadata values
