@@ -101,6 +101,7 @@ class SecNavSpider(GCSpider):
                 doc_num = doc_num_file.replace('.pdf', '')
                 web_url_suffix = r.get("FileRef")
                 doc_type = f"{echelon}{type_suffix}"
+                status = r.get("Status")
 
                 #office_primary_resp=sponsor
                 fields = {
@@ -112,7 +113,8 @@ class SecNavSpider(GCSpider):
                     'sponsor': r.get("Sponsor", "").replace("&amp;", "&"),
                     'cancel_date': r.get("Cancelled_x0020_Date"),
                     'cac_login_required': re.match('^[A-Za-z]', doc_num) != None,
-                    'is_revoked': r.get("Status") != 'Active',
+                    'status': status,
+                    'is_revoked': status != 'Active',
                     'download_url': f"{self.download_base_url}{web_url_suffix}",
                     'publication_date': r.get("Effective_x0020_Date")
                 }
@@ -184,7 +186,6 @@ class SecNavSpider(GCSpider):
             "sponsor": fields['sponsor'],
             "cancel_date": fields['cancel_date']
         }
-
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 
         return DocItem(
