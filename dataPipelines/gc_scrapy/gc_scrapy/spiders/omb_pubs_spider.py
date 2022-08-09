@@ -3,10 +3,9 @@ import re
 import bs4
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
-from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
 from datetime import datetime
 from urllib.parse import urlparse
-from dateutil import parser
 
 class OmbSpider(GCSpider):
     name = 'omb_pubs' # Crawler name
@@ -59,14 +58,10 @@ class OmbSpider(GCSpider):
                         doc_num = spaceTokens[0].rstrip(',.*')
                         doc_title = spaceTokens[1]
                         doc_name = "OMBM " + doc_num
-                    possible_date = li.text[li.text.find(
-                        "(") + 1:li.text.find(")")]
-                    if re.match(pattern=r".*, \d{4}.*", string=possible_date):
-                        try:
-                            publication_date_parsed = parser.parse(possible_date)
-                            publication_date = publication_date_parsed.strftime('%Y-%m-%dT%H:%M:%S')
-                        except parser._parser.ParserError:
-                            publication_date = ''
+                    possible_date = re.search(pattern=r"\(.* \d+, \d{4}\)", string=li.text)
+                    if possible_date:
+                        publication_date_raw = possible_date[0]
+                        publication_date = get_pub_date(publication_date_raw[1:-1])
                 if pdf_url != '' and doc_num.count('-') == 2:
                     pdf_di = [{
                         'doc_type': 'pdf',

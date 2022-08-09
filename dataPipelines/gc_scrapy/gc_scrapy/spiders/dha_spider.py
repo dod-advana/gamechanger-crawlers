@@ -40,10 +40,11 @@ class DHASpider(GCSpider):
                 doc_num = self.ascii_clean(
                     row.css('td:nth-child(1) a::text').get(default=''))
                 href = row.css('td:nth-child(1) a::attr(href)').get(default='')
-                publication_date = self.ascii_clean(
-                    row.css('td:nth-child(2)::text').get(default=''))
+                publication_date_raw = self.ascii_clean(
+                    row.css('td:nth-child(3)::text').get(default=''))
+                publication_date = get_pub_date(publication_date_raw)
                 doc_title = self.ascii_clean(
-                    row.css('td:nth-child(3)::text').get(default='')).replace('\r', '').replace('\n', '')
+                    row.css('td:nth-child(2)::text').get(default='')).replace('\r', '').replace('\n', '')
 
                 doc_name = f"{doc_type} {doc_num}"
                 web_url = f"https://www.health.mil{href}"
