@@ -14,10 +14,6 @@ from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, g
 
 class TRADOCSpider(GCSpider):
     name = 'navy_personnel_messages' # Crawler name
-    display_org = 'US Navy'  # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = 'MyNavy HR' # Level 2: GC app 'Source' metadata field for docs from this crawler 
-    source_title = 'Bureau of Naval Personnel Messages' # Level 3 filter
-
     allowed_domains = ['mynavyhr.navy.mil']
     start_urls = [
         'https://www.mynavyhr.navy.mil/References/Messages/'
@@ -63,6 +59,8 @@ class TRADOCSpider(GCSpider):
                 "file_ext" : self.get_href_file_extension(doc_url),
                 'cac_login_required': False,
                 'download_url': web_url,
+                'source_page_url': response.url,
+                'is_revoked': is_revoked,
                 'publication_date': publication_date
             }
             ## Instantiate DocItem class and assign document's metadata values
@@ -105,9 +103,9 @@ class TRADOCSpider(GCSpider):
         This functions provides both hardcoded and computed values for the variables
         in the imported DocItem object and returns the populated metadata object
         '''
-        display_org="US Navy Medicine" # Level 1: GC app 'Source' filter for docs from this crawler
-        data_source = "Navy Medicine" # Level 2: GC app 'Source' metadata field for docs from this crawler
-        source_title = "Unlisted Source" # Level 3 filter
+        display_org = 'US Navy'  # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = 'MyNavy HR' # Level 2: GC app 'Source' metadata field for docs from this crawler 
+        source_title = 'Bureau of Naval Personnel Messages' # Level 3 filter
 
         doc_name = fields['doc_name']
         doc_num = fields['doc_num']
@@ -120,9 +118,9 @@ class TRADOCSpider(GCSpider):
         display_doc_type = "Document" # Doc type for display on app
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
-        is_revoked = False
+        is_revoked = fields['is_revoked']
         access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
-        source_page_url = self.start_urls[0]
+        source_page_url = fields['source_page_url']
         source_fqdn = urlparse(source_page_url).netloc
         file_ext = fields['file_ext']
 

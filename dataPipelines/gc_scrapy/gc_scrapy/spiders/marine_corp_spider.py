@@ -232,9 +232,6 @@ class MarineCorpSpider(GCSpider):
     """
 
     name = "marine_pubs" # Crawler name
-    display_org = "US Marine Corps" # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = 'Marine Corps Publications Electronic Library' # Level 2: GC app 'Source' metadata field for docs from this crawler
-    source_title = "Unlisted Source" # Level 3 filter
 
     allowed_domains = ['marines.mil']
     base_url = 'https://www.marines.mil/News/Publications/MCPEL/?Page='
@@ -379,14 +376,13 @@ class MarineCorpSpider(GCSpider):
         yield doc_item
     
 
-
     def populate_doc_item(self, fields):
         '''
         This functions provides both hardcoded and computed values for the variables
         in the imported DocItem object and returns the populated metadata object
         '''
-        display_org="US Navy Medicine" # Level 1: GC app 'Source' filter for docs from this crawler
-        data_source = "Navy Medicine" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        display_org = "US Marine Corps" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = 'Marine Corps Publications Electronic Library' # Level 2: GC app 'Source' metadata field for docs from this crawler
         source_title = "Unlisted Source" # Level 3 filter
 
         doc_name = fields['doc_name']
@@ -401,7 +397,7 @@ class MarineCorpSpider(GCSpider):
         display_title = doc_type + " " + doc_num + " " + doc_title
         is_revoked = False
         access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
-        source_page_url = self.start_urls[0]
+        source_page_url = fields['source_page_url']
         source_fqdn = urlparse(source_page_url).netloc
         href = fields['href']
         file_ext = self.get_href_file_extension(href)
