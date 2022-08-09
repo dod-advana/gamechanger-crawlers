@@ -99,45 +99,25 @@ class SecNavSpider(GCSpider):
                 echelon = self.ascii_clean(r.get("Echelon"))
                 doc_num_file = self.ascii_clean(r.get('FileLeafRef'))
                 doc_num = doc_num_file.replace('.pdf', '')
-                doc_title = self.ascii_clean(r.get('Subject'))
-                publication_date = r.get("Effective_x0020_Date")
                 web_url_suffix = r.get("FileRef")
-                file_type = r.get("File_x0020_Type")
-                status = r.get("Status")
-                sponsor = r.get("Sponsor", "").replace("&amp;", "&")
-                cancel_date = r.get("Cancelled_x0020_Date")
-
-                # version_hash_fields = {
-                #     "item_currency": web_url_suffix,
-                #     "effective_date": publication_date,
-                #     "status": status,
-                #     "sponsor": sponsor,
-                #     "cancel_date": cancel_date
-                # }
-
                 doc_type = f"{echelon}{type_suffix}"
-                doc_name = f"{doc_type} {doc_num}"
-
-                cac_login_required = re.match('^[A-Za-z]', doc_num) != None
-
-                web_url = f"{self.download_base_url}{web_url_suffix}"
-
 
                 #office_primary_resp=sponsor
                 fields = {
-                    'doc_name': doc_name,
+                    'doc_name': f"{doc_type} {doc_num}",
                     'doc_num': doc_num,
-                    'doc_title': doc_title,
+                    'doc_title': self.ascii_clean(r.get('Subject')),
                     'doc_type': doc_type,
-                    'file_type': file_type,
-                    'cac_login_required': cac_login_required,
-                    'is_revoked': status != 'Active',
-                    'download_url': web_url,
-                    'publication_date': publication_date
+                    'file_type': r.get("File_x0020_Type"),
+                    'sponsor': r.get("Sponsor", "").replace("&amp;", "&"),
+                    'cancel_date': r.get("Cancelled_x0020_Date"),
+                    'cac_login_required': re.match('^[A-Za-z]', doc_num) != None,
+                    'is_revoked': r.get("Status") != 'Active',
+                    'download_url': f"{self.download_base_url}{web_url_suffix}",
+                    'publication_date': r.get("Effective_x0020_Date")
                 }
                 ## Instantiate DocItem class and assign document's metadata values
                 doc_item = self.populate_doc_item(fields)
-
                 self.enqueue(doc_item)
 
             next_href = data.get("NextHref")
@@ -199,7 +179,10 @@ class SecNavSpider(GCSpider):
             "doc_name":doc_name,
             "doc_num": doc_num,
             "publication_date": publication_date,
-            "download_url": download_url
+            "download_url": download_url,
+            "status": fields['status'],
+            "sponsor": fields['sponsor'],
+            "cancel_date": fields['cancel_date']
         }
 
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
