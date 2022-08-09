@@ -17,17 +17,13 @@ json_re = re.compile("var WPQ3ListData = (?P<json>{.*?});", flags=re.M | re.S)
 class SecNavSpider(GCSpider):
     name = "secnav_pubs" # Crawler name
     
-
     start_urls = [
         "https://www.secnav.navy.mil/doni/default.aspx",
     ]
-
     urls_type_map = [
         ("https://www.secnav.navy.mil/doni/allinstructions.aspx", "INST"),
         ("https://www.secnav.navy.mil/doni/notices.aspx", "NOTE")
     ]
-
-    source_page_url = "https://www.secnav.navy.mil/doni/default.aspx"
     download_base_url = "https://www.secnav.navy.mil"
 
     rotate_user_agent = False
@@ -37,6 +33,15 @@ class SecNavSpider(GCSpider):
     q = []
     ready_to_process = False
     done = []
+
+    @staticmethod
+    def get_display_doc_type(doc_type):
+        if doc_type.strip().lower().endswith("inst"):
+            return "Instruction"
+        elif doc_type.strip().lower().endswith("note"):
+            return "Notice"
+        else:
+            return "Document"
 
     def enqueue(self, doc):
         self.q.append(doc)
@@ -117,6 +122,7 @@ class SecNavSpider(GCSpider):
 
                 web_url = f"{self.download_base_url}{web_url_suffix}"
 
+
                 #office_primary_resp=sponsor
                 fields = {
                     'doc_name': doc_name,
@@ -173,23 +179,21 @@ class SecNavSpider(GCSpider):
         cac_login_required = fields['cac_login_required']
         download_url = fields['download_url']
         publication_date = get_pub_date(fields['publication_date'])
-
-        display_doc_type = "Document" # Doc type for display on app
+        display_doc_type = self.get_display_doc_type(doc_type)
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
-
         is_revoked = fields['is_revoked']
         
         access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
-        source_page_url = self.source_page_url
+        source_page_url = "https://www.secnav.navy.mil/doni/default.aspx"
         source_fqdn = urlparse(source_page_url).netloc
+        file_ext = fields['file_type']
 
         downloadable_items = [{
-                "doc_type": fields['file_type'],
+                "doc_type": file_ext,
                 "download_url": download_url,
                 "compression_type": None,
             }]
-
         ## Assign fields that will be used for versioning
         version_hash_fields = {
             "doc_name":doc_name,
@@ -220,7 +224,7 @@ class SecNavSpider(GCSpider):
                     source_title = source_title, #
                     display_source = display_source, #
                     display_title = display_title, #
-                    file_ext = doc_type, #
+                    file_ext = file_ext, #
                     is_revoked = is_revoked, #
                     access_timestamp = access_timestamp #
                 )

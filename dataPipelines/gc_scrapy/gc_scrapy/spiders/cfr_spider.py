@@ -101,6 +101,7 @@ class CFRSpider(GCSpider):
                 'doc_type': doc_type,
                 'cac_login_required': False,
                 'download_url': web_url,
+                'source_page_url': source_page_url,
                 'publication_date': publication_date
             }
 
@@ -128,12 +129,12 @@ class CFRSpider(GCSpider):
         download_url = fields['download_url']
         publication_date = get_pub_date(fields['publication_date'])
 
-        display_doc_type = "Document" # Doc type for display on app
+        display_doc_type = doc_type
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
         is_revoked = False
         access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
-        source_page_url = self.start_urls[0]
+        source_page_url = fields['source_page_url']
         source_fqdn = urlparse(source_page_url).netloc
 
         downloadable_items = [
