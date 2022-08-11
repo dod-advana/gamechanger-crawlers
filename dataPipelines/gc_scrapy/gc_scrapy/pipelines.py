@@ -338,16 +338,16 @@ class AdditionalFieldsPipeline:
             item["access_timestamp"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
 
         if item.get("publication_date") is None:
-            item["publication_date"] = ""
+            item["publication_date"] = None
 
         if item.get("cac_login_required") is None:
             item["cac_login_required"] = spider.cac_login_required
 
         if item.get("doc_type") is None:
-            item["doc_type"] = getattr(spider, "doc_type", "")
+            item["doc_type"] = getattr(spider, "doc_type", None)
 
         if item.get("doc_num") is None:
-            item["doc_num"] = ""
+            item["doc_num"] = None
 
         # if item.get("is_revoked") is not None:
            # ensure is_revoked is part of hash

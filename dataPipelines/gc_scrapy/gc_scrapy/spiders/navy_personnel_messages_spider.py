@@ -56,7 +56,7 @@ class TRADOCSpider(GCSpider):
                 'doc_num': self.ascii_clean(doc_num),
                 'doc_title': self.ascii_clean(doc_title),
                 'doc_type': self.ascii_clean(doc_type),
-                "file_ext" : self.get_href_file_extension(doc_url),
+                "file_ext": self.get_href_file_extension(doc_url),
                 'cac_login_required': False,
                 'download_url': web_url,
                 'source_page_url': response.url,
