@@ -68,7 +68,7 @@ class SornSpider(GCSpider):
         in the imported DocItem object and returns the populated metadata object
         '''
         display_org = "Dept. of Defense" # Level 1: GC app 'Source' filter for docs from this crawler
-        data_source = "Unlisted Source" # Level 2: value TBD for this crawler
+        data_source = "Federal Register" # Level 2: value TBD for this crawler
         source_title = "Unlisted Source" # Level 3 filter
 
         doc_name = fields['doc_name']
@@ -78,21 +78,19 @@ class SornSpider(GCSpider):
         cac_login_required = fields['cac_login_required']
         download_url = fields['download_url']
         publication_date = get_pub_date(fields['publication_date'])
-
         display_doc_type = fields['display_doc_type'] # Doc type for display on app
-        display_source = "Federal Registry"
+        display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
         is_revoked = False
         access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
         source_page_url = fields['source_page_url']
         source_fqdn = urlparse(source_page_url).netloc
-
+        file_ext = "pdf"
         downloadable_items = [{
-                "doc_type": "pdf",
+                "doc_type": file_ext,
                 "download_url": download_url,
                 "compression_type": None,
             }]
-
         ## Assign fields that will be used for versioning
         version_hash_fields = {
             "doc_name":doc_name,
@@ -100,7 +98,6 @@ class SornSpider(GCSpider):
             "publication_date": publication_date,
             "download_url": download_url
         }
-
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 
         return DocItem(
@@ -108,22 +105,22 @@ class SornSpider(GCSpider):
                     doc_title = doc_title,
                     doc_num = doc_num,
                     doc_type = doc_type,
-                    display_doc_type = display_doc_type, #
+                    display_doc_type = display_doc_type,
                     publication_date = publication_date,
                     cac_login_required = cac_login_required,
                     crawler_used = self.name,
                     downloadable_items = downloadable_items,
-                    source_page_url = source_page_url, #
-                    source_fqdn = source_fqdn, #
-                    download_url = download_url, #
-                    version_hash_raw_data = version_hash_fields, #
+                    source_page_url = source_page_url,
+                    source_fqdn = source_fqdn,
+                    download_url = download_url,
+                    version_hash_raw_data = version_hash_fields,
                     version_hash = version_hash,
-                    display_org = display_org, #
-                    data_source = data_source, #
-                    source_title = source_title, #
-                    display_source = display_source, #
-                    display_title = display_title, #
-                    file_ext = "pdf", #
-                    is_revoked = is_revoked, #
-                    access_timestamp = access_timestamp #
+                    display_org = display_org,
+                    data_source = data_source,
+                    source_title = source_title,
+                    display_source = display_source,
+                    display_title = display_title,
+                    file_ext = file_ext,
+                    is_revoked = is_revoked,
+                    access_timestamp = access_timestamp
                 )
