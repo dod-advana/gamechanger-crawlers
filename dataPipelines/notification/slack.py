@@ -9,10 +9,10 @@ def send_notification(message: str, SLACK_HOOK_CHANNEL=None, SLACK_HOOK_URL=None
 
     if use_env_vars:
         should_send = os.environ.get("SEND_NOTIFICATIONS")
-        channel = os.environ.get("SLACK_HOOK_CHANNEL")
+        channel_id = os.environ.get("SLACK_HOOK_CHANNEL_ID")
 
         data = json.dumps({
-            "channel": channel,
+            "channel": channel_id,
             "text": message
         }).encode("utf-8")
 
