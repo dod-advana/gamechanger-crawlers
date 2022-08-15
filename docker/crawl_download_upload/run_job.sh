@@ -81,13 +81,17 @@ function create_cumulative_manifest() {
   cat "$LOCAL_NEW_MANIFEST_PATH" >> "$cumulative_manifest"
 }
 
-function register_log_in_manifest() {
-  "$PYTHON_CMD" -m dataPipelines.gc_downloader add-to-manifest --file "$LOCAL_JOB_LOG_PATH" --manifest "$LOCAL_NEW_MANIFEST_PATH"
-}
 
-function register_crawl_log_in_manifest() {
-  "$PYTHON_CMD" -m dataPipelines.gc_downloader add-to-manifest --file "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" --manifest "$LOCAL_NEW_MANIFEST_PATH"
-}
+## Commenting out logging of job_log/crawler_output in manifest since it's not necessary.
+
+#function register_log_in_manifest() {
+#  "$PYTHON_CMD" -m dataPipelines.gc_downloader add-to-manifest --file "$LOCAL_JOB_LOG_PATH" --manifest "$LOCAL_NEW_MANIFEST_PATH"
+#}
+
+#function register_crawl_log_in_manifest() {
+#  "$PYTHON_CMD" -m dataPipelines.gc_downloader add-to-manifest --file "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" --manifest "$LOCAL_NEW_MANIFEST_PATH"
+#}
+
 
 ##### ##### #####
 ## ## ## ## ## ## ACTUAL EXEC FLOW

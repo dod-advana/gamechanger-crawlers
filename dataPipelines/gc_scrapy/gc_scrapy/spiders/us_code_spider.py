@@ -32,7 +32,7 @@ class USCodeSpider(GCSpider):
             "dataPipelines.gc_scrapy.gc_scrapy.pipelines.FileDownloadPipeline"
         )
 
-        self.custom_settings["FEED_EXPORTERS"][
+        GCSpider.custom_settings["FEED_EXPORTERS"][
             "json"
         ] = "dataPipelines.gc_scrapy.gc_scrapy.exporters.ZippedJsonLinesAsJsonItemExporter"
 
