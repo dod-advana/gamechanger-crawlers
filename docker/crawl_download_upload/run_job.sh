@@ -126,8 +126,10 @@ echo -e "\n $(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.
 
 # run the upload
 run_upload
-# register additional files in manifest
-register_log_in_manifest
-register_crawl_log_in_manifest
+
+# register additional files in manifest (commented out)
+#register_log_in_manifest
+#register_crawl_log_in_manifest
+
 # create combined manifest for future runs
 create_cumulative_manifest
