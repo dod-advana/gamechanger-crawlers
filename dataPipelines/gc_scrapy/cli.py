@@ -76,6 +76,13 @@ def cli():
     required=False
 )
 @click.option(
+    '--slack-hook-url',
+    help='Channel ID for slack message',
+    type=str,
+    default=None,
+    required=False
+)
+@click.option(
     '--dont-filter-previous-hashes',
     help='Flag to skip filtering of downloads',
     default=False,
@@ -88,6 +95,7 @@ def crawl(
     previous_manifest_location,
     spiders_file_location,
     slack_hook_channel_id,
+    slack_hook_url,
     dont_filter_previous_hashes,
 ):
     print(dedent(f"""
@@ -99,6 +107,7 @@ def crawl(
     previous_manifest_location={previous_manifest_location}
     spiders_file_location={spiders_file_location}
     slack_hook_channel_id={slack_hook_channel_id}
+    slack_hook_url={slack_hook_url}
     dont_filter_previous_hashes={dont_filter_previous_hashes}
     """))
 
@@ -183,7 +192,7 @@ def get_git_branch() -> str:
         return 'NOT FOUND'
 
 
-def send_stats(all_stats: dict, slack_hook_channel_id: str) -> None:
+def send_stats(all_stats: dict, slack_hook_channel_id: str, slack_hook_url: str) -> None:
     branch = get_git_branch()
     msg = f"[STATS] Crawler ran on branch: {branch}"
 
@@ -193,7 +202,8 @@ def send_stats(all_stats: dict, slack_hook_channel_id: str) -> None:
             msg += f"\n        {k}: {v}"
 
     try:
-        slack.send_notification(message=msg, SLACK_HOOK_CHANNEL_ID=slack_hook_channel_id, use_env_vars=False)
+        slack.send_notification(message=msg, SLACK_HOOK_CHANNEL_ID=slack_hook_channel_id, SLACK_HOOK_URL=slack_hook_url,
+                                use_env_vars=False)
     except Exception as e:
         print('Slack send error', e)
 
