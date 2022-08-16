@@ -166,7 +166,7 @@ def crawl(
         queue_spiders_sequentially(runner, spider_class_refs, crawl_kwargs)
         reactor.run()
         all_stats = copy.deepcopy(spider_class_refs[0].stats)
-        send_stats(all_stats, slack_hook_channel_id)
+        send_stats(all_stats=all_stats, slack_hook_channel_id=slack_hook_channel_id, slack_hook_url=slack_hook_url)
     except Exception as e:
         print("ERROR RUNNING SPIDERS SEQUENTIALLY", e)
 
