@@ -3,7 +3,7 @@ import json
 import urllib.request as urq
 
 
-def send_notification(message: str, SLACK_HOOK_CHANNEL=None, SLACK_HOOK_URL=None, use_env_vars=True):
+def send_notification(message: str, SLACK_HOOK_CHANNEL_ID=None, SLACK_HOOK_URL=None, use_env_vars=True):
     headers = {"Content-Type": "application/json"}
     method = "POST"
 
@@ -31,8 +31,9 @@ def send_notification(message: str, SLACK_HOOK_CHANNEL=None, SLACK_HOOK_URL=None
             print("SEND_NOTIFICATIONS env not set, did not send:\n", data)
 
     else:
+        print("SENDING NOTIFICATIONS!!")
         data = json.dumps({
-            "channel": SLACK_HOOK_CHANNEL,
+            "channel": SLACK_HOOK_CHANNEL_ID,
             "text": message
         }).encode("utf-8")
 
