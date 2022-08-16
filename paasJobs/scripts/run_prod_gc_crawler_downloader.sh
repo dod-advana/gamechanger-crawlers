@@ -19,6 +19,9 @@ export JOB_LOG_FILE="${HOST_JOB_TMP_DIR}/logs/gc-crawler-downloader.$(date --iso
 # change to "yes" in order to only crawl/download couple pubs for test purposes
 export TEST_RUN="${TEST_RUN:-no}"
 
+# make sure channel_id is exported
+export SLACK_HOOK_CHANNEL_ID="${SLACK_HOOK_CHANNEL_ID}"
+
 cat <<EOF
 About to run the GC CRAWLER/DOWNLOADER JOB ...
   DEPLOYMENT_ENV is "$DEPLOYMENT_ENV"
