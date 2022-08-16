@@ -55,6 +55,7 @@ function run_crawler() {
   --crawler-output-location=$LOCAL_CRAWLER_OUTPUT_FILE_PATH \
   --previous-manifest-location=$LOCAL_PREVIOUS_MANIFEST_LOCATION \
   --slack-hook-channel-id=$SLACK_HOOK_CHANNEL_ID \
+  --slack-hook-url=$SLACK_HOOK_URL \
   ${LOCAL_SPIDER_LIST_FILE:+ "--spiders-file-location=$LOCAL_SPIDER_LIST_FILE"}
 
   set -o pipefail
