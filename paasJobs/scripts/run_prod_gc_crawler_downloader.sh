@@ -21,7 +21,7 @@ export TEST_RUN="${TEST_RUN:-no}"
 
 # make sure channel_id and url is exported
 export SLACK_HOOK_CHANNEL_ID="${SLACK_HOOK_CHANNEL_ID}"
-export SLACK_HOOK_CHANNEL_URL="${SLACK_HOOK_CHANNEL_URL}"
+export SLACK_HOOK_URL="${SLACK_HOOK_URL}"
 
 cat <<EOF
 About to run the GC CRAWLER/DOWNLOADER JOB ...
