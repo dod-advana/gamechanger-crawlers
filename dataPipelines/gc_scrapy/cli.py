@@ -197,7 +197,7 @@ def send_stats(all_stats: dict, slack_hook_channel_id: str, slack_hook_url: str)
     msg = f"[STATS] Crawler ran on branch: {branch}"
 
     for spider_name, stats in all_stats.items():
-        msg += f"\n {spider_name}"
+        msg += f"\n `{spider_name}`"
         for k, v in stats.items():
             msg += f"\n        {k}: {v}"
 
