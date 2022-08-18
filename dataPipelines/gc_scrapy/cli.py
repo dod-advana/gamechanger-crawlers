@@ -194,7 +194,7 @@ def get_git_branch() -> str:
 
 def send_stats(all_stats: dict, slack_hook_channel_id: str, slack_hook_url: str) -> None:
     branch = get_git_branch()
-    msg = f"[STATS] Crawler ran on branch: {branch}"
+    msg = f"[STATS] Crawlers run:"
 
     for spider_name, stats in all_stats.items():
         msg += f"\n `{spider_name}`"
