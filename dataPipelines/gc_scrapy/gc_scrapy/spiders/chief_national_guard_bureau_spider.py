@@ -8,7 +8,11 @@ class CNGBISpider(GCSpider):
         Parser for Chief National Guard Bureau Instructions
     """
 
-    name = "National_Guard"
+    name = "National_Guard"  # Crawler name
+    display_org = "National Guard"  # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "National Guard Bureau Publications & Forms Library"  # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source"  # Level 3 filter
+
     allowed_domains = ['ngbpmc.ng.mil']
     start_urls = [
         'https://www.ngbpmc.ng.mil/publications1/cngbi/'
@@ -16,9 +20,10 @@ class CNGBISpider(GCSpider):
 
     file_type = "pdf"
     doc_type = "CNGBI"
+    rotate_user_agent = True
 
     def parse(self, response):
-        rows = response.css('div.WordSection1 table.MsoNormalTable tbody tr')
+        rows = response.css('div.WordSection1 table tbody tr')
 
         for row in rows:
             href_raw = row.css('td:nth-child(1) a::attr(href)').get()
@@ -40,7 +45,8 @@ class CNGBISpider(GCSpider):
                 }
             ]
 
-            doc_name_raw = row.css('td:nth-child(1) a span::text').get()
+            # a lot of the docs have the space unicode \xa0 in them. replacing it before getting doc_num
+            doc_name_raw = row.css('td:nth-child(1) a::text').get().replace(u'\xa0', ' ')
 
             # one row returns empty for doc_name_raw, so skip that case
             if not doc_name_raw:

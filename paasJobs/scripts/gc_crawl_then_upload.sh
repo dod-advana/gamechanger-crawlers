@@ -25,20 +25,15 @@ dev)
   ;;
 esac
 
->&2 echo -e "\n[INFO] CORE_DOWNLOADER_IMAGE NAME: $CORE_DOWNLOADER_IMAGE\n"
+>&2 echo -e "\n[INFO] CRAWL_DOWNLOAD_UPLOAD_IMAGE NAME: $CRAWL_DOWNLOAD_UPLOAD_IMAGE\n"
 # Set job vars
 JOB_TS="$(date +%FT%T)"
 JOB_TS_SIMPLE="$(date --date="$JOB_TS" +%Y%m%d_%H%M%S)"
 case "${1:?ERROR: Missing job name arg}" in
-gc_crawl_and_download)
-  JOB_NAME="gc_crawl_and_download"
-  CRAWLER_CONTAINER_IMAGE="$CORE_DOWNLOADER_IMAGE"
+gc_crawl_download_upload)
+  JOB_NAME="gc_crawl_download_upload"
+  CRAWLER_CONTAINER_IMAGE="$CRAWL_DOWNLOAD_UPLOAD_IMAGE"
   SCANNER_UPLOADER_S3PATH="/bronze/gamechanger/external-uploads/crawler-downloader/$JOB_TS"
-  ;;
-gc_crawl_and_download_covid)
-  JOB_NAME="gc_crawl_and_download_covid"
-  CRAWLER_CONTAINER_IMAGE="$COVID_DOWNLOADER_IMAGE"
-  SCANNER_UPLOADER_S3PATH="/bronze/gamechanger/external-uploads/covid-crawler-downloader/$JOB_TS"
   ;;
 *)
   echo >&2 "ERROR: Pass valid job name to the script."
@@ -113,7 +108,7 @@ function update_manifest() {
     || >&2 echo -e "\n[WARNING] FAILED TO UPDATE CUMULATIVE MANIFEST\n"
 }
 
-function run_crawler_downloader() {
+function run_crawl_download_upload() {
   local container_name="$JOB_NAME"
   docker rm --force "$container_name" || true
 
@@ -125,34 +120,18 @@ function run_crawler_downloader() {
     -v "${HOST_JOB_DL_DIR}:${CRAWLER_CONTAINER_DL_DIR}:z" \
     -e "LOCAL_DOWNLOAD_DIRECTORY_PATH=${CRAWLER_CONTAINER_DL_DIR}" \
     -e "LOCAL_PREVIOUS_MANIFEST_LOCATION=${CRAWLER_CONTAINER_MANIFEST_LOCATION}" \
-    -e "TEST_RUN=${TEST_RUN:-no}" \
-	${LOCAL_SPIDER_LIST_FILE:+ -e "LOCAL_SPIDER_LIST_FILE=$CRAWLER_CONTAINER_SPIDER_LIST_FILE"} \
-	${LOCAL_SPIDER_LIST_FILE:+ -v "${LOCAL_SPIDER_LIST_FILE}:${CRAWLER_CONTAINER_SPIDER_LIST_FILE}:z"} \
-    "${CRAWLER_CONTAINER_IMAGE}"
-
-  local docker_run_status=$?
-  return $docker_run_status
-}
-
-function run_scanner_uploader() {
-  printf "\n\n>>> RUNNING SCANNER CONTAINER <<<\n"
-  printf "\tHost scan dir is %s \n" "$HOST_JOB_DL_DIR"
-  printf "\tMounted in scanner container at %s \n\n" "$SCANNER_SCAN_DIR"
-
-  docker run \
-    --rm \
-    -u "$(id -u):$(id -g)" \
-    -v "${HOST_JOB_DL_DIR}:${SCANNER_SCAN_DIR}:z" \
     -e "AWS_DEFAULT_REGION=${SCANNER_UPLOADER_AWS_DEFAULT_REGION}" \
     -e "BUCKET=${SCANNER_UPLOADER_BUCKET}" \
     -e "S3_UPLOAD_BASE_PATH=${SCANNER_UPLOADER_S3PATH}" \
     -e "DELETE_AFTER_UPLOAD=no" \
     -e "SKIP_S3_UPLOAD=${SKIP_S3_UPLOAD:-no}" \
-    --entrypoint="python3" \
-    "${SCANNER_UPLOADER_CONTAINER_IMAGE}" \
-      "/srv/dlp-scanner/parallel-dlp-scanner.py" \
-        --input-path "${SCANNER_SCAN_DIR}" \
-        --scanner-path "/srv/dlp-scanner/dlp-scanner.sh"
+    -e "TEST_RUN=${TEST_RUN:-no}" \
+    -e "SLACK_HOOK_CHANNEL_ID=${SLACK_HOOK_CHANNEL_ID}" \
+    -e "SLACK_HOOK_URL=${SLACK_HOOK_URL}" \
+    -e "SLACK_HOOK_CHANNEL=${SLACK_HOOK_CHANNEL}" \
+	${LOCAL_SPIDER_LIST_FILE:+ -e "LOCAL_SPIDER_LIST_FILE=$CRAWLER_CONTAINER_SPIDER_LIST_FILE"} \
+	${LOCAL_SPIDER_LIST_FILE:+ -v "${LOCAL_SPIDER_LIST_FILE}:${CRAWLER_CONTAINER_SPIDER_LIST_FILE}:z"} \
+    "${CRAWLER_CONTAINER_IMAGE}"
 
   local docker_run_status=$?
   return $docker_run_status
@@ -184,7 +163,7 @@ EOF
 # make sure we have a fresh dir to put files into
 recreate_host_dl_dir
 # grab the previous manifest from s3, download files, and scan files & upload to s3
-grab_manifest && run_crawler_downloader && run_scanner_uploader && update_manifest
+grab_manifest && run_crawl_download_upload && update_manifest
 
 cat <<EOF
   FINISHED JOB - $JOB_NAME

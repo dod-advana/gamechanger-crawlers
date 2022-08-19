@@ -7,7 +7,11 @@ covid_re = re.compile(r'covid|covid\-19|coronavirus', flags=re.IGNORECASE)
 
 
 class DODCoronavirusSpider(GCSpider):
-    name = "DOD_Coronavirus_Guidance"
+    name = "DOD_Coronavirus_Guidance" # Crawler name
+    display_org = "Dept. of Defense" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Defense Publications" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
+
     start_urls = [
         "https://www.defense.gov/Explore/Spotlight/Coronavirus/Latest-DOD-Guidance/"
     ]

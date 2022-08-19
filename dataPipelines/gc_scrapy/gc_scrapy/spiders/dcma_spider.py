@@ -3,16 +3,17 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
 
 class DCMASpider(GCSpider):
-    name = "DCMA"
-    display_org = "Dept. of Defense"
-    data_source = "Defense Contract Management Agency Policy Publications"
-    source_title = "DCMA Policy"
+    name = "DCMA" # Crawler name
+    display_org = "Dept. of Defense" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Defense Contract Management Agency Policy Publications" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "DCMA Policy" # Level 3 filter
 
     start_urls = [
         "https://www.dcma.mil/Policy/"
     ]
 
     cac_login_required = False
+    rotate_user_agent = True
 
     def parse(self, response):
         sections = response.css('div#accGen div table tbody')

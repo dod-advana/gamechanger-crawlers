@@ -17,11 +17,10 @@ from selenium.webdriver.common.keys import Keys
 
 
 class MARADMINSpider(GCSeleniumSpider):
-    name = 'maradmin_pubs'
-
-    display_org = 'US Marine Corps'
-    data_source = 'Marine Corps Publications Electronic Library'
-    source_title = 'Marine Administrative Message'
+    name = 'maradmin_pubs' # Crawler name
+    display_org = 'US Marine Corps' # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = 'Marine Corps Publications Electronic Library' # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = 'Marine Administrative Message' # Level 3 filter
 
     start_urls = ['https://www.marines.mil/News/Messages/MARADMINS/']
     allowed_domains = ['marines.mil/']
@@ -73,9 +72,6 @@ class MARADMINSpider(GCSeleniumSpider):
                         doc_type=doc_type,
                         publication_date=publication_date,
                         source_page_url=response.url,
-                        display_org=self.display_org,
-                        data_source=self.data_source,
-                        source_title=self.source_title,
                         downloadable_items=downloadable_items,
                         version_hash_raw_data=version_hash_fields,
                         is_revoked=is_revoked,

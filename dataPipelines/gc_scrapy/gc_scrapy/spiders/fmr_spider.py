@@ -3,7 +3,10 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
 
 class FmrSpider(GCSpider):
-    name = "fmr_pubs"
+    name = "fmr_pubs" # Crawler name
+    display_org = "FMR" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Under Secretary of Defense (Comptroller)" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
 
     start_urls = [
         "https://comptroller.defense.gov/FMR/vol1_chapters.aspx"
@@ -12,6 +15,7 @@ class FmrSpider(GCSpider):
     download_base_url = 'https://comptroller.defense.gov/'
     doc_type = "DoDFMR"
     cac_login_required = False
+    rotate_user_agent = True
 
     seen = set({})
 

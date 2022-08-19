@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
-# abs path to this package
-PACKAGE_PATH: str = os.path.dirname(os.path.abspath(__file__))
+PACKAGE_ROOT = Path(__file__).parent
+REPO_ROOT = PACKAGE_ROOT.parent

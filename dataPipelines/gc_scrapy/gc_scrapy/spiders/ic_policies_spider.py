@@ -6,11 +6,15 @@ from dataPipelines.gc_scrapy.gc_scrapy.utils import abs_url
 
 
 class IcPoliciesSpider(GCSpider):
-    name = 'ic_policies'
+    name = 'ic_policies' # Crawler name
+    display_org = "Intelligence Community" # Level 1: GC app 'Source' filter for docs from this crawler
+    data_source = "Office of Director of National Intelligence" # Level 2: GC app 'Source' metadata field for docs from this crawler
+    source_title = "Unlisted Source" # Level 3 filter
 
     start_urls = [
         'https://www.dni.gov/index.php/what-we-do/ic-policies-reports/'
     ]
+    rotate_user_agent = True
 
     def parse(self, response):
         base_url = 'https://www.dni.gov'
