@@ -54,6 +54,8 @@ function run_crawler() {
   --download-output-dir=$LOCAL_DOWNLOAD_DIRECTORY_PATH \
   --crawler-output-location=$LOCAL_CRAWLER_OUTPUT_FILE_PATH \
   --previous-manifest-location=$LOCAL_PREVIOUS_MANIFEST_LOCATION \
+  --slack-hook-channel-id=$SLACK_HOOK_CHANNEL_ID \
+  --slack-hook-url=$SLACK_HOOK_URL \
   ${LOCAL_SPIDER_LIST_FILE:+ "--spiders-file-location=$LOCAL_SPIDER_LIST_FILE"}
 
   set -o pipefail
@@ -81,13 +83,17 @@ function create_cumulative_manifest() {
   cat "$LOCAL_NEW_MANIFEST_PATH" >> "$cumulative_manifest"
 }
 
-function register_log_in_manifest() {
-  "$PYTHON_CMD" -m dataPipelines.gc_downloader add-to-manifest --file "$LOCAL_JOB_LOG_PATH" --manifest "$LOCAL_NEW_MANIFEST_PATH"
-}
 
-function register_crawl_log_in_manifest() {
-  "$PYTHON_CMD" -m dataPipelines.gc_downloader add-to-manifest --file "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" --manifest "$LOCAL_NEW_MANIFEST_PATH"
-}
+## Commenting out logging of job_log/crawler_output in manifest since it's not necessary.
+
+#function register_log_in_manifest() {
+#  "$PYTHON_CMD" -m dataPipelines.gc_downloader add-to-manifest --file "$LOCAL_JOB_LOG_PATH" --manifest "$LOCAL_NEW_MANIFEST_PATH"
+#}
+
+#function register_crawl_log_in_manifest() {
+#  "$PYTHON_CMD" -m dataPipelines.gc_downloader add-to-manifest --file "$LOCAL_CRAWLER_OUTPUT_FILE_PATH" --manifest "$LOCAL_NEW_MANIFEST_PATH"
+#}
+
 
 ##### ##### #####
 ## ## ## ## ## ## ACTUAL EXEC FLOW
@@ -121,8 +127,10 @@ echo -e "\n $(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.
 
 # run the upload
 run_upload
-# register additional files in manifest
-register_log_in_manifest
-register_crawl_log_in_manifest
+
+# register additional files in manifest (commented out)
+#register_log_in_manifest
+#register_crawl_log_in_manifest
+
 # create combined manifest for future runs
 create_cumulative_manifest

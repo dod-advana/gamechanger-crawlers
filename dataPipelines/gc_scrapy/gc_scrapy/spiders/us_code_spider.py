@@ -23,15 +23,18 @@ class USCodeSpider(GCSpider):
     cac_login_required = False
     rotate_user_agent = True
 
-    GCSpider.custom_settings["ITEM_PIPELINES"][
-        "dataPipelines.gc_scrapy.gc_scrapy.pipelines.USCodeFileDownloadPipeline"
-    ] = GCSpider.custom_settings["ITEM_PIPELINES"].pop(
-        "dataPipelines.gc_scrapy.gc_scrapy.pipelines.FileDownloadPipeline"
-    )
+    def __init__(self, *args, **kwargs):
+        super(USCodeSpider, self).__init__(*args, **kwargs)
 
-    GCSpider.custom_settings["FEED_EXPORTERS"][
-        "json"
-    ] = "dataPipelines.gc_scrapy.gc_scrapy.exporters.ZippedJsonLinesAsJsonItemExporter"
+        GCSpider.custom_settings["ITEM_PIPELINES"][
+            "dataPipelines.gc_scrapy.gc_scrapy.pipelines.USCodeFileDownloadPipeline"
+        ] = GCSpider.custom_settings["ITEM_PIPELINES"].pop(
+            "dataPipelines.gc_scrapy.gc_scrapy.pipelines.FileDownloadPipeline"
+        )
+
+        GCSpider.custom_settings["FEED_EXPORTERS"][
+            "json"
+        ] = "dataPipelines.gc_scrapy.gc_scrapy.exporters.ZippedJsonLinesAsJsonItemExporter"
 
     def parse(self, response):
         rows = [el for el in response.css("div.uscitemlist > div.uscitem") if el.css("::attr(id)").get() != "alltitles"]
