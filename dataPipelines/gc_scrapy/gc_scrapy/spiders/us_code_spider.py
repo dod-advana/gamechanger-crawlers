@@ -4,6 +4,7 @@ from pathlib import Path
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
+import copy
 
 PART = " - "
 SUPPORTED_URL_EXTENSIONS = ["PDF"]
@@ -16,25 +17,36 @@ def index_containing_substring(the_list, substring):
     return None
 
 
-class USCodeSpider(GCSpider):
+class GCSpiderCP(GCSpider):
+    pass
+
+
+class USCodeSpider(GCSpiderCP):
     name = "us_code"
     start_urls = ["https://uscode.house.gov/download/download.shtml"]
     doc_type = "Title"
     cac_login_required = False
     rotate_user_agent = True
 
-    def __init__(self, *args, **kwargs):
-        super(USCodeSpider, self).__init__(*args, **kwargs)
-
-        GCSpider.custom_settings["ITEM_PIPELINES"][
-            "dataPipelines.gc_scrapy.gc_scrapy.pipelines.USCodeFileDownloadPipeline"
-        ] = GCSpider.custom_settings["ITEM_PIPELINES"].pop(
-            "dataPipelines.gc_scrapy.gc_scrapy.pipelines.FileDownloadPipeline"
-        )
-
-        GCSpider.custom_settings["FEED_EXPORTERS"][
-            "json"
-        ] = "dataPipelines.gc_scrapy.gc_scrapy.exporters.ZippedJsonLinesAsJsonItemExporter"
+    custom_settings = \
+        {"ITEM_PIPELINES": {
+            "dataPipelines.gc_scrapy.gc_scrapy.pipelines.FileNameFixerPipeline": 50,
+            "dataPipelines.gc_scrapy.gc_scrapy.pipelines.DeduplicaterPipeline": 100,
+            "dataPipelines.gc_scrapy.gc_scrapy.pipelines.AdditionalFieldsPipeline": 200,
+            "dataPipelines.gc_scrapy.gc_scrapy.pipelines.ValidateJsonPipeline": 300,
+            "dataPipelines.gc_scrapy.gc_scrapy.pipelines.USCodeFileDownloadPipeline": 400
+        },
+        "FEED_EXPORTERS": {
+            "json": "dataPipelines.gc_scrapy.gc_scrapy.exporters.ZippedJsonLinesAsJsonItemExporter",
+        },
+        "DOWNLOADER_MIDDLEWARES": {
+            "dataPipelines.gc_scrapy.gc_scrapy.downloader_middlewares.BanEvasionMiddleware": 100,
+        },
+        # 'STATS_DUMP': False,
+        "ROBOTSTXT_OBEY": False,
+        "LOG_LEVEL": "INFO",
+        "DOWNLOAD_FAIL_ON_DATALOSS": False,
+        }
 
     def parse(self, response):
         rows = [el for el in response.css("div.uscitemlist > div.uscitem") if el.css("::attr(id)").get() != "alltitles"]
