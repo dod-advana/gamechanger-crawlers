@@ -4,7 +4,6 @@ from pathlib import Path
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
-import copy
 
 PART = " - "
 SUPPORTED_URL_EXTENSIONS = ["PDF"]
@@ -17,11 +16,7 @@ def index_containing_substring(the_list, substring):
     return None
 
 
-class GCSpiderCP(GCSpider):
-    pass
-
-
-class USCodeSpider(GCSpiderCP):
+class USCodeSpider(GCSpider):
     name = "us_code"
     start_urls = ["https://uscode.house.gov/download/download.shtml"]
     doc_type = "Title"
