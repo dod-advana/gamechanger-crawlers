@@ -327,7 +327,8 @@ class USCodeFileDownloadPipeline(FileDownloadPipeline):
 
         if compression_type:
             final_item = ZippedDocItem(zipped_items=unzipped_items)
-            return final_item
+            # TODO: return all zipped items instead of just the first in the crawler output
+            return final_item["zipped_items"][0]
         return item
 
 
