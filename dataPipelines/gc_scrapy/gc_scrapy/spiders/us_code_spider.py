@@ -43,6 +43,7 @@ class USCodeSpider(GCSpider):
         "DOWNLOAD_FAIL_ON_DATALOSS": False,
         }
 
+
     def parse(self, response):
         rows = [el for el in response.css("div.uscitemlist > div.uscitem") if el.css("::attr(id)").get() != "alltitles"]
         prev_doc_num = None

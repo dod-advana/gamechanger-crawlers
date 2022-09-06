@@ -17,9 +17,7 @@ class JsonLinesAsJsonItemExporter(BaseItemExporter):
 
 class ZippedJsonLinesAsJsonItemExporter(JsonLinesAsJsonItemExporter):
     def export_item(self, item):
-        itemdict = dict(self._get_serialized_fields(item))
-
-        for unzipped_item in itemdict["zipped_items"]:
-            unzipped_item = dict(sorted(unzipped_item.items()))
-            data = self.encoder.encode(unzipped_item) + "\n"
+        for i in item["zipped_items"]:
+            itemdict = dict(self._get_serialized_fields(i))
+            data = self.encoder.encode(itemdict) + "\n"
             self.file.write(to_bytes(data, self.encoding))

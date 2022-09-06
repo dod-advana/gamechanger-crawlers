@@ -275,6 +275,7 @@ class USCodeFileDownloadPipeline(FileDownloadPipeline):
         # first in results is supposed to be ok status but it always returns true b/c 404 doesnt cause failure for some reason :(
         # so I added it in the media downloaded part as a sub tuple in return
         file_downloads = []
+        unzipped_items = [] ## Should this be here instead of inside the for loop?
         for (_, (okay, response, reason)) in results:
             if not okay:
                 self.add_to_dead_queue(item, reason if reason else int(response.status))
@@ -301,7 +302,7 @@ class USCodeFileDownloadPipeline(FileDownloadPipeline):
                     if compression_type.lower() == "zip":
                         unzipped_files = unzip_docs_as_needed(file_download_path, file_unzipped_path, doc_type)
 
-                        unzipped_items = []
+                        ##unzipped_items = []  # Should this be before the for loop? Reassigned ^
                         if unzipped_files:
                             for unzipped_item in self.create_items_from_nested_zip(unzipped_files, item):
                                 self.add_to_manifest(unzipped_item)
@@ -326,9 +327,7 @@ class USCodeFileDownloadPipeline(FileDownloadPipeline):
             self.add_to_manifest(item)
 
         if compression_type:
-            final_item = ZippedDocItem(zipped_items=unzipped_items)
-            # TODO: return all zipped items instead of just the first in the crawler output
-            return final_item["zipped_items"][0]
+            return ZippedDocItem(zipped_items=unzipped_items)
         return item
 
 
