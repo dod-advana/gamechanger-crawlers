@@ -29,10 +29,10 @@ class USCodeSpider(GCSpider):
             "dataPipelines.gc_scrapy.gc_scrapy.pipelines.DeduplicaterPipeline": 100,
             "dataPipelines.gc_scrapy.gc_scrapy.pipelines.AdditionalFieldsPipeline": 200,
             "dataPipelines.gc_scrapy.gc_scrapy.pipelines.ValidateJsonPipeline": 300,
-            "dataPipelines.gc_scrapy.gc_scrapy.pipelines.USCodeFileDownloadPipeline": 400
+            "dataPipelines.gc_scrapy.gc_scrapy.pipelines.FileDownloadPipeline": 400
         },
         "FEED_EXPORTERS": {
-            "json": "dataPipelines.gc_scrapy.gc_scrapy.exporters.ZippedJsonLinesAsJsonItemExporter",
+            "jsonlines": "dataPipelines.gc_scrapy.gc_scrapy.exporters.ZippedJsonLinesAsJsonItemExporter",
         },
         "DOWNLOADER_MIDDLEWARES": {
             "dataPipelines.gc_scrapy.gc_scrapy.downloader_middlewares.BanEvasionMiddleware": 100,

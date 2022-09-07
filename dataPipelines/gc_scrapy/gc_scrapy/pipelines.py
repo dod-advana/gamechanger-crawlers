@@ -91,6 +91,18 @@ class FileDownloadPipeline(MediaPipeline):
         print(f"Previous manifest loaded, will filter {num_hashes} hashes")
 
     @staticmethod
+    def create_items_from_nested_zip(zipped_item_paths, item):
+        for sub_path in zipped_item_paths:
+            new_item = copy.deepcopy(item)
+            new_item["doc_name"] = sub_path.stem
+            new_item["doc_title"] = sub_path.stem.split("-", 1)[1].strip()
+            new_item["version_hash_raw_data"]["doc_name"] = new_item["doc_name"]
+            new_item["version_hash_raw_data"]["sub_file_version_hash"] = dict_to_sha256_hex_digest(
+                new_item["version_hash_raw_data"]
+            )
+            yield new_item
+
+    @staticmethod
     def get_first_supported_downloadable_item(downloadable_items: list) -> Union[dict, None]:
         """Get first supported downloadable item corresponding to doc, has correct type and is not cac blocked"""
         return next((item for item in downloadable_items if item["doc_type"] in SUPPORTED_FILE_EXTENSIONS), None)
@@ -196,74 +208,6 @@ class FileDownloadPipeline(MediaPipeline):
 
             except Exception as e:
                 print("Failed to write to manifest file", path, e)
-
-    def item_completed(self, results, item, info):
-        """Called per item when all media requests have been processed"""
-        # return item for crawler output if download was skipped
-        if not info.downloaded:
-            return item
-
-        # first in results is supposed to be ok status but it always returns true b/c 404 doesnt cause failure for some reason :(
-        # so I added it in the media downloaded part as a sub tuple in return
-        file_downloads = []
-        for (_, (okay, response, reason)) in results:
-            if not okay:
-                self.add_to_dead_queue(item, reason if reason else int(response.status))
-            else:
-                output_file_name = response.meta["output_file_name"]
-                doc_type = response.meta["doc_type"]
-                compression_type = response.meta["compression_type"]
-                if compression_type:
-                    file_download_path = Path(self.output_dir, output_file_name).with_suffix(f".{compression_type}")
-                    file_unzipped_path = Path(self.output_dir, output_file_name)
-                    metadata_download_path = f"{file_unzipped_path}.metadata"
-                else:
-                    file_download_path = Path(self.output_dir, output_file_name)
-                    metadata_download_path = f"{file_download_path}.metadata"
-
-                with open(file_download_path, "wb") as f:
-                    try:
-                        to_write = info.spider.download_response_handler(response)
-                        f.write(to_write)
-                        f.close()
-
-                        # TODO: Add functionality for zips to handle multiple files/doc types
-                        if compression_type:
-                            if compression_type.lower() == "zip":
-                                unzip_docs_as_needed(file_download_path, file_unzipped_path, doc_type)
-
-                        # print('downloaded', file_download_path)
-                        file_downloads.append(file_download_path)
-
-                    except Exception as e:
-                        print("Failed to write file to", file_download_path, "Error:", e)
-
-                with open(metadata_download_path, "w") as f:
-                    try:
-                        f.write(json.dumps(dict(item)))
-
-                    except Exception as e:
-                        print("Failed to write metadata", file_download_path, e)
-
-        # if nothing was downloaded so don't add to manifest, just return item to crawl output
-        if file_downloads:
-            self.add_to_manifest(item)
-
-        return item
-
-
-# TODO: I'm pretty sure we can remove this and merge the changes with the FileDownloadPipeline
-class USCodeFileDownloadPipeline(FileDownloadPipeline):
-    def create_items_from_nested_zip(self, zipped_item_paths, item):
-        for sub_path in zipped_item_paths:
-            new_item = copy.deepcopy(item)
-            new_item["doc_name"] = sub_path.stem
-            new_item["doc_title"] = sub_path.stem.split("-", 1)[1].strip()
-            new_item["version_hash_raw_data"]["doc_name"] = new_item["doc_name"]
-            new_item["version_hash_raw_data"]["sub_file_version_hash"] = dict_to_sha256_hex_digest(
-                new_item["version_hash_raw_data"]
-            )
-            yield new_item
 
     def item_completed(self, results, item, info):
         """Called per item when all media requests have been processed"""
