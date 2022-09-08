@@ -48,73 +48,64 @@ class JBOOKAirForceBudgetSpider(GCSeleniumSpider):
 
     def parse(self, response):
         year_buttons = response.css('div[id="dnn_ctr44627_View_AccordionContainer"] a')
-        
+
+
+        # <a href="http://www.saffm.hq.af.mil/FM-Resources/Budget/Air-Force-Presidents-Budget-FY23/" 
+        # target="_self" 
+        # tabindex="0">FISCAL YEAR 2023</a>
+        print('\n\n***************')
         for year_button in year_buttons:
-            
             link = year_button.css('a::attr(href)').get()
             text = year_button.css('a::text').get()
-            print('\n\n***************')
-            print(text)
-            if 'pres' in text:
-                print(text)
-                print(text[0:1])
-                if text[0] == '9':
-                    year = '19' + text[0:2]
-                else:
-                    year = '20' + text[0:2]
-                yield response.follow(url=link, callback=self.parse_page, meta={"year": year})
+            year = text[-4:len(text)]
+            yield response.follow(url=link, callback=self.parse_page, meta={"year": year})
+        print('***************\n\n')
 
     def parse_page(self, response):
         year = response.meta["year"]
         
-        content_sections = response.css('div[class="rightHalf wpzContainerdiv"] [class="ms-webpart-chrome ms-webpart-chrome-vertical ms-webpart-chrome-fullWidth "]')
+        content_sections = response.css('div[id="dnn_ctr47771_ModuleContent"] a')
 
-        print('\n\n***************')
-        print(year)
-        #for content in content_sections:
-        #    c = content.css('a > span')
-        #    print(c.get())
-        print('***************\n\n')
-            # doc_url = content.css('a::attr(href)').get()
-            # doc_title = content.css('a::attr(title)').get()
+        for content in content_sections:
+            doc_url = content.css('a::attr(href)').get()
+            doc_title = content.css('a::text').get()
 
-            # is_revoked = False
+            is_revoked = False
 
+            # If the document is none, is neither procurement or rdte type, 
+            # or does not contain Portals (this gets rid of a few Javascript headers that get pulled back as hrefs)
+            # then ignore the document
+            if doc_url is None or not ("PROCUREMENT_" in doc_url or "RDTE_" in doc_url):
+                continue
 
-            # # If the document is none, is neither procurement or rdte type, 
-            # # or does not contain Portals (this gets rid of a few Javascript headers that get pulled back as hrefs)
-            # # then ignore the document
-            # if doc_url is None or not ('Procurement' in doc_url or 'rdte' in doc_url) or not 'Portals' in doc_url:
-            #     continue
+            publication_date = doc_url.split('/')[4] # TODO: get this from year metadata
 
-            # publication_date = doc_url.split('/')[5]
+            doc_type = 'RDTE' if "RDTE_" in doc_url else "PROCUREMENT_"
+            doc_name = f'{doc_title}' ## TODO - Grab name from href instead of doc title
 
-            # doc_type = 'RDTE' if 'rdte' in doc_url else 'Procurement'
-            # doc_name = f'{doc_type} {publication_date} - {doc_title}'
+            web_url = urljoin(response.url, doc_url)
+            downloadable_items = [
+                {
+                    "doc_type": "pdf",
+                    "web_url": web_url,
+                    "compression_type": None
+                }
+            ]
 
-            # web_url = urljoin(response.url, doc_url)
-            # downloadable_items = [
-            #     {
-            #         "doc_type": "pdf",
-            #         "web_url": web_url,
-            #         "compression_type": None
-            #     }
-            # ]
+            version_hash_fields = {
+                "item_currency": downloadable_items[0]["web_url"].split('/')[-1],
+                "document_title": doc_title,
+                "publication_date": publication_date,
+            }
 
-            # version_hash_fields = {
-            #     "item_currency": downloadable_items[0]["web_url"].split('/')[-1],
-            #     "document_title": doc_title,
-            #     "publication_date": publication_date,
-            # }
-
-            # doc_item = DocItem(
-            #     doc_name=doc_name,
-            #     doc_title=self.ascii_clean(doc_title),
-            #     doc_type=self.ascii_clean(doc_type),
-            #     publication_date=publication_date,
-            #     source_page_url=response.url,
-            #     downloadable_items=downloadable_items,
-            #     version_hash_raw_data=version_hash_fields,
-            #     is_revoked=is_revoked,
-            # )
-            # yield doc_item
+            doc_item = DocItem(
+                doc_name=doc_name,
+                doc_title=self.ascii_clean(doc_title),
+                doc_type=self.ascii_clean(doc_type),
+                publication_date=publication_date,
+                source_page_url=response.url,
+                downloadable_items=downloadable_items,
+                version_hash_raw_data=version_hash_fields,
+                is_revoked=is_revoked,
+            )
+            yield doc_item
