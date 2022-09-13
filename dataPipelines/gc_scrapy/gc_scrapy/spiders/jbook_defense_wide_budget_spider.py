@@ -60,6 +60,11 @@ class JBOOKDefenseWideBudgetSpider(GCSpider):
             
             doc_name = doc_url.split('/')[-1][:-4]
             
+            amendment = re.search("amend\w*", doc_url, re.IGNORECASE)
+            if amendment:
+                amendment_tag = doc_url.split('/')[-2]
+                doc_name = doc_name  + '_' + amendment_tag
+            
             downloadable_items = [
                 {
                     "doc_type": "pdf",
