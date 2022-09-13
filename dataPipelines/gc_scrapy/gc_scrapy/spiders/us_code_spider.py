@@ -32,7 +32,7 @@ class USCodeSpider(GCSpider):
             "dataPipelines.gc_scrapy.gc_scrapy.pipelines.FileDownloadPipeline": 400
         },
         "FEED_EXPORTERS": {
-            "jsonlines": "dataPipelines.gc_scrapy.gc_scrapy.exporters.ZippedJsonLinesAsJsonItemExporter",
+            "json": "dataPipelines.gc_scrapy.gc_scrapy.exporters.ZippedJsonLinesAsJsonItemExporter",
         },
         "DOWNLOADER_MIDDLEWARES": {
             "dataPipelines.gc_scrapy.gc_scrapy.downloader_middlewares.BanEvasionMiddleware": 100,

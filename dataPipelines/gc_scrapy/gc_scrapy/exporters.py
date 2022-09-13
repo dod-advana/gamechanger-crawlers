@@ -16,8 +16,13 @@ class JsonLinesAsJsonItemExporter(BaseItemExporter):
 
 
 class ZippedJsonLinesAsJsonItemExporter(JsonLinesAsJsonItemExporter):
+    """Output exporter for spiders with zipped items"""
     def export_item(self, item):
-        for i in item["zipped_items"]:
+        if not isinstance(item, list):
+            print(type(item))
+            print(item)
+            item = [item]
+        for i in item:
             itemdict = dict(self._get_serialized_fields(i))
             data = self.encoder.encode(itemdict) + "\n"
             self.file.write(to_bytes(data, self.encoding))

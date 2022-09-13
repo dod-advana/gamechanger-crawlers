@@ -13,7 +13,6 @@ import os
 import json
 from scrapy.exceptions import DropItem
 from jsonschema.exceptions import ValidationError
-from dataPipelines.gc_scrapy.gc_scrapy.items import ZippedDocItem
 from dataPipelines.gc_scrapy.gc_scrapy.utils import unzip_docs_as_needed
 
 from .validators import DefaultOutputSchemaValidator, SchemaValidator
@@ -213,13 +212,12 @@ class FileDownloadPipeline(MediaPipeline):
         """Called per item when all media requests have been processed"""
         # return item for crawler output if download was skipped
         if not info.downloaded:
-            # Not ideal for generalizability, if we merge with above, we need some creativity or I'm just tired
-            return ZippedDocItem(zipped_items=[item])
+            return item
 
         # first in results is supposed to be ok status but it always returns true b/c 404 doesnt cause failure for some reason :(
         # so I added it in the media downloaded part as a sub tuple in return
         file_downloads = []
-        unzipped_items = [] ## Should this be here instead of inside the for loop?
+        unzipped_items = []
         for (_, (okay, response, reason)) in results:
             if not okay:
                 self.add_to_dead_queue(item, reason if reason else int(response.status))
@@ -230,8 +228,10 @@ class FileDownloadPipeline(MediaPipeline):
                 if compression_type:
                     file_download_path = Path(self.output_dir, output_file_name).with_suffix(f".{compression_type}")
                     file_unzipped_path = Path(self.output_dir, output_file_name)
+                    metadata_download_path = f"{file_unzipped_path}.metadata"
                 else:
                     file_download_path = Path(self.output_dir, output_file_name)
+                    metadata_download_path = f"{file_download_path}.metadata"
 
                 with open(file_download_path, "wb") as f:
                     try:
@@ -246,7 +246,6 @@ class FileDownloadPipeline(MediaPipeline):
                     if compression_type.lower() == "zip":
                         unzipped_files = unzip_docs_as_needed(file_download_path, file_unzipped_path, doc_type)
 
-                        ##unzipped_items = []  # Should this be before the for loop? Reassigned ^
                         if unzipped_files:
                             for unzipped_item in self.create_items_from_nested_zip(unzipped_files, item):
                                 self.add_to_manifest(unzipped_item)
@@ -264,14 +263,21 @@ class FileDownloadPipeline(MediaPipeline):
 
                                 unzipped_items.append(unzipped_item)
                 else:
-                    file_downloads.append(file_download_path)
+                    with open(metadata_download_path, "w") as f:
+                        try:
+                            f.write(json.dumps(dict(item)))
+                        except Exception as e:
+                            print("Failed to write metadata", file_download_path, e)
+
+                # print('downloaded', file_download_path)
+                file_downloads.append(file_download_path)
 
         # if nothing was downloaded so don't add to manifest, just return item to crawl output
         if file_downloads:
             self.add_to_manifest(item)
 
-        if compression_type:
-            return ZippedDocItem(zipped_items=unzipped_items)
+        if len(unzipped_items) > 1:
+            return unzipped_items
         return item
 
 
