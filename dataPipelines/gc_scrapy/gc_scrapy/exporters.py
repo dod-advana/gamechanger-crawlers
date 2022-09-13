@@ -19,8 +19,6 @@ class ZippedJsonLinesAsJsonItemExporter(JsonLinesAsJsonItemExporter):
     """Output exporter for spiders with zipped items"""
     def export_item(self, item):
         if not isinstance(item, list):
-            print(type(item))
-            print(item)
             item = [item]
         for i in item:
             itemdict = dict(self._get_serialized_fields(i))
