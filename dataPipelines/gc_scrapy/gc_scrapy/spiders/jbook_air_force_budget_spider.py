@@ -49,17 +49,11 @@ class JBOOKAirForceBudgetSpider(GCSeleniumSpider):
     def parse(self, response):
         year_buttons = response.css('div[id="dnn_ctr44627_View_AccordionContainer"] a')
 
-
-        # <a href="http://www.saffm.hq.af.mil/FM-Resources/Budget/Air-Force-Presidents-Budget-FY23/" 
-        # target="_self" 
-        # tabindex="0">FISCAL YEAR 2023</a>
-        print('\n\n***************')
         for year_button in year_buttons:
             link = year_button.css('a::attr(href)').get()
             text = year_button.css('a::text').get()
             year = text[-4:len(text)]
             yield response.follow(url=link, callback=self.parse_page, meta={"year": year})
-        print('***************\n\n')
 
     def parse_page(self, response):
         year = response.meta["year"]
@@ -78,10 +72,10 @@ class JBOOKAirForceBudgetSpider(GCSeleniumSpider):
             if doc_url is None or not ("PROCUREMENT_" in doc_url or "RDTE_" in doc_url):
                 continue
 
-            publication_date = doc_url.split('/')[4] # TODO: get this from year metadata
 
-            doc_type = 'RDTE' if "RDTE_" in doc_url else "PROCUREMENT_"
-            doc_name = f'{doc_title}' ## TODO - Grab name from href instead of doc title
+            doc_type = 'RDTE' if "RDTE_" in doc_url else "Procurement"
+            doc_name = doc_url.split('/')[-1].replace('.pdf', '')
+            doc_name = f'{year} {doc_name}'
 
             web_url = urljoin(response.url, doc_url)
             downloadable_items = [
@@ -95,14 +89,14 @@ class JBOOKAirForceBudgetSpider(GCSeleniumSpider):
             version_hash_fields = {
                 "item_currency": downloadable_items[0]["web_url"].split('/')[-1],
                 "document_title": doc_title,
-                "publication_date": publication_date,
+                "publication_date": year,
             }
 
             doc_item = DocItem(
                 doc_name=doc_name,
                 doc_title=self.ascii_clean(doc_title),
                 doc_type=self.ascii_clean(doc_type),
-                publication_date=publication_date,
+                publication_date=year,
                 source_page_url=response.url,
                 downloadable_items=downloadable_items,
                 version_hash_raw_data=version_hash_fields,

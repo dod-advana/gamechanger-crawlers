@@ -9,6 +9,7 @@ from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver import Chrome
 from selenium.common.exceptions import NoSuchElementException
 import re
+import json
 from urllib.parse import urljoin, urlparse
 from datetime import datetime
 
@@ -47,75 +48,73 @@ class JBOOKNavyBudgetSpider(GCSeleniumSpider):
         return text.encode('ascii', 'ignore').decode('ascii').strip()
 
     def parse(self, response):
-        year_buttons = response.css('td[class="ms-cellstyle ms-vb-title"]')#div[class="ms-webpart-zone ms-fullWidth"]')
-        print('\n\n\n\n\n')
-        print(year_buttons)
+        year_buttons = response.css('td[class="ms-cellstyle ms-vb-title"]')
         for year_button in year_buttons:
-            
             link = year_button.css('a::attr(href)').get()
             text = year_button.css('a::text').get()
-            print('\n\n***************')
-            print(text)
+
+            # If we are looking at a folder we want to parse
             if 'pres' in text:
-                print(text)
-                print(text[0:1])
                 if text[0] == '9':
                     year = '19' + text[0:2]
                 else:
                     year = '20' + text[0:2]
                 yield response.follow(url=link, callback=self.parse_page, meta={"year": year})
 
+
     def parse_page(self, response):
         year = response.meta["year"]
         
-        content_sections = response.css('div[class="rightHalf wpzContainerdiv"] [class="ms-webpart-chrome ms-webpart-chrome-vertical ms-webpart-chrome-fullWidth "]')
+        pattern = r'\bvar\s+WPQ2ListData\s*=\s*\{[\s\S]*?\}\n\]'
+        table_data = response.css('script::text').re_first(pattern)
+        try:
+            table_data = table_data.split('],"FirstRow"')[0].split(': \n[')[1]
+        except:
+            print('ERROR: Blocked from site.')
+            yield DocItem()
+        for doc_string in table_data.split(',{'):
+            if not doc_string[0] == '{':
+                doc_string = '{' + doc_string
+            doc_dict = json.loads(doc_string)
+            
 
-        print('\n\n***************')
-        print(year)
-        #for content in content_sections:
-        #    c = content.css('a > span')
-        #    print(c.get())
-        print('***************\n\n')
-            # doc_url = content.css('a::attr(href)').get()
-            # doc_title = content.css('a::attr(title)').get()
+            doc_url = doc_dict['FileRef'].replace('\u002f', '/')
+            doc_title = doc_dict['Title']
 
-            # is_revoked = False
+            if doc_title is '':
+                doc_title = doc_dict['FileLeafRef'].replace('.pdf', '')
 
+            is_revoked = False
 
-            # # If the document is none, is neither procurement or rdte type, 
-            # # or does not contain Portals (this gets rid of a few Javascript headers that get pulled back as hrefs)
-            # # then ignore the document
-            # if doc_url is None or not ('Procurement' in doc_url or 'rdte' in doc_url) or not 'Portals' in doc_url:
-            #     continue
+            publication_date = doc_dict['Modified'].replace('\u002f', '/')
 
-            # publication_date = doc_url.split('/')[5]
+            doc_type = 'Procurement' if 'PROCUREMENT' in doc_dict["Section"] else 'RDTE'
+            doc_name = doc_dict['FileLeafRef'].replace('.pdf', '')
+            doc_name = f'{year} {doc_name}' # TODO: drop this once everythign is being placed properly in AWS JBOOK partition
 
-            # doc_type = 'RDTE' if 'rdte' in doc_url else 'Procurement'
-            # doc_name = f'{doc_type} {publication_date} - {doc_title}'
+            web_url = urljoin(response.url, doc_url)
+            downloadable_items = [
+                {
+                    "doc_type": "pdf",
+                    "web_url": web_url,
+                    "compression_type": None
+                }
+            ]
 
-            # web_url = urljoin(response.url, doc_url)
-            # downloadable_items = [
-            #     {
-            #         "doc_type": "pdf",
-            #         "web_url": web_url,
-            #         "compression_type": None
-            #     }
-            # ]
+            version_hash_fields = {
+                "item_currency": downloadable_items[0]["web_url"].split('/')[-1],
+                "document_title": doc_title,
+                "publication_date": publication_date,
+            }
 
-            # version_hash_fields = {
-            #     "item_currency": downloadable_items[0]["web_url"].split('/')[-1],
-            #     "document_title": doc_title,
-            #     "publication_date": publication_date,
-            # }
-
-            # doc_item = DocItem(
-            #     doc_name=doc_name,
-            #     doc_title=self.ascii_clean(doc_title),
-            #     doc_type=self.ascii_clean(doc_type),
-            #     publication_date=publication_date,
-            #     source_page_url=response.url,
-            #     downloadable_items=downloadable_items,
-            #     version_hash_raw_data=version_hash_fields,
-            #     is_revoked=is_revoked,
-            # )
-            # yield doc_item
+            doc_item = DocItem(
+                doc_name=doc_name,
+                doc_title=self.ascii_clean(doc_title),
+                doc_type=self.ascii_clean(doc_type),
+                publication_date=year,
+                source_page_url=response.url,
+                downloadable_items=downloadable_items,
+                version_hash_raw_data=version_hash_fields,
+                is_revoked=is_revoked,
+            )
+            yield doc_item
