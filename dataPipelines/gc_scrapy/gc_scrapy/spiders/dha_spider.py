@@ -11,7 +11,7 @@ class DHASpider(GCSpider):
     source_title = "Defense Health Agency Publications" # Level 3 filter
 
     start_urls = [
-        'https://www.health.mil/About-MHS/OASDHA/Defense-Health-Agency/Administration-and-Management/DHA-Publications'
+        'https://www.health.mil/Reference-Center/DHA-Publications'
     ]
 
     file_type = "pdf"
