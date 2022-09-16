@@ -100,4 +100,5 @@ class JBOOKArmyBudgetSpider(GCSeleniumSpider):
                 version_hash_raw_data=version_hash_fields,
                 is_revoked=is_revoked,
             )
-            yield doc_item
+            if int(year) >= 2014:
+                yield doc_item

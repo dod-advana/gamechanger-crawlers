@@ -53,7 +53,8 @@ class JBOOKAirForceBudgetSpider(GCSeleniumSpider):
             link = year_button.css('a::attr(href)').get()
             text = year_button.css('a::text').get()
             year = text[-4:len(text)]
-            yield response.follow(url=link, callback=self.parse_page, meta={"year": year})
+            if int(year) >= 2014:
+                yield response.follow(url=link, callback=self.parse_page, meta={"year": year})
 
     def parse_page(self, response):
         year = response.meta["year"]
