@@ -59,7 +59,9 @@ class JBOOKNavyBudgetSpider(GCSeleniumSpider):
                     year = '19' + text[0:2]
                 else:
                     year = '20' + text[0:2]
-                yield response.follow(url=link, callback=self.parse_page, meta={"year": year})
+
+                if int(year) >= 2014:
+                    yield response.follow(url=link, callback=self.parse_page, meta={"year": year})
 
 
     def parse_page(self, response):
