@@ -97,11 +97,10 @@ class CNSSSpider(GCSpider):
         rows = response.css('table.documentTable tr')
 
         for row in rows[1:]:
+#            print("################ row:")
+#            print(row)
             href_raw = row.css(
                 'td:nth-child(2) a::attr(href)').get()
-            print("################")
-            print(href_raw)
-            input("press any key to continue...")
 
             if not href_raw:
                 continue
@@ -128,6 +127,11 @@ class CNSSSpider(GCSpider):
             }
 
             web_url = f"{self.root_url}{href_raw}"
+ #           print("############# web_url:")
+ #           print(web_url)
+ #           print("############# doc_title:")
+ #           print(doc_title)
+ #           input("press any key to continue...")
 
             downloadable_items = [
                 {
@@ -148,3 +152,11 @@ class CNSSSpider(GCSpider):
                 version_hash_raw_data=version_hash_fields,
                 downloadable_items=downloadable_items
             )
+
+# Navigating through website: https://www.cnss.gov/CNSS/openDoc.cfm?25tDP2NvEo6H4CuIciL7nA==
+
+# https://www.cnss.gov/CNSS/openDoc.cfm?ubnC9+G10K89b3LyzmYq6Q==
+
+# https://www.cnss.gov/CNSS/openDoc.cfm?gGvKgLSTkLMnRzi4x+ZYkw==
+
+# https://www.cnss.gov/CNSS/openDoc.cfm?E6Fbn9X25+HpX6XyHZNwTw==
