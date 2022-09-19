@@ -92,7 +92,7 @@ class JBOOKNavyBudgetSpider(GCSeleniumSpider):
 
             doc_type = 'Procurement' if 'PROCUREMENT' in doc_dict["Section"] else 'RDTE'
             doc_name = doc_dict['FileLeafRef'].replace('.pdf', '')
-            doc_name = f'{year};{doc_type};{doc_name}'
+            doc_name = f'{doc_type};{year};{doc_name}'
 
             web_url = urljoin(response.url, doc_url)
             downloadable_items = [

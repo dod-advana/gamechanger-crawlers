@@ -73,7 +73,7 @@ class JBOOKArmyBudgetSpider(GCSeleniumSpider):
 
             doc_type = 'RDTE' if 'rdte' in doc_url else 'Procurement'
             doc_name = doc_url.split('/')[-1].replace('.pdf', '')
-            doc_name = f'{year};{doc_type};{doc_name}'
+            doc_name = f'{doc_type};{year};{doc_name}'
 
             web_url = urljoin(response.url, doc_url)
             downloadable_items = [

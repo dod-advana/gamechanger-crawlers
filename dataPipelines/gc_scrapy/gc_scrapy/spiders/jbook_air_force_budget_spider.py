@@ -77,7 +77,7 @@ class JBOOKAirForceBudgetSpider(GCSeleniumSpider):
                 doc_name = doc_url.split('/')[-1].replace('.pdf', '').replace('%20', ' ')
                 if '?' in doc_name:
                     doc_name = doc_name.split('?')[0]
-                doc_name = f'{year};{doc_type};{doc_name}'
+                doc_name = f'{doc_type};{year};{doc_name}'
 
                 web_url = urljoin(response.url, doc_url)
                 downloadable_items = [
