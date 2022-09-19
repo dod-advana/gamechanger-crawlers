@@ -72,13 +72,12 @@ class JBOOKAirForceBudgetSpider(GCSeleniumSpider):
                         'RDTE' in doc_url or 'RDT_E' in doc_url)
             is_procurement_document = ("PROCUREMENT" in doc_url or '/Proc/' in doc_url or ("Procurement" in doc_title and "Procurement" != doc_title))
 
-            print(is_rdte_document, is_procurement_document)
             if is_procurement_document or is_rdte_document:
                 doc_type = 'RDTE' if is_rdte_document else "Procurement"
                 doc_name = doc_url.split('/')[-1].replace('.pdf', '').replace('%20', ' ')
                 if '?' in doc_name:
                     doc_name = doc_name.split('?')[0]
-                doc_name = f'{year} {doc_name}'
+                doc_name = f'{year};{doc_type};{doc_name}'
 
                 web_url = urljoin(response.url, doc_url)
                 downloadable_items = [
