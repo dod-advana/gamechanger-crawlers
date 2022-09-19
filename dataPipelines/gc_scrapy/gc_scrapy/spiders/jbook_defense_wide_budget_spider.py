@@ -76,16 +76,22 @@ class JBOOKDefenseWideBudgetSpider(GCSpider):
             if amendment_search:
                 amendment_tag = doc_url.split('/')[-2]
                 doc_name = doc_name  + '_' + amendment_tag    
-            elif doc_type == 'RDTE':
-                if any(tag not in doc_name.lower() for tag in rdte_tags):
-                    doc_name = doc_name + '_rdte'                
-                if not year_search:
-                    doc_name = doc_name + '_fy' + publication_year.group()           
-            elif (doc_type == 'Procurement'):
-                if any(tag not in doc_name.lower() for tag in procurement_tags):
-                    doc_name = doc_name + '_proc'
-                if not year_search:
-                    doc_name = doc_name + '_fy' + publication_year.group() 
+            #elif doc_type == 'RDTE':
+                #if any(tag not in doc_name.lower() for tag in rdte_tags):
+                #    doc_name = doc_name + '_rdte'
+                #if not year_search:
+                #    doc_name = doc_name + '_fy' + publication_year.group()
+            #elif (doc_type == 'Procurement'):
+                #if any(tag not in doc_name.lower() for tag in procurement_tags):
+                #    doc_name = doc_name + '_proc'
+                #if not year_search:
+                #    doc_name = doc_name + '_fy' + publication_year.group()
+            #if not year_search:
+            year = publication_year.group()    
+            #else:
+            #    year = year_search     
+
+            doc_name = f'{doc_type};{year};{doc_name}' 
        
             downloadable_items = [
                 {
