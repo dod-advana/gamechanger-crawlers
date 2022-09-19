@@ -8,10 +8,7 @@ from scrapy import Selector
 from urllib.parse import urljoin, urlparse
 from datetime import datetime
 import re
-
-from dataPipelines.gc_scrapy.gc_scrapy.middleware_utils.selenium_request import SeleniumRequest
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
-from dataPipelines.gc_scrapy.gc_scrapy.GCSeleniumSpider import GCSeleniumSpider
 
 class JBOOKDefenseWideBudgetSpider(GCSpider):
     name = 'jbook_defense_wide_budget'
@@ -22,18 +19,22 @@ class JBOOKDefenseWideBudgetSpider(GCSpider):
     cac_login_required = False
     rotate_user_agent = True 
     root_url = 'https://comptroller.defense.gov/Budget-Materials/'   
-    url = 'https://comptroller.defense.gov/Budget-Materials/Budget{}/'
+    urls = ['https://comptroller.defense.gov/Budget-Materials/Budget{}/',
+           'https://comptroller.defense.gov/Budget-Materials/FY{}BudgetJustification/']
+    
     allowed_domains = ['comptroller.defense.gov/']
     
     file_type = 'pdf'
     latest_year = int(datetime.today().year) + 2
-            
+    years = range(2014, latest_year)
+ 
     def start_requests(self):
-        for i in range(1998, self.latest_year):
-            yield scrapy.Request(self.url.format(i))
+        for year in self.years:
+            for url in self.urls:
+                yield scrapy.Request(url.format(year))
         
     def parse(self, response):
-        content = response.css('a')
+        content = response.css("a[href*='.pdf']")
         for c in content:
             
             is_revoked = False
@@ -41,30 +42,51 @@ class JBOOKDefenseWideBudgetSpider(GCSpider):
             doc_title_raw = c.css("::text").get()
             doc_title = self.ascii_clean(str(doc_title_raw))
             doc_url = c.css('::attr(href)').get()
-
-            web_url = urljoin(response.url, doc_url)
             
-            if doc_url is None or not ('Procurement' in doc_title or 'Research' in doc_title) or not 'Portals' in doc_url:
+            web_url = urljoin(response.url, doc_url)
+            url_tags = ['02_Procurement', '_p1r', '_p1', '_r1', '03_RDT_and_E']
+            
+            if doc_url is None or not any(tag in doc_url for tag in url_tags):
                 continue
             
-            if 'Procurement' in doc_title:
-                doc_type = 'Procurement'
-            elif 'Research' in doc_title:
-                doc_type = 'RDTE'
-            else:
-                doc_type = None
-                yield doc_type
+            doc_type = ''
+            for tag in url_tags:
+                if tag in doc_url:
+                    doc_type = tag
+                else:
+                    doc_type is None
+                    
+            doctype_mapping = {'02_Procurement': 'Procurement', '_p1r':'Procurement', '_p1':'Procurement', '_r1':'RDTE', '03_RDT_and_E':'RDTE'}
+            for key, value in doctype_mapping.items():
+                doc_type = doc_type.replace(key, value)
             
-            publication_year = re.search("[12][0-9]{3}", doc_url)
+            publication_year = re.search('[2][0-9]{3}', doc_url)
             publication_date = '01/01/' + publication_year.group()
             
             doc_name = doc_url.split('/')[-1][:-4]
+            doc_name = doc_name.replace('%20', '_')
+            if doc_title == 'None':
+                doc_title = doc_name.replace('_', ' ')
+                        
+            amendment_search = re.search("amend\w*", doc_url, re.IGNORECASE)
+            year_search = re.search('(fy|pb)[2][0-9]{1,3}|(fy|pb)_[2][0-9]{1,3}', doc_name, re.IGNORECASE) 
+            rdte_tags = ['r1', 'rdte']
+            procurement_tags = ['p1r', 'p1', 'procurement']
             
-            amendment = re.search("amend\w*", doc_url, re.IGNORECASE)
-            if amendment:
+            if amendment_search:
                 amendment_tag = doc_url.split('/')[-2]
-                doc_name = doc_name  + '_' + amendment_tag
-            
+                doc_name = doc_name  + '_' + amendment_tag    
+            elif doc_type == 'RDTE':
+                if any(tag not in doc_name.lower() for tag in rdte_tags):
+                    doc_name = doc_name + '_rdte'                
+                if not year_search:
+                    doc_name = doc_name + '_fy' + publication_year.group()           
+            elif (doc_type == 'Procurement'):
+                if any(tag not in doc_name.lower() for tag in procurement_tags):
+                    doc_name = doc_name + '_proc'
+                if not year_search:
+                    doc_name = doc_name + '_fy' + publication_year.group() 
+       
             downloadable_items = [
                 {
                     "doc_type": "pdf",
@@ -80,7 +102,7 @@ class JBOOKDefenseWideBudgetSpider(GCSpider):
             }
         
             doc_item = DocItem(
-                doc_name=doc_name,
+                doc_name=self.ascii_clean(doc_name),
                 doc_title=doc_title,
                 doc_type=doc_type,
                 publication_date=publication_date,
