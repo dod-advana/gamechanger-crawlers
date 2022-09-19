@@ -99,6 +99,9 @@ class CNSSSpider(GCSpider):
         for row in rows[1:]:
             href_raw = row.css(
                 'td:nth-child(2) a::attr(href)').get()
+            print("################")
+            print(href_raw)
+            input("press any key to continue...")
 
             if not href_raw:
                 continue
