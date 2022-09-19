@@ -54,53 +54,55 @@ class JBOOKAirForceBudgetSpider(GCSeleniumSpider):
             text = year_button.css('a::text').get()
             year = text[-4:len(text)]
             if int(year) >= 2014:
-                yield response.follow(url=link, callback=self.parse_page, meta={"year": year})
+                yield response.follow(url=link.split('/')[-2], callback=self.parse_page, meta={"year": year})
 
     def parse_page(self, response):
         year = response.meta["year"]
-        
-        content_sections = response.css('div[id="dnn_ctr47771_ModuleContent"] a')
+        content_sections = response.css('div[class="DNNModuleContent ModICGModulesExpandableTextHtmlC"] a')#('div[id="dnn_ctr47771_ModuleContent"] a')
 
         for content in content_sections:
             doc_url = content.css('a::attr(href)').get()
             doc_title = content.css('a::text').get()
 
-            is_revoked = False
-
-            # If the document is none, is neither procurement or rdte type, 
-            # or does not contain Portals (this gets rid of a few Javascript headers that get pulled back as hrefs)
-            # then ignore the document
-            if doc_url is None or not ("PROCUREMENT_" in doc_url or "RDTE_" in doc_url):
+            # Document is not valid / an actual link if either url or title is None
+            if doc_url is None or doc_title is None:
                 continue
+            
+            is_rdte_document = ('Research, Development, Test and Evaluation' in doc_title or 'RDT&E' in doc_title or
+                        'RDTE' in doc_url or 'RDT_E' in doc_url)
+            is_procurement_document = ("PROCUREMENT" in doc_url or '/Proc/' in doc_url or ("Procurement" in doc_title and "Procurement" != doc_title))
 
+            print(is_rdte_document, is_procurement_document)
+            if is_procurement_document or is_rdte_document:
+                doc_type = 'RDTE' if is_rdte_document else "Procurement"
+                doc_name = doc_url.split('/')[-1].replace('.pdf', '').replace('%20', ' ')
+                if '?' in doc_name:
+                    doc_name = doc_name.split('?')[0]
+                doc_name = f'{year} {doc_name}'
 
-            doc_type = 'RDTE' if "RDTE_" in doc_url else "Procurement"
-            doc_name = doc_url.split('/')[-1].replace('.pdf', '')
-            doc_name = f'{year} {doc_name}'
+                web_url = urljoin(response.url, doc_url)
+                downloadable_items = [
+                    {
+                        "doc_type": "pdf",
+                        "web_url": web_url,
+                        "compression_type": None
+                    }
+                ]
 
-            web_url = urljoin(response.url, doc_url)
-            downloadable_items = [
-                {
-                    "doc_type": "pdf",
-                    "web_url": web_url,
-                    "compression_type": None
+                version_hash_fields = {
+                    "item_currency": downloadable_items[0]["web_url"].split('/')[-1],
+                    "document_title": doc_title,
+                    "publication_date": year,
                 }
-            ]
 
-            version_hash_fields = {
-                "item_currency": downloadable_items[0]["web_url"].split('/')[-1],
-                "document_title": doc_title,
-                "publication_date": year,
-            }
-
-            doc_item = DocItem(
-                doc_name=doc_name,
-                doc_title=self.ascii_clean(doc_title),
-                doc_type=self.ascii_clean(doc_type),
-                publication_date=year,
-                source_page_url=response.url,
-                downloadable_items=downloadable_items,
-                version_hash_raw_data=version_hash_fields,
-                is_revoked=is_revoked,
-            )
-            yield doc_item
+                doc_item = DocItem(
+                    doc_name=doc_name,
+                    doc_title=self.ascii_clean(doc_title),
+                    doc_type=self.ascii_clean(doc_type),
+                    publication_date=year,
+                    source_page_url=response.url,
+                    downloadable_items=downloadable_items,
+                    version_hash_raw_data=version_hash_fields,
+                    is_revoked=False,
+                )
+                yield doc_item
