@@ -218,14 +218,15 @@ class FileDownloadPipeline(MediaPipeline):
         # so I added it in the media downloaded part as a sub tuple in return
         file_downloads = []
         unzipped_items = []
-        for (_, (okay, response, reason)) in results:
+        for (_, (okay, response, reason)) in results: # Looping over the results of the requests made during crawling
             if not okay:
-                self.add_to_dead_queue(item, reason if reason else int(response.status))
+                self.add_to_dead_queue(item, reason if reason else int(response.status)) 
             else:
                 output_file_name = response.meta["output_file_name"]
                 doc_type = response.meta["doc_type"]
                 compression_type = response.meta["compression_type"]
                 if compression_type:
+                    # Build ptah to filename
                     file_download_path = Path(self.output_dir, output_file_name).with_suffix(f".{compression_type}")
                     file_unzipped_path = Path(self.output_dir, output_file_name)
                     metadata_download_path = f"{file_unzipped_path}.metadata"
@@ -233,7 +234,7 @@ class FileDownloadPipeline(MediaPipeline):
                     file_download_path = Path(self.output_dir, output_file_name)
                     metadata_download_path = f"{file_download_path}.metadata"
 
-                with open(file_download_path, "wb") as f:
+                with open(file_download_path, "wb") as f: # What's this??
                     try:
                         to_write = info.spider.download_response_handler(response)
                         f.write(to_write)
@@ -242,12 +243,12 @@ class FileDownloadPipeline(MediaPipeline):
                         print("Failed to write file to", file_download_path, "Error:", e)
                         return item
 
-                if compression_type:
+                if compression_type: 
                     if compression_type.lower() == "zip":
-                        unzipped_files = unzip_docs_as_needed(file_download_path, file_unzipped_path, doc_type)
+                        unzipped_files = unzip_docs_as_needed(file_download_path, file_unzipped_path, doc_type) # Unzip...
 
                         if unzipped_files:
-                            for unzipped_item in self.create_items_from_nested_zip(unzipped_files, item):
+                            for unzipped_item in self.create_items_from_nested_zip(unzipped_files, item): # Create new DocItem for each unzipped file
                                 self.add_to_manifest(unzipped_item)
 
                                 metadata_download_path = Path(self.output_dir, unzipped_item["doc_name"])

@@ -97,10 +97,8 @@ class CNSSSpider(GCSpider):
         rows = response.css('table.documentTable tr')
 
         for row in rows[1:]:
-            # print("################ row:")
-            # print(row)
             href_raw = row.css(
-                'td:nth-child(2) a::attr(href)').get()
+                'td:nth-child(2) a::attr(href)').get() # For this website, each document's href changes with each crawl
 
             if not href_raw:
                 continue
@@ -122,16 +120,11 @@ class CNSSSpider(GCSpider):
             doc_name = f"{doc_type} {doc_num}"
 
             version_hash_fields = {
-                "item_currency": href_raw,
+                "doc_title": doc_title,
                 "publication_date": publication_date
-            }
+            } 
 
             web_url = f"{self.root_url}{href_raw}"
-            # print("############# web_url:")
-            # print(web_url)
-            # print("############# doc_title:")
-            # print(doc_title)
-            # input("press any key to continue...")
 
             downloadable_items = [
                 {
@@ -152,21 +145,3 @@ class CNSSSpider(GCSpider):
                 version_hash_raw_data=version_hash_fields,
                 downloadable_items=downloadable_items
             )
-
-# Navigating through website:
-# https://www.cnss.gov/CNSS/openDoc.cfm?25tDP2NvEo6H4CuIciL7nA==
-# https://www.cnss.gov/CNSS/openDoc.cfm?rJXrtYUQIfcOznzpW0Vuew==
-
-# https://www.cnss.gov/CNSS/openDoc.cfm?ubnC9+G10K89b3LyzmYq6Q==
-
-# https://www.cnss.gov/CNSS/openDoc.cfm?gGvKgLSTkLMnRzi4x+ZYkw==
-
-# https://www.cnss.gov/CNSS/openDoc.cfm?E6Fbn9X25+HpX6XyHZNwTw==
-
-# Dev run:
-# https://www.cnss.gov/CNSS/openDoc.cfm?1hQfdH3fFOnH6n9+Fdqy8A==
-
-# cnss_fix run:
-# https://www.cnss.gov/CNSS/openDoc.cfm?JHhV5FnhIiaIpk4D+DuegA==
-
-# https://www.cnss.gov/CNSS/openDoc.cfm?VzpwGDfCq0nPxjfL/8MBbg==
