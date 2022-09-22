@@ -1,36 +1,38 @@
-# Define your item pipelines here
+##########################################################################################
+# This script defines the pipelines for post processing of scraped items. Item Pipelines are 
+# a standard component of Scrapy implementation. After an item has been scraped by a spider,
+# it is sent through this Item Pipeline for processing through several components, executed
+# sequentially.
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
+##########################################################################################
 
-
-# useful for handling different item types with a single interface
 import copy
 from typing import Union
 from itemadapter import ItemAdapter
 from datetime import datetime
 import os
+from pathlib import Path
 import json
-from scrapy.exceptions import DropItem
 from jsonschema.exceptions import ValidationError
-from dataPipelines.gc_scrapy.gc_scrapy.utils import unzip_docs_as_needed
-
-from .validators import DefaultOutputSchemaValidator, SchemaValidator
-from . import OUTPUT_FOLDER_NAME
-
-from .utils import dict_to_sha256_hex_digest, get_fqdn_from_web_url
 
 import scrapy
 from scrapy.pipelines.media import MediaPipeline
+from scrapy.exceptions import DropItem
 
-from pathlib import Path
+from dataPipelines.gc_scrapy.gc_scrapy.utils import unzip_docs_as_needed
+from .validators import DefaultOutputSchemaValidator, SchemaValidator
+from . import OUTPUT_FOLDER_NAME
+from .utils import dict_to_sha256_hex_digest, get_fqdn_from_web_url
+
 
 SUPPORTED_FILE_EXTENSIONS = [
     "pdf",
     "html",
     "txt",
     "zip",
-]
+] # File types the item pipeline supports
 
 
 class FileDownloadPipeline(MediaPipeline):
@@ -209,31 +211,33 @@ class FileDownloadPipeline(MediaPipeline):
                 print("Failed to write to manifest file", path, e)
 
     def item_completed(self, results, item, info):
-        """Called per item when all media requests have been processed"""
-        # return item for crawler output if download was skipped
+        """The function is called for each item after all media requests have been processed"""
+        
         if not info.downloaded:
-            return item
+            return item # return item for crawler output if download was skipped
 
-        # first in results is supposed to be ok status but it always returns true b/c 404 doesnt cause failure for some reason :(
-        # so I added it in the media downloaded part as a sub tuple in return
+        ### first in results is supposed to be 'ok' status but it always returns true b/c 404 doesnt cause failure for some reason :(
+        ### so added to the media_downloaded function as a sub-tuple in return
         file_downloads = []
         unzipped_items = []
-        for (_, (okay, response, reason)) in results:
+        for (_, (okay, response, reason)) in results: # Loop over results of requests made during crawling
             if not okay:
                 self.add_to_dead_queue(item, reason if reason else int(response.status))
             else:
-                output_file_name = response.meta["output_file_name"]
+                # Get values from metadata:
+                output_file_name = response.meta["output_file_name"] # Assigned to metadata above in get_media_requests function
                 doc_type = response.meta["doc_type"]
                 compression_type = response.meta["compression_type"]
+                # Build a path to each file associated with an item:
                 if compression_type:
-                    file_download_path = Path(self.output_dir, output_file_name).with_suffix(f".{compression_type}")
-                    file_unzipped_path = Path(self.output_dir, output_file_name)
-                    metadata_download_path = f"{file_unzipped_path}.metadata"
+                    file_download_path = Path(self.output_dir, output_file_name).with_suffix(f".{compression_type}") # Path for downloaded zipped file
+                    file_unzipped_path = Path(self.output_dir, output_file_name) # Path for unzipped files
+                    metadata_download_path = f"{file_unzipped_path}.metadata" # Path for the accompanying metadata file
                 else:
-                    file_download_path = Path(self.output_dir, output_file_name)
-                    metadata_download_path = f"{file_download_path}.metadata"
+                    file_download_path = Path(self.output_dir, output_file_name) # Path for downloaded file
+                    metadata_download_path = f"{file_download_path}.metadata" # Path for the accompanying metadata file
 
-                with open(file_download_path, "wb") as f:
+                with open(file_download_path, "wb") as f: # Download each file to it's download path
                     try:
                         to_write = info.spider.download_response_handler(response)
                         f.write(to_write)
@@ -244,17 +248,17 @@ class FileDownloadPipeline(MediaPipeline):
 
                 if compression_type:
                     if compression_type.lower() == "zip":
-                        unzipped_files = unzip_docs_as_needed(file_download_path, file_unzipped_path, doc_type)
+                        unzipped_files = unzip_docs_as_needed(file_download_path, file_unzipped_path, doc_type) # Unzip downloaded zip documents
 
-                        if unzipped_files:
-                            for unzipped_item in self.create_items_from_nested_zip(unzipped_files, item):
+                        if unzipped_files: # If files have been unzipped...
+                            for unzipped_item in self.create_items_from_nested_zip(unzipped_files, item): # Create new DocItem for each unzipped file
                                 self.add_to_manifest(unzipped_item)
 
                                 metadata_download_path = Path(self.output_dir, unzipped_item["doc_name"])
                                 suffix_doc_type = f'{unzipped_item["downloadable_items"][0]["doc_type"]}'
                                 metadata_download_path = metadata_download_path.with_suffix(f'.{suffix_doc_type}.metadata')
 
-                                with open(metadata_download_path, "w") as f:
+                                with open(metadata_download_path, "w") as f: # Write the metadata for each unzipped file
                                     try:
                                         f.write(json.dumps(dict(unzipped_item)))
 
@@ -262,23 +266,22 @@ class FileDownloadPipeline(MediaPipeline):
                                         print("Failed to write metadata", metadata_download_path, e)
 
                                 unzipped_items.append(unzipped_item)
-                else:
-                    with open(metadata_download_path, "w") as f:
+                else: # If original download is not a compressed file...
+                    with open(metadata_download_path, "w") as f: # Write the metadata for each file
                         try:
                             f.write(json.dumps(dict(item)))
                         except Exception as e:
                             print("Failed to write metadata", file_download_path, e)
 
-                # print('downloaded', file_download_path)
                 file_downloads.append(file_download_path)
 
-        # if nothing was downloaded so don't add to manifest, just return item to crawl output
-        if file_downloads:
+        if file_downloads: # If file was downloaded, add to manifest
             self.add_to_manifest(item)
 
-        if len(unzipped_items) > 1:
+        if len(unzipped_items) > 1: # If there were unzipped files, return each as item in list 'unzipped_items'
             return unzipped_items
-        return item
+
+        return item # Return item to crawl output (if no unzipped files)
 
 
 class DeduplicaterPipeline:
