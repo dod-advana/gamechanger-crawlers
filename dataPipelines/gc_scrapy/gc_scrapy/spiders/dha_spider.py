@@ -34,7 +34,7 @@ class DHASpider(GCSpider):
 
 #####################
 
-    def parse_timestamp(ts: t.Union[str, datetime], raise_parse_error: bool = False) -> t.Optional[datetime]:
+    def parse_timestamp(self, ts: t.Union[str, datetime], raise_parse_error: bool = False) -> t.Optional[datetime]:
         """Parse date/timestamp with no particular format
         :param ts: date/timestamp string
         :return: datetime.datetime if parsing was successful, else None
@@ -65,7 +65,7 @@ class DHASpider(GCSpider):
         T is a delimiter between date and time.
         '''
         try:
-            date = parse_timestamp(publication_date, None)
+            date = self.parse_timestamp(publication_date, None)
             if date:
                 publication_date = date.strftime("%Y-%m-%dT%H:%M:%S")
         except:
@@ -75,7 +75,7 @@ class DHASpider(GCSpider):
 #################
 
     def parse(self, response):
-        sections = response.css('table[class="dataTable tabpanel"]')
+        sections = response.css('table[class="dataTable tabpanel sortable"]')
         for section in sections:
             headers = section.css('button , th.p:nth-child(1) , th.p:nth-child(2) , th.p:nth-child(5) , th.p:nth-child(4)::text').extract()
             headers = [re.sub(r'<.+?>', '', header).strip() for header in headers]
