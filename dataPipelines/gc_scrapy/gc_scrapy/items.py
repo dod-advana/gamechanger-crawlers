@@ -27,7 +27,3 @@ class DocItem(scrapy.Item):
     source_title = scrapy.Field()
     is_revoked = scrapy.Field()
     office_primary_resp = scrapy.Field()
-
-
-class ZippedDocItem(scrapy.Item):
-    zipped_items = scrapy.Field()

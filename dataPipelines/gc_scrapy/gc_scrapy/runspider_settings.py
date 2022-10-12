@@ -7,7 +7,7 @@ general_settings = {
         "dataPipelines.gc_scrapy.gc_scrapy.pipelines.FileDownloadPipeline": 400,
     },
     "FEED_EXPORTERS": {
-        "json": "dataPipelines.gc_scrapy.gc_scrapy.exporters.JsonLinesAsJsonItemExporter",
+        "jsonlines": "dataPipelines.gc_scrapy.gc_scrapy.exporters.JsonLinesAsJsonItemExporter",
     },
     "DOWNLOADER_MIDDLEWARES": {
         "dataPipelines.gc_scrapy.gc_scrapy.downloader_middlewares.BanEvasionMiddleware": 100,

@@ -98,7 +98,7 @@ class CNSSSpider(GCSpider):
 
         for row in rows[1:]:
             href_raw = row.css(
-                'td:nth-child(2) a::attr(href)').get()
+                'td:nth-child(2) a::attr(href)').get() # For this website, each document's href changes with each crawl
 
             if not href_raw:
                 continue
@@ -120,9 +120,9 @@ class CNSSSpider(GCSpider):
             doc_name = f"{doc_type} {doc_num}"
 
             version_hash_fields = {
-                "item_currency": href_raw,
+                "doc_title": doc_title,
                 "publication_date": publication_date
-            }
+            } 
 
             web_url = f"{self.root_url}{href_raw}"
 
