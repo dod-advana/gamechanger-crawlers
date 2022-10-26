@@ -218,7 +218,15 @@ class FileDownloadPipeline(MediaPipeline):
                     file_unzipped_path = Path(self.output_dir, output_file_name)
                     metadata_download_path = f"{file_unzipped_path}.metadata"
                 else:
-                    file_download_path = Path(self.output_dir, output_file_name)
+                    # If it is a jbook crawler (and needs a different file output style)
+                    if 'rdte;' in output_file_name or 'procurement;' in output_file_name:
+                        jbook_output_file_path = output_file_name.replace(';', '/')
+                        # self.output_dir is set when the crawler is crawled and is the high level directory information
+                        # Should point to bronze/jbook/pdfs instead of bronze/gamechanger/pdf
+                        # jbook_output_file_path is type/year/filename
+                        file_download_path = Path(self.output_dir, jbook_output_file_path)
+                    else:
+                        file_download_path = Path(self.output_dir, output_file_name)
                     metadata_download_path = f"{file_download_path}.metadata"
 
                 with open(file_download_path, "wb") as f:
