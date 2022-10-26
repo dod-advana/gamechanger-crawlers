@@ -56,7 +56,7 @@ class JBOOKDefenseWideBudgetSpider(GCSpider):
                 else:
                     doc_type is None
                     
-            doctype_mapping = {'02_Procurement': 'Procurement', '_p1r':'Procurement', '_p1':'Procurement', '_r1':'RDTE', '03_RDT_and_E':'RDTE'}
+            doctype_mapping = {'02_Procurement': 'procurement', '_p1r':'procurement', '_p1':'procurement', '_r1':'rdte', '03_RDT_and_E':'rdte'}
             for key, value in doctype_mapping.items():
                 doc_type = doc_type.replace(key, value)
             

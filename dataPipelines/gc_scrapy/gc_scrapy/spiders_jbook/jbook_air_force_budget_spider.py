@@ -73,7 +73,7 @@ class JBOOKAirForceBudgetSpider(GCSeleniumSpider):
             is_procurement_document = ("PROCUREMENT" in doc_url or '/Proc/' in doc_url or ("Procurement" in doc_title and "Procurement" != doc_title))
 
             if is_procurement_document or is_rdte_document:
-                doc_type = 'RDTE' if is_rdte_document else "Procurement"
+                doc_type = 'rdte' if is_rdte_document else "procurement"
                 doc_name = doc_url.split('/')[-1].replace('.pdf', '').replace('%20', ' ')
                 if '?' in doc_name:
                     doc_name = doc_name.split('?')[0]

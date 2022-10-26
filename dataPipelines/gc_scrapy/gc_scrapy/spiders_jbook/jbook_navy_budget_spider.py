@@ -90,7 +90,7 @@ class JBOOKNavyBudgetSpider(GCSeleniumSpider):
 
             publication_date = doc_dict['Modified'].replace('\u002f', '/')
 
-            doc_type = 'Procurement' if 'PROCUREMENT' in doc_dict["Section"] else 'RDTE'
+            doc_type = 'procurement' if 'PROCUREMENT' in doc_dict["Section"] else 'rdte'
             doc_name = doc_dict['FileLeafRef'].replace('.pdf', '')
             doc_name = f'{doc_type};{year};{doc_name}'
 

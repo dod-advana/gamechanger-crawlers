@@ -71,7 +71,7 @@ class JBOOKArmyBudgetSpider(GCSeleniumSpider):
 
             year = doc_url.split('/')[5]
 
-            doc_type = 'RDTE' if 'rdte' in doc_url else 'Procurement'
+            doc_type = 'rdte' if 'rdte' in doc_url else 'procurement'
             doc_name = doc_url.split('/')[-1].replace('.pdf', '')
             doc_name = f'{doc_type};{year};{doc_name}'
 
