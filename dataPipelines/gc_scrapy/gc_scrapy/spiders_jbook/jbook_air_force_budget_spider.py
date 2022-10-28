@@ -65,7 +65,7 @@ class JBOOKAirForceBudgetSpider(GCSeleniumSpider):
             doc_title = content.css('a::text').get()
 
             # Document is not valid / an actual link if either url or title is None
-            if doc_url is None or doc_title is None:
+            if doc_url is None or doc_title is None or 'javascript' in doc_url:
                 continue
             
             is_rdte_document = ('Research, Development, Test and Evaluation' in doc_title or 'RDT&E' in doc_title or
