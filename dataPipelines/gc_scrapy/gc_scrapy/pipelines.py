@@ -341,7 +341,7 @@ class AdditionalFieldsPipeline:
             item["publication_date"] = None
 
         if not item.get("cac_login_required"):
-            item["cac_login_required"] = spider.cac_login_required
+            item["cac_login_required"] = getattr(spider, "cac_login_required", False)
 
         if not item.get("doc_type"):
             item["doc_type"] = getattr(spider, "doc_type", None)
