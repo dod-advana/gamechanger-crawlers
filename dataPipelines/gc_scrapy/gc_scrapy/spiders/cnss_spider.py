@@ -97,7 +97,7 @@ class CNSSSpider(GCSpider):
         rows = response.css('table.documentTable tr')
         for row in rows[1:]:
             href_raw = row.css(
-                'td:nth-child(2) a::attr(href)').get()
+                'td:nth-child(2) a::attr(href)').get() # For this website, each document's href changes with each crawl
 
             if not href_raw:
                 continue
@@ -119,6 +119,7 @@ class CNSSSpider(GCSpider):
             doc_name = f"{doc_type} {doc_num}".strip()
             
             source_page_url = response.url
+
             web_url = f"{self.root_url}{href_raw}"
             
             fields = {
@@ -169,10 +170,9 @@ class CNSSSpider(GCSpider):
         ]
         
         version_hash_fields = {
-            "doc_name": doc_name,
+            "doc_title": doc_title,
             "doc_num": doc_num,
             "publication_date": publication_date,
-            "download_url": download_url
         }
         
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)

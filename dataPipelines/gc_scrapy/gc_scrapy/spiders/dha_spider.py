@@ -9,11 +9,10 @@ import scrapy
 
 display_types = ["Instruction", "Manual", "Memo", "Regulation"]
 
-
 class DHASpider(GCSpider):
     name = "dha_pubs" # Crawler name
     start_urls = [
-        'https://www.health.mil/About-MHS/OASDHA/Defense-Health-Agency/Administration-and-Management/DHA-Publications'
+        'https://www.health.mil/Reference-Center/DHA-Publications'
     ]
 
     file_type = "pdf"
@@ -28,23 +27,68 @@ class DHASpider(GCSpider):
 
         return "Document"
 
-    def parse(self, response):
-        sections = response.css('div[data-ga-cat="File Downloads List"]')
-        for section in sections:
-            header = self.ascii_clean(section.css('h2::text').get(default=''))
-            doc_type = header.replace('DHA-', 'DHA ').strip()
-            display_doc_type = self.get_display(doc_type)
+#####################
 
+    def parse_timestamp(self, ts: t.Union[str, datetime], raise_parse_error: bool = False) -> t.Optional[datetime]:
+        """Parse date/timestamp with no particular format
+        :param ts: date/timestamp string
+        :return: datetime.datetime if parsing was successful, else None
+        """
+        def _parse(ts):
+            if isinstance(ts, datetime):
+                return ts
+
+            try:
+                ts = pandas.to_datetime(ts).to_pydatetime()
+                if str(ts) == 'NaT':
+                    return None
+                else:
+                    return ts
+            except:
+                return None
+
+        parsed_ts = _parse(ts)
+        if parsed_ts is None and raise_parse_error:
+            raise ValueError(f"Invalid timestamp: '{ts!r}'")
+        else:
+            return parsed_ts
+
+
+    def get_pub_date(self, publication_date):
+        '''
+        This function convverts publication_date from DD Month YYYY format to YYYY-MM-DDTHH:MM:SS format.
+        T is a delimiter between date and time.
+        '''
+        try:
+            date = self.parse_timestamp(publication_date, None)
+            if date:
+                publication_date = date.strftime("%Y-%m-%dT%H:%M:%S")
+        except:
+            publication_date = None
+        return publication_date
+
+#################
+
+    def parse(self, response):
+        sections = response.css('table[class="dataTable tabpanel sortable"]')
+        for section in sections:
+            headers = section.css('button , th.p:nth-child(1) , th.p:nth-child(2) , th.p:nth-child(5) , th.p:nth-child(4)::text').extract()
+            headers = [re.sub(r'<.+?>', '', header).strip() for header in headers]
             rows = section.css('table.dataTable tbody tr')
+
             for row in rows:
+                doc_type = self.ascii_clean(
+                    row.css('td:nth-child(1)::text').get(default='')) \
+                    .replace('DHA-', 'DHA ').strip()
+                display_doc_type = self.get_display(doc_type)
                 doc_num = self.ascii_clean(
-                    row.css('td:nth-child(1) a::text').get(default=''))
-                href = row.css('td:nth-child(1) a::attr(href)').get(default='')
+                    row.css('td:nth-child(2) a::text').get(default=''))
+                href = row.css('td:nth-child(2) a::attr(href)').get(default='')
                 publication_date_raw = self.ascii_clean(
-                    row.css('td:nth-child(3)::text').get(default=''))
-                publication_date = get_pub_date(publication_date_raw)
+                    row.css('td:nth-child(5)::text').get(default=''))
+                publication_date = publication_date_raw
                 doc_title = self.ascii_clean(
-                    row.css('td:nth-child(2)::text').get(default='')).replace('\r', '').replace('\n', '')
+                    row.css('td:nth-child(3)::text').get(default='')).replace('\r', '').replace('\n', '')
 
                 doc_name = f"{doc_type} {doc_num}"
                 web_url = f"https://www.health.mil{href}"
@@ -76,6 +120,7 @@ class DHASpider(GCSpider):
         cac_login_required = fields['cac_login_required']
         download_url = fields['download_url']
         publication_date = get_pub_date(fields['publication_date'])
+
         display_doc_type = fields['display_doc_type']
         
         display_source = data_source + " - " + source_title

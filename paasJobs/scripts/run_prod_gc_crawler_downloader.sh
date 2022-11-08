@@ -19,6 +19,10 @@ export JOB_LOG_FILE="${HOST_JOB_TMP_DIR}/logs/gc-crawler-downloader.$(date --iso
 # change to "yes" in order to only crawl/download couple pubs for test purposes
 export TEST_RUN="${TEST_RUN:-no}"
 
+# make sure channel_id and url is exported
+export SLACK_HOOK_CHANNEL_ID="${SLACK_HOOK_CHANNEL_ID}"
+export SLACK_HOOK_URL="${SLACK_HOOK_URL}"
+
 cat <<EOF
 About to run the GC CRAWLER/DOWNLOADER JOB ...
   DEPLOYMENT_ENV is "$DEPLOYMENT_ENV"
@@ -31,4 +35,4 @@ mkdir -p "$HOST_JOB_TMP_DIR"
 mkdir -p "$(dirname "$JOB_LOG_FILE")"
 touch "$JOB_LOG_FILE"
 
-"$SCRIPT_PARENT_DIR/gc_crawl_then_upload.sh" gc_crawl_and_download 2>&1 | tee "$JOB_LOG_FILE"
+"$SCRIPT_PARENT_DIR/gc_crawl_then_upload.sh" gc_crawl_download_upload 2>&1 | tee "$JOB_LOG_FILE"

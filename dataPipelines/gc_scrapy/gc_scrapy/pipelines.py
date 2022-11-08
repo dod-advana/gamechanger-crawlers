@@ -5,6 +5,7 @@
 
 
 # useful for handling different item types with a single interface
+import copy
 from typing import Union
 from itemadapter import ItemAdapter
 from datetime import datetime
@@ -87,6 +88,18 @@ class FileDownloadPipeline(MediaPipeline):
 
         num_hashes = len(self.previous_hashes)
         print(f"Previous manifest loaded, will filter {num_hashes} hashes")
+
+    @staticmethod
+    def create_items_from_nested_zip(zipped_item_paths, item):
+        for sub_path in zipped_item_paths:
+            new_item = copy.deepcopy(item)
+            new_item["doc_name"] = sub_path.stem
+            new_item["doc_title"] = sub_path.stem.split("-", 1)[1].strip()
+            new_item["version_hash_raw_data"]["doc_name"] = new_item["doc_name"]
+            new_item["version_hash_raw_data"]["sub_file_version_hash"] = dict_to_sha256_hex_digest(
+                new_item["version_hash_raw_data"]
+            )
+            yield new_item
 
     @staticmethod
     def get_first_supported_downloadable_item(downloadable_items: list) -> Union[dict, None]:
@@ -204,6 +217,7 @@ class FileDownloadPipeline(MediaPipeline):
         # first in results is supposed to be ok status but it always returns true b/c 404 doesnt cause failure for some reason :(
         # so I added it in the media downloaded part as a sub tuple in return
         file_downloads = []
+        unzipped_items = []
         for (_, (okay, response, reason)) in results:
             if not okay:
                 self.add_to_dead_queue(item, reason if reason else int(response.status))
@@ -216,7 +230,15 @@ class FileDownloadPipeline(MediaPipeline):
                     file_unzipped_path = Path(self.output_dir, output_file_name)
                     metadata_download_path = f"{file_unzipped_path}.metadata"
                 else:
-                    file_download_path = Path(self.output_dir, output_file_name)
+                    # If it is a jbook crawler (and needs a different file output style)
+                    if 'rdte;' in output_file_name or 'procurement;' in output_file_name:
+                        jbook_output_file_path = output_file_name.replace(';', '/')
+                        # self.output_dir is set when the crawler is crawled and is the high level directory information
+                        # Should point to bronze/jbook/pdfs instead of bronze/gamechanger/pdf
+                        # jbook_output_file_path is type/year/filename
+                        file_download_path = Path(self.output_dir, jbook_output_file_path)
+                    else:
+                        file_download_path = Path(self.output_dir, output_file_name)
                     metadata_download_path = f"{file_download_path}.metadata"
 
                 with open(file_download_path, "wb") as f:
@@ -224,62 +246,46 @@ class FileDownloadPipeline(MediaPipeline):
                         to_write = info.spider.download_response_handler(response)
                         f.write(to_write)
                         f.close()
-
-                        # TODO: Add functionality for zips to handle multiple files/doc types
-                        if compression_type:
-                            if compression_type.lower() == "zip":
-                                unzip_docs_as_needed(file_download_path, file_unzipped_path, doc_type)
-
-                        # print('downloaded', file_download_path)
-                        file_downloads.append(file_download_path)
-
                     except Exception as e:
                         print("Failed to write file to", file_download_path, "Error:", e)
+                        return item
 
-                with open(metadata_download_path, "w") as f:
-                    try:
-                        f.write(json.dumps(dict(item)))
+                if compression_type:
+                    if compression_type.lower() == "zip":
+                        unzipped_files = unzip_docs_as_needed(file_download_path, file_unzipped_path, doc_type)
 
-                    except Exception as e:
-                        print("Failed to write metadata", file_download_path, e)
+                        if unzipped_files:
+                            for unzipped_item in self.create_items_from_nested_zip(unzipped_files, item):
+                                self.add_to_manifest(unzipped_item)
 
-        # if nothing was downloaded so don't add to manifest, just return item to crawl output
-        if file_downloads:
-            self.add_to_manifest(item)
+                                metadata_download_path = Path(self.output_dir, unzipped_item["doc_name"])
+                                suffix_doc_type = f'{unzipped_item["downloadable_items"][0]["doc_type"]}'
+                                metadata_download_path = metadata_download_path.with_suffix(f'.{suffix_doc_type}.metadata')
 
-        return item
+                                with open(metadata_download_path, "w") as f:
+                                    try:
+                                        f.write(json.dumps(dict(unzipped_item)))
 
+                                    except Exception as e:
+                                        print("Failed to write metadata", metadata_download_path, e)
 
-class USCodeFileDownloadPipeline(FileDownloadPipeline):
-    def item_completed(self, results, item, info):
-        """Called per item when all media requests have been processed"""
-        # return item for crawler output if download was skipped
-        if not info.downloaded:
-            return item
+                                unzipped_items.append(unzipped_item)
+                else:
+                    with open(metadata_download_path, "w") as f:
+                        try:
+                            f.write(json.dumps(dict(item)))
+                        except Exception as e:
+                            print("Failed to write metadata", file_download_path, e)
 
-        # first in results is supposed to be ok status but it always returns true b/c 404 doesnt cause failure for some reason :(
-        # so I added it in the media downloaded part as a sub tuple in return
-        file_downloads = []
-        for (_, (okay, response, reason)) in results:
-            if not okay:
-                self.add_to_dead_queue(item, reason if reason else int(response.status))
-            else:
-                file_download_path = Path(info.spider.download_output_dir, item["doc_name"])
-                metadata_download_path = f"{file_download_path}.metadata"
-
+                # print('downloaded', file_download_path)
                 file_downloads.append(file_download_path)
 
-                with open(metadata_download_path, "w") as f:
-                    try:
-                        f.write(json.dumps(dict(item)))
-
-                    except Exception as e:
-                        print("Failed to write metadata", file_download_path, e)
-
         # if nothing was downloaded so don't add to manifest, just return item to crawl output
         if file_downloads:
             self.add_to_manifest(item)
 
+        if len(unzipped_items) > 1:
+            return unzipped_items
         return item
 
 

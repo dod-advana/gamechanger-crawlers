@@ -4,11 +4,10 @@ from textwrap import dedent
 from scrapy.crawler import CrawlerRunner
 import importlib
 import os
-from pathlib import Path
 from scrapy.utils.project import get_project_settings
 from scrapy.utils.spider import iter_spider_classes
 from twisted.internet import reactor, defer
-from notification import slack
+from dataPipelines.notification import slack
 import copy
 from pathlib import Path
 
@@ -70,6 +69,20 @@ def cli():
     required=False
 )
 @click.option(
+    '--slack-hook-channel-id',
+    help='Channel ID for slack message',
+    type=str,
+    default=None,
+    required=False
+)
+@click.option(
+    '--slack-hook-url',
+    help='Channel ID for slack message',
+    type=str,
+    default=None,
+    required=False
+)
+@click.option(
     '--dont-filter-previous-hashes',
     help='Flag to skip filtering of downloads',
     default=False,
@@ -81,9 +94,10 @@ def crawl(
     crawler_output_location,
     previous_manifest_location,
     spiders_file_location,
+    slack_hook_channel_id,
+    slack_hook_url,
     dont_filter_previous_hashes,
 ):
-
     print(dedent(f"""
     CRAWLING INITIATED
 
@@ -92,6 +106,8 @@ def crawl(
     crawler_output_location={crawler_output_location}
     previous_manifest_location={previous_manifest_location}
     spiders_file_location={spiders_file_location}
+    slack_hook_channel_id={slack_hook_channel_id}
+    slack_hook_url={slack_hook_url}
     dont_filter_previous_hashes={dont_filter_previous_hashes}
     """))
 
@@ -150,7 +166,7 @@ def crawl(
         queue_spiders_sequentially(runner, spider_class_refs, crawl_kwargs)
         reactor.run()
         all_stats = copy.deepcopy(spider_class_refs[0].stats)
-        send_stats(all_stats)
+        send_stats(all_stats=all_stats, slack_hook_channel_id=slack_hook_channel_id, slack_hook_url=slack_hook_url)
     except Exception as e:
         print("ERROR RUNNING SPIDERS SEQUENTIALLY", e)
 
@@ -176,17 +192,18 @@ def get_git_branch() -> str:
         return 'NOT FOUND'
 
 
-def send_stats(all_stats: dict) -> None:
+def send_stats(all_stats: dict, slack_hook_channel_id: str, slack_hook_url: str) -> None:
     branch = get_git_branch()
-    msg = f"[STATS] Crawler ran on branch: {branch}"
+    msg = f"[STATS] Crawlers run:"
 
     for spider_name, stats in all_stats.items():
-        msg += f"\n {spider_name}"
+        msg += f"\n `{spider_name}`"
         for k, v in stats.items():
             msg += f"\n        {k}: {v}"
 
     try:
-        slack.send_notification(message=msg)
+        slack.send_notification(message=msg, SLACK_HOOK_CHANNEL_ID=slack_hook_channel_id, SLACK_HOOK_URL=slack_hook_url,
+                                use_env_vars=False)
     except Exception as e:
         print('Slack send error', e)
 
