@@ -1,4 +1,4 @@
-export PYTHONPATH="$(pwd)"
+cd .. && export PYTHONPATH="$(pwd)"
 
 CRAWLER_DATA_ROOT="../gamechanger-crawlers-outputs/$1"
 mkdir -p "$CRAWLER_DATA_ROOT"
