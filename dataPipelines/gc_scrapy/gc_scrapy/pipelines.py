@@ -315,38 +315,38 @@ class AdditionalFieldsPipeline:
         if getattr(spider, "display_source", None):
             item["display_source"] = spider.display_source
 
-        if item.get("crawler_used") is None:
+        if not item.get("crawler_used"):
             item["crawler_used"] = spider.name
 
         source_page_url = item.get("source_page_url")
-        if source_page_url is None:
+        if not source_page_url:
             if getattr(spider, "source_page_url", None):
                 item["source_page_url"] = spider.source_page_url
             else:
                 source_page_url = spider.start_urls[0]
                 item["source_page_url"] = source_page_url
 
-        if item.get("source_fqdn") is None:
+        if not item.get("source_fqdn"):
             item["source_fqdn"] = get_fqdn_from_web_url(source_page_url)
 
- #       if item.get("version_hash") is None:
+ #       if not item.get("version_hash"):
             # ensure doc_name is part of hash
             # item["version_hash_raw_data"]["doc_name"] = item["doc_name"]
             # item["version_hash"] = dict_to_sha256_hex_digest(item["version_hash_raw_data"])
 
-        if item.get("access_timestamp") is None:
+        if not item.get("access_timestamp"):
             item["access_timestamp"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
 
-        if item.get("publication_date") is None:
+        if not item.get("publication_date"):
             item["publication_date"] = None
 
-        if item.get("cac_login_required") is None:
+        if not item.get("cac_login_required"):
             item["cac_login_required"] = spider.cac_login_required
 
-        if item.get("doc_type") is None:
+        if not item.get("doc_type"):
             item["doc_type"] = getattr(spider, "doc_type", None)
 
-        if item.get("doc_num") is None:
+        if not item.get("doc_num"):
             item["doc_num"] = None
 
         # if item.get("is_revoked") is not None:
