@@ -94,7 +94,10 @@ class FileDownloadPipeline(MediaPipeline):
         for sub_path in zipped_item_paths:
             new_item = copy.deepcopy(item)
             new_item["doc_name"] = sub_path.stem
-            new_item["doc_title"] = sub_path.stem.split("-", 1)[1].strip()
+            if item['crawler_used'] == "far_subpart_regs":
+                new_item["doc_title"] = sub_path.stem
+            else:
+                new_item["doc_title"] = sub_path.stem.split("-", 1)[1].strip()
             new_item["version_hash_raw_data"]["doc_name"] = new_item["doc_name"]
             new_item["version_hash_raw_data"]["sub_file_version_hash"] = dict_to_sha256_hex_digest(
                 new_item["version_hash_raw_data"]
