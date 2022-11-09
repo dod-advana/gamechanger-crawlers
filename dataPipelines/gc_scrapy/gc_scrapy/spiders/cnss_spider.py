@@ -158,7 +158,6 @@ class CNSSSpider(GCSpider):
         display_title = doc_type + " " + doc_num + " " + doc_title
         source_fqdn = urlparse(source_page_url).netloc
         is_revoked = False
-        access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
 
         
         downloadable_items = [
@@ -199,5 +198,4 @@ class CNSSSpider(GCSpider):
                     display_title = display_title, #
                     file_ext = doc_type, #
                     is_revoked = is_revoked, #
-                    access_timestamp = access_timestamp #
                 )

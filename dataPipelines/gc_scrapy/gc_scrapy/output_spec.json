@@ -22,7 +22,7 @@
 			"version_hash_raw_data": {
 				"pub_date": "2020-06-01"
 			},
-			"access_timestamp": "2020-06-28T22:59:57.274200",
+			"access_timestamp": "2020-06-28T22:59:57",
 			"source_fqdn": "example.local"
 		}
 	],
@@ -166,9 +166,9 @@
 			"title": "The access_timestamp schema",
 			"description": "An explanation about the purpose of this instance.",
 			"examples": [
-				"2020-06-28 22:59:57.274200"
+				"2020-06-28T22:59:57"
 			],
-			"pattern": "\\d{4}-\\d{2}-\\d{2}[T]\\d{2}:\\d{2}:\\d{2}[.]\\d+"
+			"pattern": "\\d{4}-\\d{2}-\\d{2}[T]\\d{2}:\\d{2}:\\d{2}"
 		},
 		"source_fqdn": {
 			"type": "string",

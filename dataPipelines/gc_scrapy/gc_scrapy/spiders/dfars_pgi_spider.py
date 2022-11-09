@@ -156,7 +156,6 @@ class DoDSpider(GCSpider):
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
         is_revoked = False
-        access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
         source_fqdn = urlparse(source_page_url).netloc
 
         downloadable_items = [
@@ -199,6 +198,5 @@ class DoDSpider(GCSpider):
                     display_title = display_title, #
                     file_ext = file_ext, #
                     is_revoked = is_revoked, #
-                    access_timestamp = access_timestamp #
                 )
 

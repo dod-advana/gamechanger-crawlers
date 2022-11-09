@@ -89,7 +89,7 @@ class DCMASpider(GCSpider):
         publication_date = self.get_pub_date(publication_date)
         source_fqdn = urlparse(source_page_url).netloc
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
-        access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
+
 
         return DocItem(
                     doc_name = doc_name,
@@ -113,5 +113,5 @@ class DCMASpider(GCSpider):
                     display_title = display_title,
                     file_ext = file_type,
                     is_revoked = is_revoked,
-                    access_timestamp = access_timestamp
+
                 )

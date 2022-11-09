@@ -189,7 +189,6 @@ class TRADOCSpider(GCSpider):
         file_ext = downloadable_items[0]["doc_type"]
         source_fqdn = urlparse(source_page_url).netloc
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
-        access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
         return DocItem(
             doc_name = doc_name,
             doc_title = doc_title,
@@ -213,5 +212,4 @@ class TRADOCSpider(GCSpider):
             file_ext = file_ext,
             is_revoked = is_revoked,
             office_primary_resp = office_primary_resp,
-            access_timestamp = access_timestamp
             )

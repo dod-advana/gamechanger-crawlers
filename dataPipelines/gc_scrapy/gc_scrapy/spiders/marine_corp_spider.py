@@ -327,7 +327,6 @@ class MarineCorpSpider(GCSpider):
                 display_source = data_source + " - " + source_title
                 display_title = doc_type + " " + doc_num + " " + doc_title
                 is_revoked = False
-                access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
                 source_fqdn = urlparse(source_page_url).netloc
 
                 incomplete_item = {
@@ -349,7 +348,6 @@ class MarineCorpSpider(GCSpider):
                         version_hash_raw_data = version_hash_fields,
                         is_revoked = is_revoked,
                         publication_date = publication_date,
-                        access_timestamp = access_timestamp
                     )
                 }
 

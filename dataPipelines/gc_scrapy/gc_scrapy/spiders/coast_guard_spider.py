@@ -146,7 +146,6 @@ class CoastGuardSpider(GCSeleniumSpider):
         file_ext = self.get_href_file_extension(fields.get("href_raw")) #########
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
-        access_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
         publication_date = self.get_pub_date(fields.get("publication_date"))
         doc_name = f"{doc_type} {doc_num}"
         download_url = fields.get("download_url").replace(' ', '%20')
@@ -189,5 +188,4 @@ class CoastGuardSpider(GCSeleniumSpider):
                     file_ext = file_ext,
                     office_primary_resp = office_primary_resp,
                     is_revoked = is_revoked,
-                    access_timestamp = access_timestamp
                 )

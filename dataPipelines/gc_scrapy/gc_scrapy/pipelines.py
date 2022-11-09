@@ -344,7 +344,7 @@ class AdditionalFieldsPipeline:
             # item["version_hash"] = dict_to_sha256_hex_digest(item["version_hash_raw_data"])
 
         if not item.get("access_timestamp"):
-            item["access_timestamp"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") # T added as delimiter between date and time
+            item["access_timestamp"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S") # T added as delimiter between date and time
 
         if not item.get("publication_date"):
             item["publication_date"] = None
