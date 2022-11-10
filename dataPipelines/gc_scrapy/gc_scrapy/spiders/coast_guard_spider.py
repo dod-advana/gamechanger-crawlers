@@ -3,6 +3,9 @@ from scrapy import Selector
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import Chrome
 from selenium.common.exceptions import NoSuchElementException
+from datetime import datetime
+from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp, dict_to_sha256_hex_digest
+from urllib.parse import urlparse
 
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSeleniumSpider import GCSeleniumSpider
@@ -14,11 +17,6 @@ class CoastGuardSpider(GCSeleniumSpider):
     """
 
     name = 'Coast_Guard' # Crawler name
-    display_org = "Coast Guard" # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = "Coast Guard Deputy Commandant for Mission Support" # Level 2: GC app 'Source' metadata field for docs from this crawler
-    source_title = "Unlisted Source" # Level 3 filter
-    cac_login_required = False
-
     allowed_domains = ['dcms.uscg.mil']
     start_urls = [
         'https://www.dcms.uscg.mil/Our-Organization/Assistant-Commandant-for-C4IT-CG-6/The-Office-of-Information-Management-CG-61/About-CG-Directives-System/'
@@ -33,6 +31,38 @@ class CoastGuardSpider(GCSeleniumSpider):
     current_page_selector = 'div.numericDiv ul li.active a.Page'
     next_page_selector = 'div.numericDiv ul li.active + li a'
     rows_selector = "table.Dashboard tbody tr"
+
+
+    @staticmethod
+    def get_display_doc_type(doc_type):
+        """This function returns value for display_doc_type based on doc_type -> display_doc_type mapping"""
+        display_type_dict = {"cngbi": "Instruction",
+            "cim": "Manual",
+            "ci": "Instruction",
+            "cn": "Notice",
+            "ccn": "Notice",
+            "dcmsi": "Instruction"}
+        return display_type_dict.get(doc_type.lower())
+
+    @staticmethod
+    def get_pub_date(publication_date):
+        '''
+        This function convverts publication_date from DD Month YYYY format to YYYY-MM-DDTHH:MM:SS format.
+        T is a delimiter between date and time.
+        '''
+        try:
+            date = parse_timestamp(publication_date, None)
+            if date:
+                publication_date = datetime.strftime(date, '%Y-%m-%dT%H:%M:%S')
+        except:
+            publication_date = ""
+        return publication_date
+
+    def get_office_primary_resp(self, office_primary_resp):
+        if office_primary_resp:
+            return self.ascii_clean(office_primary_resp)
+        else:
+            return None
 
     def parse(self, response):
         driver: Chrome = response.meta["driver"]
@@ -78,43 +108,84 @@ class CoastGuardSpider(GCSeleniumSpider):
             if doc_type_raw == 'COMDTINST':
                 doc_type_raw = 'CI'
 
-            doc_num = doc_num_raw.replace('_', '.')
-
             doc_title_raw = row.css('td:nth-child(2) a::text').get()
-            doc_title = self.ascii_clean(doc_title_raw)
-
             office_primary_resp_raw = row.css('td:nth-child(3)::text').get()
-            office_primary_resp = self.ascii_clean(office_primary_resp_raw)
-
             href_raw = row.css('td:nth-child(2) a::attr(href)').get()
-
-            web_url = self.ensure_full_href_url(href_raw, driver.current_url)
-
+            source_page_url = driver.current_url
+            download_url = self.ensure_full_href_url(href_raw, source_page_url)
             publication_date = row.css('td:nth-child(5)::text').get()
 
-            version_hash_fields = {
-                "item_currency": href_raw,
-                "document_title": doc_title
+            fields = {
+                "doc_type_raw": doc_type_raw,
+                "doc_num_raw": doc_num_raw,
+                "doc_title_raw": doc_title_raw,
+                "href_raw": href_raw,
+                "download_url": download_url,
+                "source_page_url": source_page_url,
+                "publication_date": publication_date,
+                "office_primary_resp_raw": office_primary_resp_raw
             }
 
-            file_type = self.get_href_file_extension(href_raw)
+            yield self.populate_doc_item(fields)
 
-            downloadable_items = [
-                {
-                    "doc_type": file_type,
-                    "web_url": web_url.replace(' ', '%20'),
-                    "compression_type": None
-                }
-            ]
+    def populate_doc_item(self, fields):
+        '''
+        This functions provides both hardcoded and computed values for the variables
+        in the imported DocItem object and returns the populated metadata object
+        '''
+        display_org = "Coast Guard" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "Coast Guard Deputy Commandant for Mission Support" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "Unlisted Source" # Level 3 filter
+        cac_login_required = False # No CAC required for any documents
+        is_revoked = False
 
-            yield DocItem(
-                doc_type=doc_type_raw,
-                doc_name=f"{doc_type_raw} {doc_num}",
-                doc_title=doc_title,
-                doc_num=doc_num,
-                publication_date=publication_date,
-                downloadable_items=downloadable_items,
-                version_hash_raw_data=version_hash_fields,
-                source_page_url=driver.current_url,
-                office_primary_resp=office_primary_resp,
-            )
+        doc_num = fields.get("doc_num_raw").replace('_', '.')
+        doc_type = fields.get("doc_type_raw")
+        doc_title = self.ascii_clean(fields.get("doc_title_raw"))
+        display_doc_type = self.get_display_doc_type(doc_type)
+        file_ext = self.get_href_file_extension(fields.get("href_raw")) #########
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_num + " " + doc_title
+        publication_date = self.get_pub_date(fields.get("publication_date"))
+        doc_name = f"{doc_type} {doc_num}"
+        download_url = fields.get("download_url").replace(' ', '%20')
+        version_hash_fields = {
+                "doc_name": doc_name,
+                "doc_num": doc_num,
+                "publication_date": publication_date,
+                "download_url": download_url
+            }
+        downloadable_items = [{
+                "doc_type": file_ext,
+                "download_url": download_url,
+                "compression_type": None
+            }]
+        office_primary_resp = self.get_office_primary_resp(fields.get("office_primary_resp_raw"))
+        source_page_url = fields.get("source_page_url")
+        source_fqdn = urlparse(source_page_url).netloc
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+
+        return DocItem(
+                    doc_name = doc_name,
+                    doc_title = doc_title,
+                    doc_num = doc_num,
+                    doc_type = doc_type,
+                    display_doc_type = display_doc_type,
+                    publication_date = publication_date,
+                    cac_login_required = cac_login_required,
+                    crawler_used = self.name,
+                    downloadable_items = downloadable_items,
+                    source_page_url = source_page_url,
+                    source_fqdn = source_fqdn,
+                    download_url = download_url, 
+                    version_hash_raw_data = version_hash_fields,
+                    version_hash = version_hash,
+                    display_org = display_org,
+                    data_source = data_source,
+                    source_title = source_title,
+                    display_source = display_source,
+                    display_title = display_title,
+                    file_ext = file_ext,
+                    office_primary_resp = office_primary_resp,
+                    is_revoked = is_revoked,
+                )

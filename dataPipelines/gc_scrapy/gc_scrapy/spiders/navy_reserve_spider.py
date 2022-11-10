@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import scrapy
 from scrapy import Selector
+from datetime import datetime
+from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp, dict_to_sha256_hex_digest
+from urllib.parse import urlparse
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select, WebDriverWait
@@ -17,19 +20,24 @@ from time import sleep
 
 class NavyReserveSpider(GCSeleniumSpider):
     name = "navy_reserves" # Crawler name
-    display_org = 'US Navy Reserve'  # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = 'U.S. Navy Reserve' # Level 2: GC app 'Source' metadata field for docs from this crawler 
-    source_title = "Unlisted Source" # Level 3 filter
     
     allowed_domains = ['navyreserve.navy.mil']
     start_urls = [
         'https://www.navyreserve.navy.mil/'
     ]
 
-    file_type = 'pdf'
-    cac_login_required = False
+
     
     tables_selector = 'table.dnnGrid'
+
+    @staticmethod
+    def get_display_doc_type(doc_type):
+        if doc_type.strip().lower().endswith("inst"):
+            return "Instruction"
+        elif doc_type.strip().lower().endswith("note"):
+            return "Notice"
+        else:
+            return "Document"
 
     def parse(self, response):
         driver: Chrome = response.meta["driver"]
@@ -124,29 +132,17 @@ class NavyReserveSpider(GCSeleniumSpider):
 
                         doc_title = self.ascii_clean(doc_title_raw)
 
-                        version_hash_fields = {
-                            "item_currency": href_raw,
-                            "document_title": doc_title,
-                            "document_number": doc_num
-                        }
-
-                        downloadable_items = [
-                            {
-                                "doc_type": self.file_type,
-                                "web_url": web_url.replace(' ', '%20'),
-                                "compression_type": None
+                        fields = {
+                            "doc_name": doc_name.strip(),
+                            "doc_title": doc_title.strip(),
+                            "doc_num": doc_num.strip(),
+                            "doc_type": doc_type.strip(),
+                            "source_page_url": driver.current_url,
+                            "href_raw": href_raw,
+                            "download_url": web_url.replace(' ', '%20')
                             }
-                        ]
+                        yield self.populate_doc_item(fields)
 
-                        yield DocItem(
-                            doc_name=doc_name.strip(),
-                            doc_title=doc_title.strip(),
-                            doc_num=doc_num.strip(),
-                            doc_type=doc_type.strip(),
-                            downloadable_items=downloadable_items,
-                            version_hash_raw_data=version_hash_fields,
-                            source_page_url=driver.current_url
-                        )
                 except:
                     print(
                         f'Unexpected Parsing Exception - attempting to continue: {e}')
@@ -157,3 +153,65 @@ class NavyReserveSpider(GCSeleniumSpider):
                     # wait until paging table is stale from page load, can be slow
                     WebDriverWait(driver, 100).until(
                         EC.staleness_of(paging_table))
+
+
+    def populate_doc_item(self, fields:dict) -> DocItem:
+        display_org = 'US Navy Reserve'  # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = 'U.S. Navy Reserve' # Level 2: GC app 'Source' metadata field for docs from this crawler 
+        source_title = "Unlisted Source" # Level 3 filter
+        file_type = 'pdf'
+        cac_login_required = False
+        is_revoked = False
+        publication_date = "N/A"
+
+        doc_name = fields.get('doc_name')
+        doc_title = fields.get('doc_title')
+        doc_num = fields.get('doc_num')
+        doc_type = fields.get('doc_type')
+        display_doc_type = self.get_display_doc_type(doc_type)
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_num + " " + doc_title
+
+        source_page_url = fields.get('source_page_url')
+        download_url = fields.get('download_url')
+
+        version_hash_fields = {
+            "download_url": fields.get('href_raw'),
+            "doc_name": doc_title,
+            "doc_num": doc_num,
+            "doc_title": doc_title,
+            "publication_date": publication_date
+        }
+        downloadable_items = [
+            {
+                "doc_type": file_type,
+                "download_url": download_url,
+                "compression_type": None
+            }
+        ]
+        source_fqdn = urlparse(source_page_url).netloc
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+
+        return DocItem(
+            doc_name = doc_name,
+            doc_title = doc_title,
+            doc_num = doc_num,
+            doc_type = doc_type,
+            display_doc_type = display_doc_type,
+            publication_date = publication_date,
+            cac_login_required = cac_login_required,
+            crawler_used = self.name,
+            downloadable_items = downloadable_items,
+            source_page_url = source_page_url,
+            source_fqdn = source_fqdn,
+            download_url = download_url, 
+            version_hash_raw_data = version_hash_fields,
+            version_hash = version_hash,
+            display_org = display_org,
+            data_source = data_source,
+            source_title = source_title,
+            display_source = display_source,
+            display_title = display_title,
+            file_ext = file_type,
+            is_revoked = is_revoked,
+            )
