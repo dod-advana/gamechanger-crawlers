@@ -131,7 +131,7 @@ class USCodeSpider(GCSpider):
         download_url = fields['download_url']
         # publication_date = get_pub_date(fields['publication_date'])
 
-        display_doc_type = "Document"  # Doc type for display on app
+        display_doc_type = "Title"  # Doc type for display on app
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
         is_revoked = False
