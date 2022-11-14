@@ -64,16 +64,18 @@ class DoDSpider(GCSpider):
         table = soup.find('table', attrs={'class': 'dnnGrid'})
         rows = table.find_all('tr')
 
+        page_url_clean = page_url.lower()
+
         # set issuance type
-        if page_url.endswith('dodd/'):
+        if page_url_clean.endswith('dodd/'):
             doc_type = 'DoDD'
-        elif page_url.endswith('dodi/'):
+        elif page_url_clean.endswith('dodi/'):
             doc_type = 'DoDI'
-        elif page_url.endswith('dodm/'):
+        elif page_url_clean.endswith('dodm/'):
             doc_type = 'DoDM'
-        elif page_url.endswith('inst/'):
+        elif page_url_clean.endswith('inst/'):
             doc_type = 'AI'
-        elif page_url.endswith('dtm/'):
+        elif page_url_clean.endswith('dtm/'):
             doc_type = 'DTM'
         else:
             doc_type = 'DoDI CPM'
