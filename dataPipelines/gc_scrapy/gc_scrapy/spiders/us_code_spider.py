@@ -90,17 +90,18 @@ class USCodeSpider(GCSpider):
 
                 ext_idx = index_containing_substring(SUPPORTED_URL_EXTENSIONS, link_title)
                 if ext_idx is not None:
-                    doc_type = SUPPORTED_URL_EXTENSIONS[ext_idx].lower()
+                    file_type = SUPPORTED_URL_EXTENSIONS[ext_idx].lower()
                     compression_type = "zip"
                     downloadable_items.append(
-                        {"doc_type": doc_type, "web_url": web_url, "compression_type": compression_type}
+                        {"doc_type": file_type, "web_url": web_url, "compression_type": compression_type}
                     )
 
                     fields = {
                         'doc_name': doc_name,
                         'doc_num': doc_num,
                         'doc_title': doc_title,
-                        'doc_type': doc_type,
+                        'file_type': file_type,
+                        'doc_type': self.doc_type,
                         'cac_login_required': False,
                         'downloadable_items': downloadable_items,
                         'compression_type': compression_type,
@@ -124,6 +125,7 @@ class USCodeSpider(GCSpider):
         doc_name = fields['doc_name']
         doc_num = fields['doc_num']
         doc_title = fields['doc_title']
+        file_type = fields['file_type']
         doc_type = fields['doc_type']
         cac_login_required = fields['cac_login_required']
         download_url = fields['download_url']
@@ -137,7 +139,7 @@ class USCodeSpider(GCSpider):
         source_fqdn = urlparse(source_page_url).netloc
 
         downloadable_items = [{
-            "doc_type": doc_type,
+            "doc_type": file_type,
             "download_url": download_url,
             "compression_type": fields['compression_type'],
         }]
@@ -146,6 +148,7 @@ class USCodeSpider(GCSpider):
         version_hash_fields = {
             "doc_name": doc_name,
             "doc_num": doc_num,
+            "file_type": file_type,
             # "publication_date": publication_date,
             "download_url": download_url
         }
