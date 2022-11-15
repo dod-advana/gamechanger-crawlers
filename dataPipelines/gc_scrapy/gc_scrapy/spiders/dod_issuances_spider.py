@@ -34,7 +34,8 @@ class DoDSpider(GCSpider):
             "dodm": 'Manual',
             "dodi": 'Instruction',
             "dodd": 'Directive',
-            "ai": 'Instruction'
+            "ai": 'Instruction',
+            "dtm": 'Memorandum'
             }
         return display_dict.get(doc_type, "Document")
 
