@@ -130,10 +130,10 @@ class DoDSpider(GCSpider):
                     data = re.sub(r'\(.*\)', '', data).strip()
 
                     # set doc_name and doc_num based on issuance
-                    if page_url.endswith('dtm/'):
+                    if page_url_clean.endswith('dtm/'):
                         doc_name = data
                         doc_num = re.search(r'\d{2}.\d{3}', data)[0]
-                    elif page_url.endswith('140025/'):
+                    elif page_url_clean.endswith('140025/'):
                         issuance_num = data.split()
                         doc_name = 'DoDI 1400.25 Volume ' + issuance_num[0] if issuance_num[0] != 'DoDI' \
                             else ' '.join(issuance_num).strip()
