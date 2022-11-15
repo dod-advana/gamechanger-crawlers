@@ -34,7 +34,8 @@ class DoDSpider(GCSpider):
             "dodm": 'Manual',
             "dodi": 'Instruction',
             "dodd": 'Directive',
-            "ai": 'Instruction'
+            "ai": 'Instruction',
+            "dtm": 'Memorandum'
             }
         return display_dict.get(doc_type, "Document")
 
@@ -64,16 +65,18 @@ class DoDSpider(GCSpider):
         table = soup.find('table', attrs={'class': 'dnnGrid'})
         rows = table.find_all('tr')
 
+        page_url_clean = page_url.lower()
+
         # set issuance type
-        if page_url.endswith('dodd/'):
+        if page_url_clean.endswith('dodd/'):
             doc_type = 'DoDD'
-        elif page_url.endswith('dodi/'):
+        elif page_url_clean.endswith('dodi/'):
             doc_type = 'DoDI'
-        elif page_url.endswith('dodm/'):
+        elif page_url_clean.endswith('dodm/'):
             doc_type = 'DoDM'
-        elif page_url.endswith('inst/'):
+        elif page_url_clean.endswith('inst/'):
             doc_type = 'AI'
-        elif page_url.endswith('dtm/'):
+        elif page_url_clean.endswith('dtm/'):
             doc_type = 'DTM'
         else:
             doc_type = 'DoDI CPM'
@@ -128,10 +131,10 @@ class DoDSpider(GCSpider):
                     data = re.sub(r'\(.*\)', '', data).strip()
 
                     # set doc_name and doc_num based on issuance
-                    if page_url.endswith('dtm/'):
+                    if page_url_clean.endswith('dtm/'):
                         doc_name = data
                         doc_num = re.search(r'\d{2}.\d{3}', data)[0]
-                    elif page_url.endswith('140025/'):
+                    elif page_url_clean.endswith('140025/'):
                         issuance_num = data.split()
                         doc_name = 'DoDI 1400.25 Volume ' + issuance_num[0] if issuance_num[0] != 'DoDI' \
                             else ' '.join(issuance_num).strip()
@@ -217,23 +220,22 @@ class DoDSpider(GCSpider):
                 doc_title = doc_title,
                 doc_num = doc_num,
                 doc_type = doc_type,
-                display_doc_type_s = display_doc_type,
-                publication_date_dt = publication_date,
-                cac_login_required_b = cac_login_required,
-                crawler_used_s = self.name,
+                display_doc_type = display_doc_type,
+                publication_date = publication_date,
+                cac_login_required = cac_login_required,
+                crawler_used = self.name,
                 downloadable_items = downloadable_items,
-                source_page_url_s = source_page_url,
-                source_fqdn_s = source_fqdn,
-                download_url_s = download_url, 
+                source_page_url = source_page_url,
+                source_fqdn = source_fqdn,
+                download_url = download_url, 
                 version_hash_raw_data = version_hash_fields,
-                version_hash_s = version_hash,
-                display_org_s = display_org,
-                data_source_s = data_source,
-                source_title_s = source_title,
-                display_source_s = display_source,
-                display_title_s = display_title,
-                file_ext_s = file_type,
-                is_revoked_b = is_revoked,
+                version_hash = version_hash,
+                display_org = display_org,
+                data_source = data_source,
+                source_title = source_title,
+                display_source = display_source,
+                display_title = display_title,
+                file_ext = file_type,
+                is_revoked = is_revoked,
                 office_primary_resp = office_primary_resp,
             )
-
