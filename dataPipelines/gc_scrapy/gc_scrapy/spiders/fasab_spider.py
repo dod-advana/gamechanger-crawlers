@@ -59,13 +59,13 @@ class BrickSetSpider(GCSpider):
         This functions provides both hardcoded and computed values for the variables
         in the imported DocItem object and returns the populated metadata object
         '''
-        display_org = "Uncategorized" # Level 1: value TBD for this crawler
-        data_source = "Unlisted Source" # Level 2: value TBD for this crawler
-        source_title = "Unlisted Source" # Level 3 filter
+        display_org = "FASAB"  # Level 1: value TBD for this crawler
+        data_source = "Federal Accounting Standards Advisory Board"  # Level 2: value TBD for this crawler
+        source_title = "Handbook of Accounting Standards"  # Level 3 filter
 
         cac_login_required = False
 
-        display_doc_type = "Document" # Doc type for display on app
+        display_doc_type = "Document"  # Doc type for display on app
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
         is_revoked = False
@@ -82,7 +82,8 @@ class BrickSetSpider(GCSpider):
 
         ## Assign fields that will be used for versioning
         version_hash_fields = {
-            "doc_name":doc_name,
+            "display_org": display_org,
+            "doc_name": doc_name,
             "doc_num": doc_num,
             "publication_date": publication_date,
             "download_url": web_url.split('/')[-1]

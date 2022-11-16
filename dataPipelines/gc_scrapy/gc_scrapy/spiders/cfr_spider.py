@@ -117,9 +117,9 @@ class CFRSpider(GCSpider):
         This functions provides both hardcoded and computed values for the variables
         in the imported DocItem object and returns the populated metadata object
         '''
-        display_org = "Congress" # Level 1: GC app 'Source' filter for docs from this crawler
-        data_source = "U.S. Government Publishing Office" # Level 2: GC app 'Source' metadata field for docs from this crawler
-        source_title = "Unlisted Source" # Level 3 filter
+        display_org = "Executive Branch" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "National Archives and Records Administration" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "Unlisted Source"  # Level 3 filter
 
         doc_name = fields['doc_name']
         doc_num = fields['doc_num']
