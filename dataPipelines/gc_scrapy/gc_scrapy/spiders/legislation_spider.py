@@ -155,7 +155,8 @@ class LegislationSpider(GCSpider):
             if d['colname'] in detail_data:
                 detail_data[d['colname']] = d['colvalue']
 
-        doc_title = self.ascii_clean(detail_data.get('Full Title'))
+        raw_title = ' '.join(data['title'].split()[6:])
+        doc_title = self.ascii_clean(data['title'])
         # congress_num_str = detail_data.get(
         #    'Congress Number').replace(' Congress', '')
 
