@@ -156,7 +156,7 @@ class LegislationSpider(GCSpider):
                 detail_data[d['colname']] = d['colvalue']
 
         raw_title = ' '.join(data['title'].split()[6:])
-        doc_title = self.ascii_clean(data['title'])
+        doc_title = self.ascii_clean(raw_title)
         # congress_num_str = detail_data.get(
         #    'Congress Number').replace(' Congress', '')
 
@@ -212,6 +212,7 @@ class LegislationSpider(GCSpider):
         version_hash_fields = {
             "doc_num": doc_num,
             "doc_name": doc_name,
+            "doc_title": doc_title,
             "publication_date": publication_date,
             "download_url": web_url
         }
