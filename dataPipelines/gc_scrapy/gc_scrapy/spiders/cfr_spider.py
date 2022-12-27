@@ -118,10 +118,11 @@ class CFRSpider(GCSpider):
             if d['colname'] in detail_data:
                 detail_data[d['colname']] = d['colvalue']
 
-        raw_title = data['title']
+        # TODO: doc_num and doc_title (raw_title) are kindof hardcoded, need to change this
+        raw_title = ' '.join(data['title'].split()[3:])
         doc_title = self.ascii_clean(raw_title)
-        doc_num = ''.join(detail_data['Collection'].split()[2:])
-        doc_type = "Code"
+        doc_num = detail_data['Publication Title'].split()[1]
+        doc_type = "CFR Title"
         doc_name = (f"{detail_data['Publication Title']} {year}" if year not in detail_data['Publication Title'] else f"{detail_data['Publication Title']}")
         source_page_url = self.get_visible_detail_url(package_id)
 
@@ -149,7 +150,7 @@ class CFRSpider(GCSpider):
         doc_title = fields.get('doc_title')
         doc_num = fields.get('doc_num')
         doc_type = fields.get('doc_type')
-        display_doc_type = "Code"
+        display_doc_type = "CFR Title"
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
         web_url = fields.get("web_url")
