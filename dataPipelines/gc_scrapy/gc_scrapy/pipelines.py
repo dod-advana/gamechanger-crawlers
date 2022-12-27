@@ -94,7 +94,10 @@ class FileDownloadPipeline(MediaPipeline):
         for sub_path in zipped_item_paths:
             new_item = copy.deepcopy(item)
             new_item["doc_name"] = sub_path.stem
-            new_item["doc_title"] = sub_path.stem.split("-", 1)[1].strip()
+            if item['crawler_used'] == "far_subpart_regs":
+                new_item["doc_title"] = sub_path.stem
+            else:
+                new_item["doc_title"] = sub_path.stem.split("-", 1)[1].strip()
             new_item["version_hash_raw_data"]["doc_name"] = new_item["doc_name"]
             new_item["version_hash_raw_data"]["sub_file_version_hash"] = dict_to_sha256_hex_digest(
                 new_item["version_hash_raw_data"]
@@ -132,7 +135,7 @@ class FileDownloadPipeline(MediaPipeline):
         file_item = self.get_first_supported_downloadable_item(item["downloadable_items"])
 
         if file_item:
-            url = file_item["web_url"]
+            url = file_item["download_url"]
             extension = file_item["doc_type"]
             output_file_name = f"{doc_name}.{extension}"
 
@@ -230,7 +233,15 @@ class FileDownloadPipeline(MediaPipeline):
                     file_unzipped_path = Path(self.output_dir, output_file_name)
                     metadata_download_path = f"{file_unzipped_path}.metadata"
                 else:
-                    file_download_path = Path(self.output_dir, output_file_name)
+                    # If it is a jbook crawler (and needs a different file output style)
+                    if 'rdte;' in output_file_name or 'procurement;' in output_file_name:
+                        jbook_output_file_path = output_file_name.replace(';', '/')
+                        # self.output_dir is set when the crawler is crawled and is the high level directory information
+                        # Should point to bronze/jbook/pdfs instead of bronze/gamechanger/pdf
+                        # jbook_output_file_path is type/year/filename
+                        file_download_path = Path(self.output_dir, jbook_output_file_path)
+                    else:
+                        file_download_path = Path(self.output_dir, output_file_name)
                     metadata_download_path = f"{file_download_path}.metadata"
 
                 with open(file_download_path, "wb") as f:
@@ -301,7 +312,7 @@ class DeduplicaterPipeline:
 class AdditionalFieldsPipeline:
     def process_item(self, item, spider):
 
-        if getattr(spider, "display_org", None): # If DocItem.display_org = None, propogate value with value of spider class variable display_org
+        if getattr(spider, "display_org", None): # If DocItem.display_org= None, propogate value with value of spider class variable display_org
             item["display_org"] = spider.display_org
 
         if getattr(spider, "data_source", None): # If DocItem.data_source = None, propogate value with value of spider class variable data_source
@@ -313,43 +324,43 @@ class AdditionalFieldsPipeline:
         if getattr(spider, "display_source", None):
             item["display_source"] = spider.display_source
 
-        if item.get("crawler_used") is None:
+        if not item.get("crawler_used"):
             item["crawler_used"] = spider.name
 
         source_page_url = item.get("source_page_url")
-        if source_page_url is None:
+        if not source_page_url:
             if getattr(spider, "source_page_url", None):
                 item["source_page_url"] = spider.source_page_url
             else:
                 source_page_url = spider.start_urls[0]
                 item["source_page_url"] = source_page_url
 
-        if item.get("source_fqdn") is None:
+        if not item.get("source_fqdn"):
             item["source_fqdn"] = get_fqdn_from_web_url(source_page_url)
 
-        if item.get("version_hash") is None:
+ #       if not item.get("version_hash"):
             # ensure doc_name is part of hash
-            item["version_hash_raw_data"]["doc_name"] = item["doc_name"]
-            item["version_hash"] = dict_to_sha256_hex_digest(item["version_hash_raw_data"])
+            # item["version_hash_raw_data"]["doc_name"] = item["doc_name"]
+            # item["version_hash"] = dict_to_sha256_hex_digest(item["version_hash_raw_data"])
 
-        if item.get("access_timestamp") is None:
-            item["access_timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+        if not item.get("access_timestamp"):
+            item["access_timestamp"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S") # T added as delimiter between date and time
 
-        if item.get("publication_date") is None:
-            item["publication_date"] = "N/A"
+        if not item.get("publication_date"):
+            item["publication_date"] = None
 
-        if item.get("cac_login_required") is None:
-            item["cac_login_required"] = spider.cac_login_required
+        if not item.get("cac_login_required"):
+            item["cac_login_required"] = getattr(spider, "cac_login_required", False)
 
-        if item.get("doc_type") is None:
-            item["doc_type"] = getattr(spider, "doc_type", "")
+        if not item.get("doc_type"):
+            item["doc_type"] = getattr(spider, "doc_type", None)
 
-        if item.get("doc_num") is None:
-            item["doc_num"] = ""
+        if not item.get("doc_num"):
+            item["doc_num"] = None
 
-        if item.get("is_revoked") is not None:
-            # ensure is_revoked is part of hash
-            item["version_hash_raw_data"]["is_revoked"] = item["is_revoked"]
+        # if item.get("is_revoked") is not None:
+           # ensure is_revoked is part of hash
+           # item["version_hash_raw_data"]["is_revoked"] = item["is_revoked"]
 
         return item
 

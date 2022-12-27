@@ -1,8 +1,12 @@
 import scrapy
 import re
-from urllib.parse import urljoin, urlencode, parse_qs
+from datetime import datetime
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
+
+from urllib.parse import urljoin, urlparse
+from datetime import datetime
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
 
 type_and_num_regex = re.compile(r"([a-zA-Z].*) (\d.*)") # Get 'type' (alphabetic) value and 'num' (numeric) value from 'doc_name' string
 
@@ -36,6 +40,19 @@ class ArmyReserveSpider(GCSpider):
         '''
         return text.encode('ascii', 'ignore').decode('ascii').strip()
 
+    @staticmethod
+    def get_display_doc_type(doc_type):
+        """This function returns value for display_doc_type based on doc_type -> display_doc_type mapping"""
+        display_type_dict = {
+        "usar cir": "Circular",
+        "usar pam": "Pamphlet",
+        "usar reg": "Regulation"
+        }
+        if doc_type.lower() in display_type_dict.keys():
+            return display_type_dict[doc_type.lower()]
+        else:
+            return "Document"
+
     def parse(self, response):
         '''
         This function generates a link and metadata for each document found on the Army Reserves Publishing
@@ -50,18 +67,10 @@ class ArmyReserveSpider(GCSpider):
             # Join relative urls to base
             web_url = urljoin(self.start_urls[0], pdf_url) if pdf_url.startswith(
                 '/') else pdf_url
-            # Encode spaces from pdf names
             web_url = web_url.replace(" ", "%20") # Add document to base url, encoding spaces (with %20)
 
             cac_login_required = True if "usar.dod.afpims.mil" in web_url else False # Determine if CAC is required from url
 
-            downloadable_items = [
-                {
-                    "doc_type": self.file_type,
-                    "web_url": web_url,
-                    "compression_type": None
-                }
-            ] # Get document metadata
             doc_name_raw = "".join(item.css('strong::text').getall()) # Bolded portion of displayed document name as doc_name_raw
             doc_title_raw = item.css('a::text').get() # Unbolded portion of displayed document name as doc_title_raw
             
@@ -82,19 +91,78 @@ class ArmyReserveSpider(GCSpider):
                 doc_type = "USAR Doc"
                 doc_num = ""
 
-            version_hash_fields = {
-                "item_currency": web_url.split('/')[-1], # Item currency found on pdf link
-                "document_title": doc_title,
-                "document_number": doc_num
-            } # Add version hash metadata
+            # This site/crawler does not have pub dates
+            fields = {
+                'doc_name': doc_name,
+                'doc_num': doc_num,
+                'doc_title': doc_title,
+                'doc_type': doc_type,
+                'cac_login_required': cac_login_required,
+                'download_url': web_url
+            }
 
             ## Instantiate DocItem class and assign document's metadata values
-            yield DocItem(
-                doc_name=doc_name,
-                doc_title=doc_title,
-                doc_num=doc_num,
-                doc_type=doc_type,
-                cac_login_required=cac_login_required,
-                downloadable_items=downloadable_items,
-                version_hash_raw_data=version_hash_fields,
-            )
+            doc_item = self.populate_doc_item(fields)
+       
+            yield doc_item
+
+
+    def populate_doc_item(self, fields):
+        '''
+        This functions provides both hardcoded and computed values for the variables
+        in the imported DocItem object and returns the populated metadata object
+        '''
+        display_org = "Dept. of the Army" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "Army Publishing Directorate" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "Unlisted Source" # Level 3 filter
+        is_revoked = False
+
+        doc_name = fields['doc_name']
+        doc_num = fields['doc_num']
+        doc_title = fields['doc_title']
+        doc_type = fields['doc_type']
+        display_doc_type = self.get_display_doc_type(doc_type)
+        cac_login_required = fields['cac_login_required']
+        download_url = fields['download_url']
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_num + " " + doc_title
+        source_page_url = self.start_urls[0]
+        source_fqdn = urlparse(source_page_url).netloc
+        downloadable_items = [
+                {
+                    "doc_type": self.file_type,
+                    "download_url": download_url,
+                    "compression_type": None
+                }
+            ] # Get document metadata
+        version_hash_fields = {
+            "doc_name":doc_name,
+            "doc_num": doc_num,
+            "download_url": download_url.split('/')[-1]
+        } # Assign fields used for versioning
+        file_ext = downloadable_items[0]["doc_type"]
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+
+        return DocItem(
+            doc_name = doc_name,
+            doc_title = doc_title,
+            doc_num = doc_num,
+            doc_type = doc_type,
+            display_doc_type = display_doc_type,
+            publication_date = None, # Publication dates not available from website, link, or filename
+            cac_login_required = cac_login_required,
+            crawler_used = self.name,
+            downloadable_items = downloadable_items,
+            source_page_url = source_page_url,
+            source_fqdn = source_fqdn,
+            download_url = download_url,
+            version_hash_raw_data = version_hash_fields,
+            version_hash = version_hash,
+            display_org = display_org,
+            data_source = data_source,
+            source_title = source_title,
+            display_source = display_source,
+            display_title = display_title,
+            file_ext = file_ext,
+            is_revoked = is_revoked,
+        )

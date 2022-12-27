@@ -4,6 +4,10 @@ import re
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
+from urllib.parse import urljoin, urlparse
+from datetime import datetime
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
+
 
 general_num_re = re.compile(
     r"(?<!ch )(?<!vol )(?<!\W )(\d[\w\.\-]*)", flags=re.IGNORECASE)
@@ -223,14 +227,15 @@ doc_type_transformations_map = {
 
 
 class MarineCorpSpider(GCSpider):
-    """
-        Parser for Marine Corp EPEL
-    """
+    '''
+    Class defines the behavior for crawling and extracting text-based documents from the "Marine Corp Publications Electronic Library (MCPEL)" site, which contains 
+    a list of all Marine Corps publications, orders, directives. This class inherits the 'GCSpider' class from GCSpider.py. The GCSpider class is Gamechanger's
+    implementation of the standard parse method used in Scrapy crawlers in order to return a response.
+
+    This class and its methods = the marine_pubs "spider".
+    '''
 
     name = "marine_pubs" # Crawler name
-    display_org = "US Marine Corps" # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = 'Marine Corps Publications Electronic Library' # Level 2: GC app 'Source' metadata field for docs from this crawler
-    source_title = "Unlisted Source" # Level 3 filter
 
     allowed_domains = ['marines.mil']
     base_url = 'https://www.marines.mil/News/Publications/MCPEL/?Page='
@@ -242,6 +247,17 @@ class MarineCorpSpider(GCSpider):
     randomly_delay_request = True
 
     cac_required_options = ["placeholder", "FOUO", "for_official_use_only"]
+
+    @staticmethod
+    def get_display_doc_type(doc_type):
+        """This function returns value for display_doc_type based on doc_type -> display_doc_type mapping"""
+        display_type_dict = {
+            "secnavinst": 'Instruction'
+        }
+        if doc_type.lower() in display_type_dict.keys():
+            return display_type_dict[doc_type.lower()]
+        else:
+            return "Document"
 
     def parse(self, response):
         source_page_url = response.url
@@ -289,27 +305,49 @@ class MarineCorpSpider(GCSpider):
                 # mutably sets keys on raw_data dict
                 set_all_transformations(raw_data, transformations)
 
+                doc_num=raw_data['doc_num']
+                doc_name = self.ascii_clean(raw_data['doc_name'])
                 version_hash_fields = {
+                    "doc_num": doc_num,
+                    "doc_name": doc_name,
+                    "publication_date": None,
                     "status": doc_status_raw
                 }
-
                 doc_title = self.ascii_clean(doc_title_raw)
-                doc_name = self.ascii_clean(raw_data['doc_name'])
                 if not doc_title:
                     doc_title = doc_name
-
                 cac_login_required = True if any(
                     x in doc_title for x in self.cac_required_options) else False
+                doc_type = raw_data['doc_type']
+                display_org = "US Marine Corps" # Level 1: GC app 'Source' filter for docs from this crawler
+                data_source = 'Marine Corps Publications Electronic Library' # Level 2: GC app 'Source' metadata field for docs from this crawler
+                source_title = "Unlisted Source" # Level 3 filter
+                publication_date = None # No publication date for this crawler
+                display_doc_type = self.get_display_doc_type(doc_type)
+                display_source = data_source + " - " + source_title
+                display_title = doc_type + " " + doc_num + " " + doc_title
+                is_revoked = False
+                source_fqdn = urlparse(source_page_url).netloc
 
                 incomplete_item = {
-                    "item": DocItem(
-                        doc_name=doc_name,
-                        doc_num=raw_data['doc_num'],
-                        doc_type=raw_data['doc_type'],
-                        doc_title=doc_title,
-                        source_page_url=source_page_url,
-                        version_hash_raw_data=version_hash_fields,
-                        cac_login_required=cac_login_required
+                    "fields": DocItem(
+                        doc_name = doc_name,
+                        doc_num = doc_num,
+                        doc_type = doc_type,
+                        doc_title = doc_title,
+                        source_page_url = source_page_url,
+                        cac_login_required = cac_login_required,
+                        display_doc_type = display_doc_type,
+                        display_source = display_source,
+                        display_title = display_title,
+                        display_org = display_org,
+                        data_source = data_source,
+                        source_title = source_title,
+                        crawler_used = self.name,
+                        source_fqdn = source_fqdn,
+                        version_hash_raw_data = version_hash_fields,
+                        is_revoked = is_revoked,
+                        publication_date = publication_date,
                     )
                 }
 
@@ -329,7 +367,7 @@ class MarineCorpSpider(GCSpider):
 
     def parse_download_page(self, response):
 
-        doc_item = response.meta["item"]
+        doc_item = response.meta["fields"]
         href_raw = response.css(
             'div.download-section a::attr(href)').get(default="")
         if not href_raw:
@@ -348,19 +386,16 @@ class MarineCorpSpider(GCSpider):
         if not href_raw or not self.is_valid_url(href_raw):
             return
 
-        doc_item['version_hash_raw_data'].update({
-            "item_currency": href_raw
-        })
-
-        doc_type = self.get_href_file_extension(href_raw)
-        web_url = self.url_encode_spaces(href_raw)
-
-        doc_item['downloadable_items'] = [
-            {
-                "doc_type": doc_type,
-                "web_url": web_url,
-                "compression_type": None
-            }
-        ]
+        doc_item['version_hash_raw_data'].update({"download_url": href_raw})
+        doc_item['version_hash'] = dict_to_sha256_hex_digest(doc_item['version_hash_raw_data'])
+        file_ext = self.get_href_file_extension(href_raw)
+        doc_item['file_ext'] = file_ext
+        download_url = self.url_encode_spaces(href_raw)
+        doc_item['download_url'] = download_url
+        doc_item['downloadable_items'] = [{
+            "doc_type": file_ext,
+            "download_url": download_url,
+            "compression_type": None
+        }]
 
         yield doc_item

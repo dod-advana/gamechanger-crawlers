@@ -1,5 +1,4 @@
 import re
-from urllib.parse import urljoin
 
 from scrapy.http import TextResponse
 from scrapy.selector import Selector
@@ -7,16 +6,16 @@ from scrapy.selector import Selector
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 
+from urllib.parse import urljoin, urlparse
+from datetime import datetime
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
+
 class DoDSpider(GCSpider):
     name = 'dfars_pgi' # Crawler name
-    display_org = "DFARS" # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = "Defense Federal Acquisition Regulation" # Level 2: GC app 'Source' metadata field for docs from this crawler
-    source_title = "Unlisted Source" # Level 3 filter
 
     start_urls = ['https://www.acq.osd.mil/dpap/dars/dfarspgi/current']
     allowed_domains = ['www.acq.osd.mil']
 
-    cac_login_required = False
     rotate_user_agent = True
 
     def parse(self, response: TextResponse):
@@ -40,6 +39,7 @@ class DoDSpider(GCSpider):
         prev_title = 'DEFENSE FEDERAL ACQUISITION REGULATION SUPPLEMENT'
         row: Selector
         for row in rows:
+            source_page_url = response.url
             if row.attrib['class'] == 'rule':
                 part_and_title_raw: str = row.css('td:nth-child(1)::text').get()
                 if part_and_title_raw is None:
@@ -80,30 +80,19 @@ class DoDSpider(GCSpider):
 
                     doc_name = f'DFARS {doc_num} - {doc_title}'
 
-                    version_hash_fields = {
-                        "item_currency": dfars_pdf_href.split('/')[-1],
-                        "document_title": doc_title,
-                        "document_number": doc_num
+                    fields = {
+                        'doc_name': doc_name,
+                        'doc_num': doc_num,
+                        'doc_title': doc_title,
+                        'doc_type': 'DFARS',
+                        'cac_login_required': False,
+                        'source_page_url': source_page_url,
+                        'download_url': dfars_pdf_href,
+                        'publication_date': publication_date
                     }
 
-                    downloadable_items = [
-                        {
-                            "doc_type": "pdf",
-                            "web_url": dfars_pdf_href,
-                            "compression_type": None
-                        }
-                    ]
-                
-                    dfars_doc_item = DocItem(
-                        doc_type='DFARS',
-                        doc_name=doc_name,
-                        doc_num=doc_num,
-                        doc_title=doc_title,
-                        publication_date=publication_date,
-                        source_page_url=response.url,
-                        downloadable_items=downloadable_items,
-                        version_hash_raw_data=version_hash_fields,
-                    )
+                    dfars_doc_item = self.populate_doc_item(fields)
+    
                     yield dfars_doc_item
 
                 # PGI
@@ -114,32 +103,21 @@ class DoDSpider(GCSpider):
 
                     doc_name = f'{doc_num} - {doc_title}'
 
-                    version_hash_fields = {
-                        "item_currency": pgi_pdf_href.split('/')[-1],
-                        "document_title": doc_title,
-                        "document_number": doc_num
+                    fields = {
+                        'doc_name': doc_name,
+                        'doc_num': doc_num,
+                        'doc_title': doc_title,
+                        'doc_type': 'PGI',
+                        'cac_login_required': False,
+                        'source_page_url': source_page_url,
+                        'download_url': pgi_pdf_href,
+                        'publication_date': publication_date
                     }
-
-                    downloadable_items = [
-                        {
-                            "doc_type": "pdf",
-                            "web_url": pgi_pdf_href,
-                            "compression_type": None
-                        }
-                    ]
-                
-                    pgi_doc_item = DocItem(
-                        doc_type='PGI',
-                        doc_name=doc_name,
-                        doc_num=doc_num,
-                        doc_title=doc_title,
-                        publication_date=publication_date,
-                        source_page_url=response.url,
-                        downloadable_items=downloadable_items,
-                        version_hash_raw_data=version_hash_fields,
-                    )
-                    yield pgi_doc_item
                     
+                    pgi_doc_item = self.populate_doc_item(fields)
+    
+                    yield pgi_doc_item
+                                
     
     def clean_name(self, name):
         return ' '.join(re.sub(r'[^a-zA-Z0-9. ()\\-]', '', self.ascii_clean(name).replace('/', '-')).split())
@@ -155,3 +133,70 @@ class DoDSpider(GCSpider):
             return doc_num
         # ?
         return f'PGI {dfars_num}'
+
+    def populate_doc_item(self, fields):
+        '''
+        This functions provides both hardcoded and computed values for the variables
+        in the imported DocItem object and returns the populated metadata object
+        '''
+        display_org = "DFARS" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "Defense Federal Acquisition Regulation" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "Unlisted Source" # Level 3 filter
+
+        doc_name = fields['doc_name']
+        doc_num = fields['doc_num']
+        doc_title = fields['doc_title']
+        doc_type = fields['doc_type']
+        cac_login_required = fields['cac_login_required']
+        source_page_url = fields['source_page_url']
+        download_url = fields['download_url']
+        publication_date = get_pub_date(fields['publication_date'])
+
+        display_doc_type = "Document" # Doc type for display on app
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_num + " " + doc_title
+        is_revoked = False
+        source_fqdn = urlparse(source_page_url).netloc
+
+        downloadable_items = [
+            {
+                "doc_type": "pdf",
+                "download_url": download_url,
+                "compression_type": None,
+            }
+        ]
+        file_ext = downloadable_items[0]["doc_type"]
+        ## Assign fields that will be used for versioning
+        version_hash_fields = {
+            "doc_name":doc_name,
+            "doc_num": doc_num,
+            "publication_date": publication_date,
+            "download_url": download_url.split('/')[-1]
+        }
+
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+
+        return DocItem(
+                    doc_name = doc_name,
+                    doc_title = doc_title,
+                    doc_num = doc_num,
+                    doc_type = doc_type,
+                    display_doc_type = display_doc_type, #
+                    publication_date = publication_date,
+                    cac_login_required = cac_login_required,
+                    crawler_used = self.name,
+                    downloadable_items = downloadable_items,
+                    source_page_url = source_page_url, #
+                    source_fqdn = source_fqdn, #
+                    download_url = download_url, #
+                    version_hash_raw_data = version_hash_fields, #
+                    version_hash = version_hash,
+                    display_org = display_org, #
+                    data_source = data_source, #
+                    source_title = source_title, #
+                    display_source = display_source, #
+                    display_title = display_title, #
+                    file_ext = file_ext, #
+                    is_revoked = is_revoked, #
+                )
+

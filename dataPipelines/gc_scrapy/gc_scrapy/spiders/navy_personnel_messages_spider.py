@@ -8,19 +8,17 @@ from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from scrapy.http.response.text import TextResponse
 from scrapy.selector import Selector
 
+from urllib.parse import urljoin, urlparse
+from datetime import datetime
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
 
 class TRADOCSpider(GCSpider):
     name = 'navy_personnel_messages' # Crawler name
-    display_org = 'US Navy'  # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = 'MyNavy HR' # Level 2: GC app 'Source' metadata field for docs from this crawler 
-    source_title = 'Bureau of Naval Personnel Messages' # Level 3 filter
-
     allowed_domains = ['mynavyhr.navy.mil']
     start_urls = [
         'https://www.mynavyhr.navy.mil/References/Messages/'
     ]
 
-    cac_login_required = False
     rotate_user_agent = True
 
     def parse(self, response: TextResponse):
@@ -48,38 +46,26 @@ class TRADOCSpider(GCSpider):
 
             # there seem to be some dead hidden links to the BUPERS site so ignore
             doc_url = table_row.css('td:nth-child(2) a:not([href*="/bupers-npc/"])::attr(href)').get()
-
             doc_date = self.join_text(table_row.css('td:nth-child(3) *::text').getall())
             publication_date = self.parse_date(doc_date)
-
             doc_name = f'{doc_type} {doc_num}'
-
             web_url = urljoin(response.url, doc_url)
-            downloadable_items = [
-                {
-                    "doc_type": "txt",
-                    "web_url": web_url,
-                    "compression_type": None
-                }
-            ]
 
-            version_hash_fields = {
-                "item_currency": downloadable_items[0]["web_url"].split('/')[-1],
-                "document_title": doc_title,
-                "publication_date": publication_date,
+            fields = {
+                'doc_name': self.clean_name(doc_name),
+                'doc_num': self.ascii_clean(doc_num),
+                'doc_title': self.ascii_clean(doc_title),
+                'doc_type': self.ascii_clean(doc_type),
+                "file_ext": self.get_href_file_extension(doc_url),
+                'cac_login_required': False,
+                'download_url': web_url,
+                'source_page_url': response.url,
+                'is_revoked': is_revoked,
+                'publication_date': publication_date
             }
-
-            doc_item = DocItem(
-                doc_name=self.clean_name(doc_name),
-                doc_num=self.ascii_clean(doc_num),
-                doc_title=self.ascii_clean(doc_title),
-                doc_type=self.ascii_clean(doc_type),
-                publication_date=publication_date,
-                source_page_url=response.url,
-                downloadable_items=downloadable_items,
-                version_hash_raw_data=version_hash_fields,
-                is_revoked=is_revoked,
-            )
+            ## Instantiate DocItem class and assign document's metadata values
+            doc_item = self.populate_doc_item(fields)
+        
             yield doc_item
 
     def join_text(self, texts: t.List[str]) -> str:
@@ -111,3 +97,68 @@ class TRADOCSpider(GCSpider):
             return '2021-08-16'
 
         raise ValueError(f'unknown date format {date_str}')
+
+    def populate_doc_item(self, fields):
+        '''
+        This functions provides both hardcoded and computed values for the variables
+        in the imported DocItem object and returns the populated metadata object
+        '''
+        display_org = 'US Navy'  # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = 'MyNavy HR' # Level 2: GC app 'Source' metadata field for docs from this crawler 
+        source_title = 'Bureau of Naval Personnel Messages' # Level 3 filter
+
+        doc_name = fields['doc_name']
+        doc_num = fields['doc_num']
+        doc_title = fields['doc_title']
+        doc_type = fields['doc_type']
+        cac_login_required = fields['cac_login_required']
+        download_url = fields['download_url']
+        publication_date = get_pub_date(fields['publication_date'])
+
+        display_doc_type = "Document" # Doc type for display on app
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_num + " " + doc_title
+        is_revoked = fields['is_revoked']
+        source_page_url = fields['source_page_url']
+        source_fqdn = urlparse(source_page_url).netloc
+        file_ext = fields['file_ext']
+
+        downloadable_items = [{
+                "doc_type": "txt",
+                "download_url": download_url,
+                "compression_type": None,
+            }]
+
+        ## Assign fields that will be used for versioning
+        version_hash_fields = {
+            "doc_name":doc_name,
+            "doc_num": doc_num,
+            "publication_date": publication_date,
+            "download_url": download_url.split('/')[-1]
+        }
+
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+
+        return DocItem(
+                    doc_name = doc_name,
+                    doc_title = doc_title,
+                    doc_num = doc_num,
+                    doc_type = doc_type,
+                    display_doc_type = display_doc_type, #
+                    publication_date = publication_date,
+                    cac_login_required = cac_login_required,
+                    crawler_used = self.name,
+                    downloadable_items = downloadable_items,
+                    source_page_url = source_page_url, #
+                    source_fqdn = source_fqdn, #
+                    download_url = download_url, #
+                    version_hash_raw_data = version_hash_fields, #
+                    version_hash = version_hash,
+                    display_org = display_org, #
+                    data_source = data_source, #
+                    source_title = source_title, #
+                    display_source = display_source, #
+                    display_title = display_title, #
+                    file_ext = file_ext, #
+                    is_revoked = is_revoked, #
+                )

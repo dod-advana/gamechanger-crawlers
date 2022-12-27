@@ -16,6 +16,7 @@ class DocItem(scrapy.Item):
     crawler_used = scrapy.Field()
     source_page_url = scrapy.Field()
     downloadable_items = scrapy.Field()
+    download_url = scrapy.Field()
     version_hash_raw_data = scrapy.Field()
     access_timestamp = scrapy.Field()
     source_fqdn = scrapy.Field()
@@ -25,5 +26,9 @@ class DocItem(scrapy.Item):
     display_source = scrapy.Field()
     data_source = scrapy.Field()
     source_title = scrapy.Field()
+    file_ext = scrapy.Field()
+    display_title = scrapy.Field()
     is_revoked = scrapy.Field()
     office_primary_resp = scrapy.Field()
+
+

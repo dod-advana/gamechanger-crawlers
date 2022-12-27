@@ -10,19 +10,19 @@
 			"downloadable_items": [
 				{
 					"doc_type": "pdf",
-					"web_url": "https://example.local/pubs/misc_pub_vol4.pdf",
+					"download_url": "https://example.local/pubs/misc_pub_vol4.pdf",
 					"compression_type": null
 				},
 				{
 					"doc_type": "xml",
-					"web_url": "https://example.local/pubs/misc_pub_vol4.xml",
+					"download_url": "https://example.local/pubs/misc_pub_vol4.xml",
 					"compression_type": null
 				}
 			],
 			"version_hash_raw_data": {
 				"pub_date": "2020-06-01"
 			},
-			"access_timestamp": "2020-06-28 22:59:57.274200",
+			"access_timestamp": "2020-06-28T22:59:57",
 			"source_fqdn": "example.local"
 		}
 	],
@@ -31,14 +31,24 @@
 		"source_page_url",
 		"downloadable_items",
 		"version_hash_raw_data",
+		"version_hash",
 		"access_timestamp",
+		"download_url",
 		"source_fqdn",
 		"doc_type",
+		"display_doc_type",
+		"display_org",
+		"display_source",
+		"display_title",
+		"data_source",
+		"source_title",
+		"file_ext",
 		"doc_num",
 		"doc_title",
 		"publication_date",
 		"cac_login_required",
-		"crawler_used"
+		"crawler_used",
+		"is_revoked"
 	],
 	"properties": {
 		"doc_type": {
@@ -156,9 +166,9 @@
 			"title": "The access_timestamp schema",
 			"description": "An explanation about the purpose of this instance.",
 			"examples": [
-				"2020-06-28 22:59:57.274200"
+				"2020-06-28T22:59:57"
 			],
-			"pattern": "\\d{4}-\\d{2}-\\d{2}[ ]\\d{2}:\\d{2}:\\d{2}[.]\\d+"
+			"pattern": "\\d{4}-\\d{2}-\\d{2}[T]\\d{2}:\\d{2}:\\d{2}"
 		},
 		"source_fqdn": {
 			"type": "string",
@@ -177,13 +187,13 @@
 			"examples": [
 				{
 					"doc_type": "pdf",
-					"web_url": "https://example.local/pubs/misc_pub_vol4.pdf",
+					"download_url": "https://example.local/pubs/misc_pub_vol4.pdf",
 					"compression_type": null
 				}
 			],
 			"required": [
 				"doc_type",
-				"web_url",
+				"download_url",
 				"compression_type"
 			],
 			"properties": {
@@ -193,9 +203,9 @@
 					"description": "The ultimate document file type when decompressed",
 					"pattern": "^[\\S]+$"
 				},
-				"web_url": {
+				"download_url": {
 					"type": "string",
-					"title": "Web Url",
+					"title": "Download Url",
 					"description": "Web url to a downloadable artifact, compressed or not",
 					"pattern": "^https?://"
 				},

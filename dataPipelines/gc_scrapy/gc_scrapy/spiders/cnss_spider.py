@@ -1,7 +1,12 @@
+from pydoc import source_synopsis
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
+from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp
 import scrapy
 import typing as t
+from datetime import datetime
+from urllib.parse import urlparse
 
 
 def simple(doc_type_num) -> t.Tuple[str, str, str]:
@@ -63,11 +68,6 @@ def directive(doc_type_num) -> t.Tuple[str, str, str]:
 
 class CNSSSpider(GCSpider):
     name = "CNSS" # Crawler name
-    display_org = "Dept. of Defense" # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = "Committee on National Security Systems Library" # Level 2: GC app 'Source' metadata field for docs from this crawler
-    source_title = "Unlisted Source" # Level 3 filter
-    cac_login_required = False
-
     start_urls = [
         "https://www.cnss.gov/CNSS/index.cfm"
     ]
@@ -95,7 +95,6 @@ class CNSSSpider(GCSpider):
                                ] = response.meta["split_func"]
 
         rows = response.css('table.documentTable tr')
-
         for row in rows[1:]:
             href_raw = row.css(
                 'td:nth-child(2) a::attr(href)').get() # For this website, each document's href changes with each crawl
@@ -114,34 +113,89 @@ class CNSSSpider(GCSpider):
             doc_type_num = self.ascii_clean(doc_type_num_raw)
             doc_title = self.ascii_clean(doc_title_raw)
             publication_date = self.ascii_clean(publication_date_raw)
-
+     
             doc_type, doc_num, display_doc_type = split_func(doc_type_num)
-
-            doc_name = f"{doc_type} {doc_num}"
-
-            version_hash_fields = {
-                "doc_title": doc_title,
-                "publication_date": publication_date
-            } 
+            
+            doc_name = f"{doc_type} {doc_num}".strip()
+            
+            source_page_url = response.url
 
             web_url = f"{self.root_url}{href_raw}"
-
-            downloadable_items = [
-                {
-                    "doc_type": 'pdf',
-                    "web_url": web_url,
-                    "compression_type": None
+            
+            fields = {
+                    'doc_name': doc_name,
+                    'doc_num': doc_num,
+                    'doc_title': doc_title,
+                    'doc_type': doc_type,
+                    'cac_login_required': False,
+                    'download_url': web_url,
+                    'publication_date': publication_date,
+                    'source_page_url': source_page_url,
+                    'display_doc_type': display_doc_type
                 }
-            ]
 
-            yield DocItem(
-                doc_name=doc_name.strip(),
-                doc_title=doc_title,
-                doc_num=doc_num,
-                doc_type=doc_type,
-                display_doc_type=display_doc_type,
-                publication_date=publication_date,
-                source_page_url=response.url,
-                version_hash_raw_data=version_hash_fields,
-                downloadable_items=downloadable_items
-            )
+            doc_item = self.populate_doc_item(fields)
+            
+            yield from doc_item
+            
+            
+    def populate_doc_item(self, fields):
+        display_org = "Dept. of Defense" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "Committee on National Security Systems Library" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "Unlisted Source" # Level 3 filter
+        
+        doc_name = fields['doc_name']
+        doc_num = fields['doc_num']
+        doc_title = fields['doc_title']
+        doc_type = fields['doc_type']
+        cac_login_required = fields['cac_login_required']
+        download_url = fields['download_url']
+        publication_date = get_pub_date(fields['publication_date'])
+        source_page_url = fields['source_page_url']
+        display_doc_type = fields['display_doc_type']
+
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_num + " " + doc_title
+        source_fqdn = urlparse(source_page_url).netloc
+        is_revoked = False
+
+        
+        downloadable_items = [
+            {
+                "doc_type": 'pdf',
+                "download_url": download_url,
+                "compression_type": None
+            }
+        ]
+        
+        version_hash_fields = {
+            "doc_title": doc_title,
+            "doc_num": doc_num,
+            "publication_date": publication_date,
+        }
+        
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+
+        yield DocItem(
+                    doc_name = doc_name,
+                    doc_title = doc_title,
+                    doc_num = doc_num,
+                    doc_type = doc_type,
+                    display_doc_type = display_doc_type, #
+                    publication_date = publication_date,
+                    cac_login_required = cac_login_required,
+                    crawler_used = self.name,
+                    downloadable_items = downloadable_items,
+                    source_page_url = source_page_url, #
+                    source_fqdn = source_fqdn, #
+                    download_url = download_url, #
+                    version_hash_raw_data = version_hash_fields, #
+                    version_hash = version_hash,
+                    display_org = display_org, #
+                    data_source = data_source, #
+                    source_title = source_title, #
+                    display_source = display_source, #
+                    display_title = display_title, #
+                    file_ext = doc_type, #
+                    is_revoked = is_revoked, #
+                )
