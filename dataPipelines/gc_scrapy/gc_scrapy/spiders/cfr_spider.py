@@ -1,21 +1,18 @@
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
+from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp, dict_to_sha256_hex_digest
+from urllib.parse import urlparse
+from datetime import datetime
 import json
-import re
 import scrapy
 
-from urllib.parse import urljoin, urlparse
-from datetime import datetime
-from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
-
-bill_version_re = re.compile(r'\((.*)\)')
-
-
 class CFRSpider(GCSpider):
-    name = "code_of_federal_regulations" # Crawler name
-    
+    name = "code_of_federal_regulations"  # Crawler name
     rotate_user_agent = True
-    visible_start = "https://www.govinfo.gov/app/collection/cfr"
+    # the years to grab documents from
+    # TODO: Grab only Title 35 from 2000, don't grab all docs
+    years = ["2000", "2021", "2022"]
+
     start_urls = [
         "https://www.govinfo.gov/wssearch/rb/cfr?fetchChildrenOnly=0"
     ]
@@ -38,143 +35,164 @@ class CFRSpider(GCSpider):
         yield scrapy.Request(url=self.start_urls[0], method='GET', headers=self.headers)
 
     @staticmethod
+    def get_pub_date(publication_date):
+        '''
+        This function convverts publication_date from DD Month YYYY format to YYYY-MM-DDTHH:MM:SS format.
+        T is a delimiter between date and time.
+        '''
+        try:
+            date = parse_timestamp(publication_date, None)
+            if date:
+                publication_date = datetime.strftime(date, '%Y-%m-%dT%H:%M:%S')
+        except:
+            publication_date = ""
+        return publication_date
+
+    @staticmethod
     def get_visible_detail_url(package_id: str) -> str:
         return f"https://www.govinfo.gov/app/details/{package_id}"
 
     @staticmethod
-    def get_pdf_file_download_url_from_id(package_id: str) -> str:
-        return f"https://www.govinfo.gov/content/pkg/{package_id}/pdf/{package_id}.pdf"
+    def get_api_detail_url(package_id: str) -> str:
+        return f"https://www.govinfo.gov/wssearch/getContentDetail?packageId={package_id}"
 
-    def parse(self, start_url_response):
-        data = json.loads(start_url_response.body)
-        years = [
-            node.get('nodeValue').get('browsePath')for node in data.get('childNodes', [])
-        ]
+    @staticmethod
+    def get_browse_path_url(browse_path) -> str:
+        return f"https://www.govinfo.gov/wssearch/rb//cfr/{browse_path}?fetchChildrenOnly=1&offset=0&pageSize=100"
 
-        for year in years:
-            year_url = f"https://www.govinfo.gov/wssearch/rb//cfr/{year}/?fetchChildrenOnly=1"
-            yield start_url_response.follow(url=year_url, callback=self.handle_title_nums, headers=self.headers)
+    @staticmethod
+    def get_nested_values(data, key='value') -> list:
+        return [cnode.get('nodeValue').get(key) for cnode in data.get('childNodes', [])]
 
-    def handle_title_nums(self, year_response):
-        data = json.loads(year_response.body)
-        cnodes = data.get('childNodes', [])
-        title_num_nodes = [cnode['nodeValue'] for cnode in cnodes]
-
-        for title_num_dict in title_num_nodes:
-
-            if title_num_dict.get('volumes'):
-                for vol in title_num_dict.get('volumes'):
-                    package_id = vol.get('packageid')
-                    vol_num = vol.get('volume')
-
-                    vol_data = title_num_dict.copy()
-                    vol_data.update({
-                        "packageid": package_id,
-                        "volume": vol_num
-                    })
-
-                    yield self.make_doc_item_from_dict(vol_data)
+    def parse(self, response):
+        for year in self.years:
+            if getattr(self, "specific_congress", None) is None:
+                cfr_year = year
             else:
-                yield self.make_doc_item_from_dict(title_num_dict)
+                cfr_year = 2022
 
-    def make_doc_item_from_dict(self, data):
-        publication_date = data.get('publishdate')
-        title = data.get('title')
-        title_num = data.get('cfrtitlenumber', "")
-        package_id = data.get('packageid')
-        vol_num = data.get('volume')
+            specific_congress_url = self.get_browse_path_url(cfr_year)
 
-        source_page_url = self.get_visible_detail_url(package_id)
+            yield response.follow(url=specific_congress_url, callback=self.get_package_ids, meta={"offset": 0, "year": year},
+                                  headers=self.headers)
 
-        is_index_type = "GPO-CFR-INDEX" in package_id
+    def get_package_ids(self, response):
+        data = json.loads(response.body)
+        current_offset = response.meta["offset"]
+        year = response.meta["year"]
 
-        doc_type = "CFR Index" if is_index_type else 'CFR Title'
-        doc_title = title if is_index_type else title.title()
-        doc_num = f"{title_num} Vol. {vol_num}" if vol_num else title_num
+        packages = self.get_nested_values(data, key='packageid')
+        # recursive base condition
+        if not len(packages):
+            return
 
-        web_url = self.get_pdf_file_download_url_from_id(package_id)
+        for package_id in packages:
+            detail_url = self.get_api_detail_url(package_id)
+            yield response.follow(url=detail_url, callback=self.parse_detail_data, meta={"offset": 0, "year": year},
+                                  headers=self.headers)
 
-        fields = {
-                'doc_name': package_id,
-                'doc_num': doc_num,
-                'doc_title': doc_title,
-                'doc_type': doc_type,
-                'cac_login_required': False,
-                'download_url': web_url,
-                'source_page_url': source_page_url,
-                'publication_date': publication_date
-            }
+        # iterate offset
+        next_offset = current_offset + 1
+        next_offset_url = response.url.replace(
+            f'offset={current_offset}', f'offset={next_offset}')
 
-        ## Instantiate DocItem class and assign document's metadata values
-        doc_item = self.populate_doc_item(fields)
-    
-        return doc_item
-        
+        yield response.follow(url=next_offset_url, callback=self.get_package_ids, meta={"offset": next_offset},
+                              headers=self.headers)
 
+    def parse_detail_data(self, response):
+        data = json.loads(response.body)
+        year = response.meta["year"]
 
-    def populate_doc_item(self, fields):
-        '''
-        This functions provides both hardcoded and computed values for the variables
-        in the imported DocItem object and returns the populated metadata object
-        '''
-        display_org = "Congress" # Level 1: GC app 'Source' filter for docs from this crawler
-        data_source = "U.S. Government Publishing Office" # Level 2: GC app 'Source' metadata field for docs from this crawler
-        source_title = "Unlisted Source" # Level 3 filter
+        package_id = data['documentincontext']['packageId']
+        web_url = f"https:{data['download']['pdflink']}"
 
-        doc_name = fields['doc_name']
-        doc_num = fields['doc_num']
-        doc_title = fields['doc_title']
-        doc_type = fields['doc_type']
-        cac_login_required = fields['cac_login_required']
-        download_url = fields['download_url']
-        publication_date = get_pub_date(fields['publication_date'])
-
-        display_doc_type = doc_type
-        display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_num + " " + doc_title
-        is_revoked = False
-        source_page_url = fields['source_page_url']
-        source_fqdn = urlparse(source_page_url).netloc
-
-        downloadable_items = [
-            {
-                "doc_type": "pdf",
-                "download_url": download_url,
-                "compression_type": None,
-            }
-        ]
-        file_ext = downloadable_items[0]["doc_type"]
-        ## Assign fields that will be used for versioning
-        version_hash_fields = {
-            "doc_name":doc_name,
-            "doc_num": doc_num,
-            "publication_date": publication_date,
-            "download_url": download_url
+        detail_data = {
+            "Publication Title": "",
+            "Date": "",
+            "Collection": "",
+            "Category": ""
         }
 
+        detail_data_list = data['metadata']['columnnamevalueset']
+        for d in detail_data_list:
+            if d['colname'] in detail_data:
+                detail_data[d['colname']] = d['colvalue']
+
+        # TODO: doc_num and doc_title (raw_title) are kindof hardcoded, need to change this
+        raw_title = ' '.join(data['title'].split()[3:])
+        doc_title = self.ascii_clean(raw_title)
+        doc_num = detail_data['Publication Title'].split()[1]
+        doc_type = "CFR Title"
+        doc_name = (f"{detail_data['Publication Title']} {year}" if year not in detail_data['Publication Title'] else f"{detail_data['Publication Title']}")
+        source_page_url = self.get_visible_detail_url(package_id)
+
+        fields = {
+            "doc_name": doc_name.strip(),
+            "doc_title": doc_title.strip(),
+            "doc_num": doc_num.strip(),
+            "doc_type": doc_type,
+            "source_page_url": source_page_url,
+            "web_url": web_url,
+            "publication_date": detail_data.get("Date Approved")
+        }
+
+        yield self.populate_doc_item(fields)
+
+    def populate_doc_item(self, fields: dict) -> DocItem:
+        display_org = "Executive Branch" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "National Archives and Records Administration" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "Unlisted Source"  # Level 3 filter
+        file_type = 'pdf'
+        cac_login_required = False
+        is_revoked = False
+
+        doc_name = fields.get('doc_name')
+        doc_title = fields.get('doc_title')
+        doc_num = fields.get('doc_num')
+        doc_type = fields.get('doc_type')
+        display_doc_type = "CFR Title"
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_num + " " + doc_title
+        web_url = fields.get("web_url")
+        download_url = web_url.replace(' ', '%20')
+        source_page_url = fields.get('source_page_url')
+        publication_date = fields.get("publication_date")
+        publication_date = self.get_pub_date(publication_date)
+        downloadable_items = [{
+            "doc_type": file_type,
+            "download_url": web_url,
+            "compression_type": None
+        }]
+        version_hash_fields = {
+            "doc_num": doc_num,
+            "doc_name": doc_name,
+            "doc_title": doc_title,
+            "publication_date": publication_date,
+            "download_url": web_url
+        }
+        source_fqdn = urlparse(source_page_url).netloc
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 
         return DocItem(
-                    doc_name = doc_name,
-                    doc_title = doc_title,
-                    doc_num = doc_num,
-                    doc_type = doc_type,
-                    display_doc_type = display_doc_type, #
-                    publication_date = publication_date,
-                    cac_login_required = cac_login_required,
-                    crawler_used = self.name,
-                    downloadable_items = downloadable_items,
-                    source_page_url = source_page_url, #
-                    source_fqdn = source_fqdn, #
-                    download_url = download_url, #
-                    version_hash_raw_data = version_hash_fields, #
-                    version_hash = version_hash,
-                    display_org = display_org, #
-                    data_source = data_source, #
-                    source_title = source_title, #
-                    display_source = display_source, #
-                    display_title = display_title, #
-                    file_ext = file_ext, #
-                    is_revoked = is_revoked, #
-                )
-
+            doc_name=doc_name,
+            doc_title=doc_title,
+            doc_num=doc_num,
+            doc_type=doc_type,
+            display_doc_type=display_doc_type,
+            publication_date=publication_date,
+            cac_login_required=cac_login_required,
+            crawler_used=self.name,
+            downloadable_items=downloadable_items,
+            source_page_url=source_page_url,
+            source_fqdn=source_fqdn,
+            download_url=download_url,
+            version_hash_raw_data=version_hash_fields,
+            version_hash=version_hash,
+            display_org=display_org,
+            data_source=data_source,
+            source_title=source_title,
+            display_source=display_source,
+            display_title=display_title,
+            file_ext=file_type,
+            is_revoked=is_revoked,
+        )

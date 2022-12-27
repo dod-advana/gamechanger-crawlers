@@ -5,12 +5,13 @@ from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, g
 from datetime import datetime
 from urllib.parse import urlparse
 import scrapy
-
+import re
 
 display_types = ["Instruction", "Manual", "Memo", "Regulation"]
 
+
 class DHASpider(GCSpider):
-    name = "dha_pubs" # Crawler name
+    name = "dha_pubs"  # Crawler name
     start_urls = [
         'https://www.health.mil/Reference-Center/DHA-Publications'
     ]
@@ -27,52 +28,11 @@ class DHASpider(GCSpider):
 
         return "Document"
 
-#####################
-
-    def parse_timestamp(self, ts: t.Union[str, datetime], raise_parse_error: bool = False) -> t.Optional[datetime]:
-        """Parse date/timestamp with no particular format
-        :param ts: date/timestamp string
-        :return: datetime.datetime if parsing was successful, else None
-        """
-        def _parse(ts):
-            if isinstance(ts, datetime):
-                return ts
-
-            try:
-                ts = pandas.to_datetime(ts).to_pydatetime()
-                if str(ts) == 'NaT':
-                    return None
-                else:
-                    return ts
-            except:
-                return None
-
-        parsed_ts = _parse(ts)
-        if parsed_ts is None and raise_parse_error:
-            raise ValueError(f"Invalid timestamp: '{ts!r}'")
-        else:
-            return parsed_ts
-
-
-    def get_pub_date(self, publication_date):
-        '''
-        This function convverts publication_date from DD Month YYYY format to YYYY-MM-DDTHH:MM:SS format.
-        T is a delimiter between date and time.
-        '''
-        try:
-            date = self.parse_timestamp(publication_date, None)
-            if date:
-                publication_date = date.strftime("%Y-%m-%dT%H:%M:%S")
-        except:
-            publication_date = None
-        return publication_date
-
-#################
-
     def parse(self, response):
         sections = response.css('table[class="dataTable tabpanel sortable"]')
         for section in sections:
-            headers = section.css('button , th.p:nth-child(1) , th.p:nth-child(2) , th.p:nth-child(5) , th.p:nth-child(4)::text').extract()
+            headers = section.css(
+                'button , th.p:nth-child(1) , th.p:nth-child(2) , th.p:nth-child(5) , th.p:nth-child(4)::text').extract()
             headers = [re.sub(r'<.+?>', '', header).strip() for header in headers]
             rows = section.css('table.dataTable tbody tr')
 
@@ -94,24 +54,24 @@ class DHASpider(GCSpider):
                 web_url = f"https://www.health.mil{href}"
 
                 fields = {
-                'doc_name': doc_name,
-                'doc_num': doc_num,
-                'doc_title': doc_title,
-                'doc_type': doc_type,
-                'cac_login_required': False,
-                'download_url': web_url,
-                'publication_date': publication_date,
-                'display_doc_type': display_doc_type
-            }
+                    'doc_name': doc_name,
+                    'doc_num': doc_num,
+                    'doc_title': doc_title,
+                    'doc_type': doc_type,
+                    'cac_login_required': False,
+                    'download_url': web_url,
+                    'publication_date': publication_date,
+                    'display_doc_type': display_doc_type
+                }
 
                 doc_item = self.populate_doc_item(fields)
-                
+
                 yield from doc_item
 
     def populate_doc_item(self, fields):
-        display_org = "Defense Health Agency" # Level 1: GC app 'Source' filter for docs from this crawler
-        data_source = "Military Health System" # Level 2: GC app 'Source' metadata field for docs from this crawler
-        source_title = "Defense Health Agency Publications" # Level 3 filter
+        display_org = "Defense Health Agency"  # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "Military Health System"  # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "Defense Health Agency Publications"  # Level 3 filter
 
         doc_name = fields['doc_name']
         doc_num = fields['doc_num']
@@ -122,7 +82,7 @@ class DHASpider(GCSpider):
         publication_date = get_pub_date(fields['publication_date'])
 
         display_doc_type = fields['display_doc_type']
-        
+
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + " " + doc_title
         is_revoked = False
@@ -136,37 +96,36 @@ class DHASpider(GCSpider):
                 "compression_type": None
             }
         ]
-        
+
         version_hash_fields = {
-            "doc_name":doc_name,
+            "doc_name": doc_name,
             "doc_num": doc_num,
             "publication_date": publication_date,
             "download_url": download_url
         }
-        
+
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
-        
+
         yield DocItem(
-                    doc_name = doc_name,
-                    doc_title = doc_title,
-                    doc_num = doc_num,
-                    doc_type = doc_type,
-                    display_doc_type = display_doc_type, #
-                    publication_date = publication_date,
-                    cac_login_required = cac_login_required,
-                    crawler_used = self.name,
-                    downloadable_items = downloadable_items,
-                    source_page_url = source_page_url, #
-                    source_fqdn = source_fqdn, #
-                    download_url = download_url, #
-                    version_hash_raw_data = version_hash_fields, #
-                    version_hash = version_hash,
-                    display_org = display_org, #
-                    data_source = data_source, #
-                    source_title = source_title, #
-                    display_source = display_source, #
-                    display_title = display_title, #
-                    file_ext = doc_type, #
-                    is_revoked = is_revoked, #
-                )
-        
+            doc_name=doc_name,
+            doc_title=doc_title,
+            doc_num=doc_num,
+            doc_type=doc_type,
+            display_doc_type=display_doc_type,  #
+            publication_date=publication_date,
+            cac_login_required=cac_login_required,
+            crawler_used=self.name,
+            downloadable_items=downloadable_items,
+            source_page_url=source_page_url,  #
+            source_fqdn=source_fqdn,  #
+            download_url=download_url,  #
+            version_hash_raw_data=version_hash_fields,  #
+            version_hash=version_hash,
+            display_org=display_org,  #
+            data_source=data_source,  #
+            source_title=source_title,  #
+            display_source=display_source,  #
+            display_title=display_title,  #
+            file_ext=doc_type,  #
+            is_revoked=is_revoked,  #
+        )
