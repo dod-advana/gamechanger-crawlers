@@ -170,7 +170,7 @@ class NavyReserveSpider(GCSeleniumSpider):
         doc_type = fields.get('doc_type')
         display_doc_type = self.get_display_doc_type(doc_type)
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_num + " " + doc_title
+        display_title = doc_type + " " + doc_num + ": " + doc_title
 
         source_page_url = fields.get('source_page_url')
         download_url = fields.get('download_url')

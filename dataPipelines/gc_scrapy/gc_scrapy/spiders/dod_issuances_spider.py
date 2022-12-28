@@ -200,7 +200,7 @@ class DoDSpider(GCSpider):
         publication_date = self.ascii_clean(fields.get("publication_date").strip())
         publication_date = self.get_pub_date(publication_date)
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_num + " " + doc_title
+        display_title = doc_type + " " + doc_num + ": " + doc_title
         display_doc_type = self.get_display_doc_type(doc_type.lower())
         download_url = fields.get("pdf_url")
         file_type = self.get_href_file_extension(download_url)

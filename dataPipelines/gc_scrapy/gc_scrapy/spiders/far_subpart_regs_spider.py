@@ -127,7 +127,7 @@ class FarSubpartSpider(GCSeleniumSpider):
         doc_num = fields.get('doc_num')
         doc_name = doc_type + " " + doc_num
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_num + " " + doc_title
+        display_title = doc_type + " " + doc_num + ": " + doc_title
         downloadable_items = [{
                 "doc_type": file_type,
                 "download_url": download_url,

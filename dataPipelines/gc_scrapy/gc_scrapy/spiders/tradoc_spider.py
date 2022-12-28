@@ -174,7 +174,7 @@ class TRADOCSpider(GCSpider):
         doc_title = fields.get('doc_title')
         doc_type = fields.get('doc_type')
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_num + " " + doc_title
+        display_title = doc_type + " " + doc_num + ": " + doc_title
         source_page_url = fields.get('source_page_url')
         publication_date = fields.get("publication_date")
         downloadable_items = fields.get("downloadable_items")

@@ -133,7 +133,7 @@ class USCodeSpider(GCSpider):
 
         display_doc_type = "Title"  # Doc type for display on app
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_num + " " + doc_title
+        display_title = doc_type + " " + doc_num + ": " + doc_title
         is_revoked = False
         source_page_url = self.start_urls[0]
         source_fqdn = urlparse(source_page_url).netloc

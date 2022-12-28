@@ -199,7 +199,7 @@ class BupersSpider(GCSpider):
         publication_date = fields.get("publication_date")
         doc_num = fields.get("doc_num")
         doc_title = fields.get("doc_title")
-        display_title = doc_type + " " + doc_num + " " + fields.get("doc_title")
+        display_title = doc_type + " " + doc_num + ": " + doc_title
         doc_name = self.match_old_doc_name(f"{doc_type} {doc_num}")
         download_url = "https://www." + self.allowed_domains[0] + fields.get("href")
         downloadable_items = self.get_downloadables(fields.get("href"))
