@@ -126,6 +126,6 @@ class DHASpider(GCSpider):
             source_title=source_title,  #
             display_source=display_source,  #
             display_title=display_title,  #
-            file_ext=doc_type,  #
+            file_ext=self.file_type,  #
             is_revoked=is_revoked,  #
         )
