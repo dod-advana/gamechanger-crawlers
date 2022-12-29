@@ -145,7 +145,7 @@ class CoastGuardSpider(GCSeleniumSpider):
         display_doc_type = self.get_display_doc_type(doc_type)
         file_ext = self.get_href_file_extension(fields.get("href_raw")) #########
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_num + " " + doc_title
+        display_title = doc_type + " " + doc_num + ": " + doc_title
         publication_date = self.get_pub_date(fields.get("publication_date"))
         doc_name = f"{doc_type} {doc_num}"
         download_url = fields.get("download_url").replace(' ', '%20')

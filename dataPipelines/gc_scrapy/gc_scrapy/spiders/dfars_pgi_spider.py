@@ -154,7 +154,7 @@ class DoDSpider(GCSpider):
 
         display_doc_type = "Document" # Doc type for display on app
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_num + " " + doc_title
+        display_title = doc_type + " " + doc_num + ": " + doc_title
         is_revoked = False
         source_fqdn = urlparse(source_page_url).netloc
 

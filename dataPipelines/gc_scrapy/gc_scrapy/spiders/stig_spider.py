@@ -100,7 +100,7 @@ class StigSpider(GCSpider):
 
         display_doc_type = fields['display_doc_type'] # Doc type for display on app
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_num + " " + doc_title
+        display_title = doc_type + " " + doc_num + ": " + doc_title
         is_revoked = False
         source_page_url = fields['source_page_url']
         source_fqdn = urlparse(source_page_url).netloc

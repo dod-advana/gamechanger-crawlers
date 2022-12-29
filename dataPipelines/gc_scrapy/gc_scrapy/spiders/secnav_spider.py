@@ -163,7 +163,7 @@ class SecNavSpider(GCSpider):
         publication_date = get_pub_date(fields['publication_date'])
         display_doc_type = self.get_display_doc_type(doc_type)
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_num + " " + doc_title
+        display_title = doc_type + " " + doc_num + ": " + doc_title
         is_revoked = fields['is_revoked']
         
 
