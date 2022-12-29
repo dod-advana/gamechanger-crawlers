@@ -1,32 +1,39 @@
 import re
 from datetime import datetime
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 from scrapy.http.response.text import TextResponse
 from scrapy.selector import Selector
 
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
+from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp, dict_to_sha256_hex_digest
 
 
 class TRADOCSpider(GCSpider):
     name = 'tradoc' # Crawler name
-    display_org = 'United States Army Training and Doctrine Command' # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = 'TRADOC' # Level 2: GC app 'Source' metadata field for docs from this crawler
-    source_title = 'TRADOC Administrative Publications' # Level 3
-
-    office_primary_resp = "Training and Doctrine Command"
-
     allowed_domains = ['adminpubs.tradoc.army.mil']
     start_urls = [
         'https://adminpubs.tradoc.army.mil/index.html'
     ]
-
-    cac_login_required = False
     rotate_user_agent = True
 
     _doc_num_rgx = re.compile(r'^(?P<num>[-0-9a-zA-Z]+)?(?: with )?(?:Change (?P<change>\d+))?$',
                               re.IGNORECASE)
+
+    @staticmethod
+    def get_pub_date(publication_date):
+        '''
+        This function convverts publication_date from DD Month YYYY format to YYYY-MM-DDTHH:MM:SS format.
+        T is a delimiter between date and time.
+        '''
+        try:
+            date = parse_timestamp(publication_date, None)
+            if date:
+                publication_date = datetime.strftime(date, '%Y-%m-%dT%H:%M:%S')
+        except:
+            publication_date = ""
+        return publication_date
 
     def parse(self, response: TextResponse):
         links = response.css('#content > p > a::attr(href)').getall()
@@ -87,7 +94,7 @@ class TRADOCSpider(GCSpider):
                     ext = self.get_href_file_extension(web_url)
                     item = {
                         "doc_type": ext,
-                        "web_url": web_url,
+                        "download_url": web_url,
                         "compression_type": None
                     }
                     # ensure pdf first file
@@ -96,27 +103,18 @@ class TRADOCSpider(GCSpider):
                     else:
                         downloadable_items.append(item)
 
-                version_hash_fields = {
-                    "item_currency": downloadable_items[0]["web_url"].split('/')[-1],
-                    "document_title": doc_title,
-                    "document_number": doc_num,
-                    "publication_date": publication_date,
-                }
-
                 doc_name = f'TRADOC {doc_num}'
 
-                pgi_doc_item = DocItem(
-                    doc_name=self.clean_name(doc_name),
-                    doc_num=self.ascii_clean(doc_num),
-                    doc_title=self.ascii_clean(doc_title),
-                    doc_type=self.ascii_clean(doc_category),
-                    publication_date=publication_date,
-                    source_page_url=response.url,
-                    downloadable_items=downloadable_items,
-                    version_hash_raw_data=version_hash_fields,
-                    office_primary_resp=self.office_primary_resp,
-                )
-                yield pgi_doc_item
+                fields = {
+                    "doc_name": self.clean_name(doc_name),
+                    "doc_num": self.ascii_clean(doc_num),
+                    "doc_title": self.ascii_clean(doc_title),
+                    "doc_type": self.ascii_clean(doc_category),
+                    "publication_date": publication_date,
+                    "source_page_url": response.url,
+                    "downloadable_items": downloadable_items
+                }
+                yield self.populate_doc_item(fields)
 
     def clean_name(self, name):
         return ' '.join(re.sub(r'[^a-zA-Z0-9. ()-_]', '', self.ascii_clean(name).replace('/', '_')).split())
@@ -161,3 +159,57 @@ class TRADOCSpider(GCSpider):
             pass
 
         raise ValueError(f'unknown date format {str(date_str)}')
+
+    def populate_doc_item(self, fields:dict) -> DocItem:
+        display_org = 'United States Army Training and Doctrine Command' # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = 'TRADOC' # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = 'TRADOC Administrative Publications' # Level 3
+        office_primary_resp = "Training and Doctrine Command"
+        display_doc_type = "Document"
+        cac_login_required = False
+        is_revoked = False
+
+        doc_name = fields.get('doc_name')
+        doc_num = fields.get('doc_num')
+        doc_title = fields.get('doc_title')
+        doc_type = fields.get('doc_type')
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_num + ": " + doc_title
+        source_page_url = fields.get('source_page_url')
+        publication_date = fields.get("publication_date")
+        downloadable_items = fields.get("downloadable_items")
+        download_url = downloadable_items[0]['download_url']
+        download_url = download_url.replace(' ', '%20')
+        version_hash_fields = {
+            "download_url": download_url,
+            "doc_name": doc_name,
+            "doc_num": doc_num,
+            "publication_date": publication_date,
+        }
+        file_ext = downloadable_items[0]["doc_type"]
+        source_fqdn = urlparse(source_page_url).netloc
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+        return DocItem(
+            doc_name = doc_name,
+            doc_title = doc_title,
+            doc_num = doc_num,
+            doc_type = doc_type,
+            display_doc_type = display_doc_type,
+            publication_date = publication_date,
+            cac_login_required = cac_login_required,
+            crawler_used = self.name,
+            downloadable_items = downloadable_items,
+            source_page_url = source_page_url,
+            source_fqdn = source_fqdn,
+            download_url = download_url, 
+            version_hash_raw_data = version_hash_fields,
+            version_hash = version_hash,
+            display_org = display_org,
+            data_source = data_source,
+            source_title = source_title,
+            display_source = display_source,
+            display_title = display_title,
+            file_ext = file_ext,
+            is_revoked = is_revoked,
+            office_primary_resp = office_primary_resp,
+            )

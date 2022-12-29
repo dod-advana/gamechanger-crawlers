@@ -1,7 +1,4 @@
-from datetime import datetime
 import re
-from urllib.parse import urljoin
-
 import time
 from scrapy.http import TextResponse
 from scrapy.selector import Selector
@@ -15,17 +12,16 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSeleniumSpider import GCSeleniumSpider
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from selenium.webdriver.common.keys import Keys
 
+from urllib.parse import urljoin, urlparse
+from datetime import datetime
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
+
 
 class MARADMINSpider(GCSeleniumSpider):
     name = 'maradmin_pubs' # Crawler name
-    display_org = 'US Marine Corps' # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = 'Marine Corps Publications Electronic Library' # Level 2: GC app 'Source' metadata field for docs from this crawler
-    source_title = 'Marine Administrative Message' # Level 3 filter
 
     start_urls = ['https://www.marines.mil/News/Messages/MARADMINS/']
     allowed_domains = ['marines.mil/']
-
-    cac_login_required = False
 
     def parse(self, response: TextResponse):
         driver: Chrome = response.meta["driver"]
@@ -51,32 +47,20 @@ class MARADMINSpider(GCSeleniumSpider):
 
                     is_revoked = doc_status != 'Active'
 
-                    version_hash_fields = {
-                        "document_number": doc_num,
-                        "publication_date": publication_date,
-                        "web_url": web_url
+                    fields = {
+                        'doc_name': " ".join(self.ascii_clean(doc_name).split(" ")[:8]).replace("/", "-"),
+                        'doc_num': self.ascii_clean(doc_num),
+                        'doc_title': self.ascii_clean(doc_title),
+                        'doc_type': doc_type,
+                        'cac_login_required': False,
+                        'source_page_url':response.url,
+                        'download_url': web_url,
+                        'publication_date': publication_date
                     }
-
-                    downloadable_items = [
-                        {
-                            "doc_type": "html",
-                            "web_url": web_url,
-                            "compression_type": None
-                        }
-                    ]
-
-                    doc_item = DocItem(
-                        doc_name=" ".join(self.ascii_clean(doc_name).split(" ")[:8]).replace("/", "-"),                       
-                        doc_num=self.ascii_clean(doc_num),
-                        doc_title=self.ascii_clean(doc_title),
-                        doc_type=doc_type,
-                        publication_date=publication_date,
-                        source_page_url=response.url,
-                        downloadable_items=downloadable_items,
-                        version_hash_raw_data=version_hash_fields,
-                        is_revoked=is_revoked,
-                    )
-                    yield doc_item
+                    ## Instantiate DocItem class and assign document's metadata values
+                    doc_item = self.populate_doc_item(fields)
+                
+                    yield from doc_item
                 except Exception as e:
                     print('error in processing row: ' + str(e))
 
@@ -92,3 +76,71 @@ class MARADMINSpider(GCSeleniumSpider):
             except NoSuchElementException:
                 print("Last button encountered. Ending crawler")
                 break
+            
+            
+        
+
+
+    def populate_doc_item(self, fields):
+        '''
+        This functions provides both hardcoded and computed values for the variables
+        in the imported DocItem object and returns the populated metadata object
+        '''
+        display_org = 'US Marine Corps' # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = 'Marine Corps Publications Electronic Library' # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = 'Marine Administrative Message' # Level 3 filter
+
+        doc_name = fields['doc_name']
+        doc_num = fields['doc_num']
+        doc_title = fields['doc_title']
+        doc_type = fields['doc_type']
+        cac_login_required = fields['cac_login_required']
+        download_url = fields['download_url']
+        publication_date = get_pub_date(fields['publication_date'])
+
+        display_doc_type = "Document" # Doc type for display on app
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_num + ": " + doc_title
+        is_revoked = False
+        source_page_url = fields['source_page_url']
+        source_fqdn = urlparse(source_page_url).netloc
+
+        downloadable_items = [{
+                "doc_type": "html",
+                "download_url": download_url,
+                "compression_type": None,
+            }]
+
+        ## Assign fields that will be used for versioning
+        version_hash_fields = {
+            "doc_name":doc_name,
+            "doc_num": doc_num,
+            "publication_date": publication_date,
+            "download_url": download_url
+        }
+
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+
+        yield DocItem(
+                    doc_name = doc_name,
+                    doc_title = doc_title,
+                    doc_num = doc_num,
+                    doc_type = doc_type,
+                    display_doc_type = display_doc_type, #
+                    publication_date = publication_date,
+                    cac_login_required = cac_login_required,
+                    crawler_used = self.name,
+                    downloadable_items = downloadable_items,
+                    source_page_url = source_page_url, #
+                    source_fqdn = source_fqdn, #
+                    download_url = download_url, #
+                    version_hash_raw_data = version_hash_fields, #
+                    version_hash = version_hash,
+                    display_org = display_org, #
+                    data_source = data_source, #
+                    source_title = source_title, #
+                    display_source = display_source, #
+                    display_title = display_title, #
+                    file_ext = doc_type, #
+                    is_revoked = is_revoked, #
+                )

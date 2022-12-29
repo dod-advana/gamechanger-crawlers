@@ -1,19 +1,43 @@
 import re
 import bs4
+from datetime import datetime
+from urllib.parse import urlparse
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
-
-from dataPipelines.gc_scrapy.gc_scrapy.utils import abs_url
+from dataPipelines.gc_scrapy.gc_scrapy.utils import abs_url, parse_timestamp, dict_to_sha256_hex_digest
 
 
 class DoDSpider(GCSpider):
     name = 'dod_issuances' # Crawler name
-    display_org = "Dept. of Defense" # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = "WHS DoD Directives Division" # Level 2: GC app 'Source' metadata field for docs from this crawler
-    source_title = "Unlisted Source" # Level 3 filter
 
     start_urls = ['https://www.esd.whs.mil/DD/DoD-Issuances/DTM/']
     allowed_domains = ['www.esd.whs.mil']
+
+    @staticmethod
+    def get_pub_date(publication_date):
+        '''
+        This function convverts publication_date from DD Month YYYY format to YYYY-MM-DDTHH:MM:SS format.
+        T is a delimiter between date and time.
+        '''
+        try:
+            date = parse_timestamp(publication_date, None)
+            if date:
+                publication_date = datetime.strftime(date, '%Y-%m-%dT%H:%M:%S')
+        except:
+            publication_date = ""
+        return publication_date
+
+    @staticmethod
+    def get_display_doc_type(doc_type):
+        display_dict = {
+            "dod": 'Issuance',
+            "dodm": 'Manual',
+            "dodi": 'Instruction',
+            "dodd": 'Directive',
+            "ai": 'Instruction',
+            "dtm": 'Memorandum'
+            }
+        return display_dict.get(doc_type, "Document")
 
     def parse(self, response):
         links = response.css('li.col-sm-6')[0].css('a')
@@ -41,16 +65,18 @@ class DoDSpider(GCSpider):
         table = soup.find('table', attrs={'class': 'dnnGrid'})
         rows = table.find_all('tr')
 
+        page_url_clean = page_url.lower()
+
         # set issuance type
-        if page_url.endswith('dodd/'):
+        if page_url_clean.endswith('dodd/'):
             doc_type = 'DoDD'
-        elif page_url.endswith('dodi/'):
+        elif page_url_clean.endswith('dodi/'):
             doc_type = 'DoDI'
-        elif page_url.endswith('dodm/'):
+        elif page_url_clean.endswith('dodm/'):
             doc_type = 'DoDM'
-        elif page_url.endswith('inst/'):
+        elif page_url_clean.endswith('inst/'):
             doc_type = 'AI'
-        elif page_url.endswith('dtm/'):
+        elif page_url_clean.endswith('dtm/'):
             doc_type = 'DTM'
         else:
             doc_type = 'DoDI CPM'
@@ -77,6 +103,7 @@ class DoDSpider(GCSpider):
             exp_date = ''
             issuance_num = ''
             pdf_di = None
+            office_primary_resp = ''
 
             # skip the extra rows, not included in the table
             try:
@@ -96,7 +123,7 @@ class DoDSpider(GCSpider):
                         base_url, cell.a['href']).replace(' ', '%20')
                     pdf_di = {
                         "doc_type": 'pdf',
-                        "web_url": pdf_url,
+                        "download_url": pdf_url,
                         "compression_type": None
                     }
 
@@ -104,10 +131,10 @@ class DoDSpider(GCSpider):
                     data = re.sub(r'\(.*\)', '', data).strip()
 
                     # set doc_name and doc_num based on issuance
-                    if page_url.endswith('dtm/'):
+                    if page_url_clean.endswith('dtm/'):
                         doc_name = data
                         doc_num = re.search(r'\d{2}.\d{3}', data)[0]
-                    elif page_url.endswith('140025/'):
+                    elif page_url_clean.endswith('140025/'):
                         issuance_num = data.split()
                         doc_name = 'DoDI 1400.25 Volume ' + issuance_num[0] if issuance_num[0] != 'DoDI' \
                             else ' '.join(issuance_num).strip()
@@ -136,24 +163,79 @@ class DoDSpider(GCSpider):
                 cac_login_required = True if any(x in pdf_url for x in cac_required) \
                     or any(x in doc_title for x in cac_required) else False
 
-            # all fields that will be used for versioning
-            version_hash_fields = {
-                # version metadata found on pdf links
-                "item_currency": pdf_url.split('/')[-1],
-                "exp_date": exp_date.strip(),
-                "pub_date": publication_date.strip(),
-                "chapter_date": chapter_date.strip()
+            fields = {
+                "doc_name": doc_name,
+                "doc_num": doc_num,
+                "doc_title": doc_title,
+                "doc_type": doc_type,
+                "cac_login_required": cac_login_required,
+                "page_url": page_url,
+                "pdf_url": pdf_url,
+                "pdf_di": pdf_di,
+                "publication_date": publication_date,
+                "chapter_date": chapter_date,
+                "office_primary_resp": office_primary_resp
             }
+            doc_item = self.populate_doc_item(fields)
+            
+            yield doc_item
 
-            yield DocItem(
-                doc_name=self.ascii_clean(doc_name.strip()),
-                doc_title=self.ascii_clean(re.sub('\\"', '', doc_title)),
-                doc_num=self.ascii_clean(doc_num.strip()),
-                doc_type=self.ascii_clean(doc_type.strip()),
-                publication_date=self.ascii_clean(publication_date),
-                source_page_url=response.url,
-                cac_login_required=cac_login_required,
-                downloadable_items=[pdf_di],
-                version_hash_raw_data=version_hash_fields,
-                office_primary_resp=office_primary_resp,
+    def populate_doc_item(self, fields):
+        '''
+        This functions provides both hardcoded and computed values for the variables
+        in the imported DocItem object and returns the populated metadata object
+        '''
+        display_org = "Dept. of Defense" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "WHS DoD Directives Division" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "Unlisted Source" # Level 3 filter
+        is_revoked = False
+        cac_login_required = fields.get("cac_login_required")
+        source_page_url = fields.get("page_url")
+        office_primary_resp = fields.get("office_primary_resp")
+
+        doc_name = self.ascii_clean(fields.get("doc_name").strip())
+        doc_title = self.ascii_clean(re.sub('\\"', '', fields.get("doc_title")))
+        doc_num = self.ascii_clean(fields.get("doc_num").strip())
+        doc_type = self.ascii_clean(fields.get("doc_type").strip())
+        publication_date = self.ascii_clean(fields.get("publication_date").strip())
+        publication_date = self.get_pub_date(publication_date)
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_num + ": " + doc_title
+        display_doc_type = self.get_display_doc_type(doc_type.lower())
+        download_url = fields.get("pdf_url")
+        file_type = self.get_href_file_extension(download_url)
+        downloadable_items = [fields.get("pdf_di")]
+        version_hash_fields = {
+                "download_url": download_url,
+                "pub_date": publication_date,
+                "change_date": fields.get("chapter_date").strip(),
+                "doc_num": doc_num,
+                "doc_name": doc_name
+            }
+        source_fqdn = urlparse(source_page_url).netloc
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+
+        return DocItem(
+                doc_name = doc_name,
+                doc_title = doc_title,
+                doc_num = doc_num,
+                doc_type = doc_type,
+                display_doc_type = display_doc_type,
+                publication_date = publication_date,
+                cac_login_required = cac_login_required,
+                crawler_used = self.name,
+                downloadable_items = downloadable_items,
+                source_page_url = source_page_url,
+                source_fqdn = source_fqdn,
+                download_url = download_url, 
+                version_hash_raw_data = version_hash_fields,
+                version_hash = version_hash,
+                display_org = display_org,
+                data_source = data_source,
+                source_title = source_title,
+                display_source = display_source,
+                display_title = display_title,
+                file_ext = file_type,
+                is_revoked = is_revoked,
+                office_primary_resp = office_primary_resp,
             )

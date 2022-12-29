@@ -7,12 +7,14 @@ from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver import Chrome
 from selenium.common.exceptions import NoSuchElementException
 import re
-from urllib.parse import urljoin, urlparse
-from datetime import datetime
 
 from dataPipelines.gc_scrapy.gc_scrapy.middleware_utils.selenium_request import SeleniumRequest
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSeleniumSpider import GCSeleniumSpider
+
+from urllib.parse import urljoin, urlparse
+from datetime import datetime
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
 
 ## Universal variables - Regular expression matching
 squash_spaces = re.compile(r'\s*[\n\t\r\s+]\s*') # Find redundant spaces in a string
@@ -30,9 +32,6 @@ class AirForcePubsSpider(GCSeleniumSpider):
     '''
 
     name = 'air_force_pubs' # Crawler name
-    display_org = "Dept. of the Air Force" # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = "Dept. of the Air Force E-Publishing" # Level 2: GC app 'Source' metadata field for docs from this crawler
-    source_title = "Unlisted Source" # Level 3 filter
 
     allowed_domains = ['e-publishing.af.mil'] # Domains the spider is allowed to crawl
     start_urls = [
@@ -104,7 +103,7 @@ class AirForcePubsSpider(GCSeleniumSpider):
         for row in webpage.css(row_selector):
             product_number_raw = row.css(
                 f'td:nth-child(1) a::text').get(default='')
-            url_raw = row.css(
+            web_url = row.css(
                 f'td:nth-child(1) a::attr(href)').get(default='')
             title_raw = row.css(
                 f'td:nth-child(2) a::text').get(default='')
@@ -163,50 +162,101 @@ class AirForcePubsSpider(GCSeleniumSpider):
             ## Clean raw metadata values
             doc_title = squash_spaces.sub(' ', title_raw).strip() # Clean any superfluous spaces in raw value
 
-            pub_date = squash_spaces.sub(' ', publish_date_raw).strip() # Clean any superfluous spaces in raw value
-            pub_date = pub_date.split(' ')[0] # Get only year-month-day from published_date_raw value
-            pub_date = datetime.strptime(
-                pub_date, '%Y%m%d').strftime('%Y-%m-%d')
+            publication_date = squash_spaces.sub(' ', publish_date_raw).strip() # Clean any superfluous spaces in raw value
+            publication_date = publication_date.split(' ')[0] # Get only year-month-day from published_date_raw value
+            publication_date = datetime.strptime(
+                publication_date, '%Y%m%d').strftime('%Y-%m-%d')
 
             # CERTIFICATION DATE
             cert_date = squash_spaces.sub(' ', certification_date_raw).strip() # Clean any superfluous spaces in raw value
             cert_date = cert_date.split(' ')[0] # Get only year-month-day from certfication_date_raw value
-            cert_date = datetime.strptime(
-                cert_date, '%Y%m%d').strftime('%Y-%m-%d')
+            cert_date = datetime.strptime(cert_date, '%Y%m%d').strftime('%Y-%m-%d')
 
             # LAST DOCUMENT ACTION
             last_action = squash_spaces.sub(' ', last_action_raw).strip() # Clean any superfluous spaces in raw value
 
             ## Set boolean if CAC is required to view document
-            cac_login_required = True if any(x in url_raw for x in self.cac_required_options) \
+            cac_login_required = True if any(x in web_url for x in self.cac_required_options) \
                 or any(x in doc_title for x in self.cac_required_options) \
                 or '-S' in prod_num else False
 
-            ## Assign fields that will be used for versioning
-            version_hash_fields = {
-                # version metadata found on pdf links
-                "item_currency": url_raw.split('/')[-1],
-                "certified_date": cert_date,
-                "last_action": last_action,
-                "pub_date": pub_date
+            fields = {
+                'doc_name': doc_name,
+                'doc_num': doc_num,
+                'doc_title': re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
+                'doc_type': doc_type,
+                'cac_login_required': cac_login_required,
+                'download_url': web_url,
+                'publication_date': publication_date
             }
 
-            downloadable_items = [
-                {
-                    "doc_type": self.file_type,
-                    "web_url": url_raw,
-                    "compression_type": None
-                }
-            ]
-
             ## Instantiate DocItem class and assign document's metadata values
-            yield DocItem(
-                doc_name=doc_name,
-                doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
-                doc_num=doc_num,
-                doc_type=doc_type,
-                publication_date=pub_date,
-                cac_login_required=cac_login_required,
-                downloadable_items=downloadable_items,
-                version_hash_raw_data=version_hash_fields
-            )
+            doc_item = self.populate_doc_item(fields)
+            yield doc_item
+
+
+    def populate_doc_item(self, fields):
+        '''
+        This functions provides both hardcoded and computed values for the variables
+        in the imported DocItem object and returns the populated metadata object
+        '''
+        display_org = "Dept. of the Air Force" # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "Dept. of the Air Force E-Publishing" # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "Unlisted Source" # Level 3 filter
+
+        doc_name = fields['doc_name']
+        doc_num = fields['doc_num']
+        doc_title = fields['doc_title']
+        doc_type = fields['doc_type']
+        cac_login_required = fields['cac_login_required']
+        download_url = fields['download_url']
+        publication_date = get_pub_date(fields['publication_date'])
+
+        display_doc_type = "Document" # Doc type for display on app
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_num + ": " + doc_title
+        is_revoked = False
+
+        source_page_url = self.start_urls[0]
+        source_fqdn = urlparse(source_page_url).netloc
+        
+        downloadable_items = [{
+                "doc_type": self.file_type,
+                "download_url": download_url,
+                "compression_type": None
+            }]
+
+        ## Assign fields that will be used for versioning
+        version_hash_fields = {
+            "doc_name":doc_name,
+            "doc_num": doc_num,
+            "publication_date": publication_date,
+            "download_url": download_url.split('/')[-1]
+        }
+        file_ext = downloadable_items[0]["doc_type"]
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+
+        return DocItem(
+                    doc_name = doc_name,
+                    doc_title = doc_title,
+                    doc_num = doc_num,
+                    doc_type = doc_type,
+                    display_doc_type = display_doc_type, #
+                    publication_date = publication_date,
+                    cac_login_required = cac_login_required,
+                    crawler_used = self.name,
+                    downloadable_items = downloadable_items,
+                    source_page_url = source_page_url, #
+                    source_fqdn = source_fqdn, #
+                    download_url = download_url, #
+                    version_hash_raw_data = version_hash_fields, #
+                    version_hash = version_hash,
+                    display_org = display_org, #
+                    data_source = data_source, #
+                    source_title = source_title, #
+                    display_source = display_source, #
+                    display_title = display_title, #
+                    file_ext = file_ext, #
+                    is_revoked = is_revoked, #
+
+                )
