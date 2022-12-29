@@ -155,7 +155,7 @@ class CNSSSpider(GCSpider):
         display_doc_type = fields['display_doc_type']
 
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_num + " " + doc_title
+        display_title = doc_type + " " + doc_num + ": " + doc_title
         source_fqdn = urlparse(source_page_url).netloc
         is_revoked = False
 

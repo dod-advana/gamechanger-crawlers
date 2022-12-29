@@ -198,7 +198,7 @@ class LegislationSpider(GCSpider):
         doc_type = fields.get('doc_type')
         display_doc_type = "Law"
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_num + " " + doc_title
+        display_title = doc_type + " " + doc_num + ": " + doc_title
         web_url = fields.get("web_url")
         download_url = web_url.replace(' ', '%20')
         source_page_url = fields.get('source_page_url')

@@ -160,7 +160,7 @@ class ExecutiveOrdersSpider(GCSpider):
         }
         # handles rare case where a num cant be found
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_num + " " + doc_title
+        display_title = doc_type + " " + doc_num + ": " + doc_title
         source_fqdn = urlparse(source_page_url).netloc
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 

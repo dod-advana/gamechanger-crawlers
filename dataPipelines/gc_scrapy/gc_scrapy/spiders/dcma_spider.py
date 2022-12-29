@@ -74,7 +74,7 @@ class DCMASpider(GCSpider):
 
         doc_name=f"{doc_type} {doc_num}"
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_num + " " + doc_title
+        display_title = doc_type + " " + doc_num + ": " + doc_title
         file_type = self.get_href_file_extension(href)
         version_hash_fields = {
                     "item_currency": href,

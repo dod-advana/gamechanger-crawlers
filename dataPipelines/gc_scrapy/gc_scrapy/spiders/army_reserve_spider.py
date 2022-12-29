@@ -125,7 +125,7 @@ class ArmyReserveSpider(GCSpider):
         cac_login_required = fields['cac_login_required']
         download_url = fields['download_url']
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_num + " " + doc_title
+        display_title = doc_type + " " + doc_num + ": " + doc_title
         source_page_url = self.start_urls[0]
         source_fqdn = urlparse(source_page_url).netloc
         downloadable_items = [
