@@ -113,10 +113,11 @@ class MARADMINSpider(GCSeleniumSpider):
 
         ## Assign fields that will be used for versioning
         version_hash_fields = {
-            "doc_name":doc_name,
+            "doc_name": doc_name,
             "doc_num": doc_num,
             "publication_date": publication_date,
-            "download_url": download_url
+            "download_url": download_url,
+            "display_title": display_title
         }
 
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
@@ -126,21 +127,21 @@ class MARADMINSpider(GCSeleniumSpider):
                     doc_title = doc_title,
                     doc_num = doc_num,
                     doc_type = doc_type,
-                    display_doc_type = display_doc_type, #
+                    display_doc_type = display_doc_type,
                     publication_date = publication_date,
                     cac_login_required = cac_login_required,
                     crawler_used = self.name,
                     downloadable_items = downloadable_items,
-                    source_page_url = source_page_url, #
-                    source_fqdn = source_fqdn, #
-                    download_url = download_url, #
-                    version_hash_raw_data = version_hash_fields, #
+                    source_page_url = source_page_url,
+                    source_fqdn = source_fqdn,
+                    download_url = download_url,
+                    version_hash_raw_data = version_hash_fields,
                     version_hash = version_hash,
-                    display_org = display_org, #
-                    data_source = data_source, #
-                    source_title = source_title, #
-                    display_source = display_source, #
-                    display_title = display_title, #
-                    file_ext = doc_type, #
-                    is_revoked = is_revoked, #
+                    display_org = display_org,
+                    data_source = data_source,
+                    source_title = source_title,
+                    display_source = display_source,
+                    display_title = display_title,
+                    file_ext = doc_type,
+                    is_revoked = is_revoked,
                 )

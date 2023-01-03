@@ -184,7 +184,8 @@ class SecNavSpider(GCSpider):
             "download_url": download_url,
             "status": fields['status'],
             "sponsor": fields['sponsor'],
-            "cancel_date": fields['cancel_date']
+            "cancel_date": fields['cancel_date'],
+            "display_title": display_title
         }
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 

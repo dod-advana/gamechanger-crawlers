@@ -153,7 +153,8 @@ class CoastGuardSpider(GCSeleniumSpider):
                 "doc_name": doc_name,
                 "doc_num": doc_num,
                 "publication_date": publication_date,
-                "download_url": download_url
+                "download_url": download_url,
+                "display_title": display_title
             }
         downloadable_items = [{
                 "doc_type": file_ext,

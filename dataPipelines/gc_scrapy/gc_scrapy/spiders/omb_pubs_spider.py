@@ -69,14 +69,6 @@ class OmbSpider(GCSpider):
                         'compression_type': None
                     }]
 
-                    version_hash_fields = {
-                        "doc_name":doc_name,
-                        "doc_num": doc_num,
-                        "publication_date": publication_date,
-                        "download_url": pdf_url
-                    }
-                    
-                    version_hash = dict_to_sha256_hex_digest(version_hash_fields)
                     parsed_title = self.ascii_clean(re.sub('\\"', '', doc_title))
                     parsed_num = doc_num.strip()
                     if parsed_num not in parsed_nums:
@@ -89,10 +81,8 @@ class OmbSpider(GCSpider):
                             'publication_date': publication_date,
                             'cac_login_required': False,
                             'source_page_url': page_url.strip(),
-                            'version_hash_raw_data': version_hash_fields,
                             'downloadable_items': pdf_di,
                             'download_url': pdf_url,
-                            'version_hash': version_hash,
                         }
                         doc_item = self.populate_doc_item(fields)                 
                         yield from doc_item
@@ -114,36 +104,42 @@ class OmbSpider(GCSpider):
         download_url = fields['download_url']
         display_doc_type = fields['display_doc_type']
         downloadable_items = fields['downloadable_items']
-        version_hash = fields['version_hash']
-        version_hash_fields = fields['version_hash_raw_data']
         
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + ": " + doc_title
         is_revoked = False
         source_page_url = self.start_urls[0]
         source_fqdn = urlparse(source_page_url).netloc
+        version_hash_fields = {
+            "doc_name": doc_name,
+            "doc_num": doc_num,
+            "publication_date": publication_date,
+            "download_url": download_url,
+            "display_title": display_title
+        }
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 
         yield DocItem(
                     doc_name = doc_name,
                     doc_title = doc_title,
                     doc_num = doc_num,
                     doc_type = doc_type,
-                    display_doc_type = display_doc_type, #
+                    display_doc_type = display_doc_type,
                     publication_date = publication_date,
                     cac_login_required = cac_login_required,
                     crawler_used = self.name,
                     downloadable_items = downloadable_items,
-                    source_page_url = source_page_url, #
-                    source_fqdn = source_fqdn, #
-                    download_url = download_url, #
-                    version_hash_raw_data = version_hash_fields, #
+                    source_page_url = source_page_url,
+                    source_fqdn = source_fqdn,
+                    download_url = download_url,
+                    version_hash_raw_data = version_hash_fields,
                     version_hash = version_hash,
-                    display_org = display_org, #
-                    data_source = data_source, #
-                    source_title = source_title, #
-                    display_source = display_source, #
-                    display_title = display_title, #
-                    file_ext = doc_type, #
-                    is_revoked = is_revoked, #
+                    display_org = display_org,
+                    data_source = data_source,
+                    source_title = source_title,
+                    display_source = display_source,
+                    display_title = display_title,
+                    file_ext = doc_type,
+                    is_revoked = is_revoked,
                 )
         

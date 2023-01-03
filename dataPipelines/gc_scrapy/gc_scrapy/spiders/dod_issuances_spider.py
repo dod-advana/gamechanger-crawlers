@@ -210,7 +210,8 @@ class DoDSpider(GCSpider):
                 "pub_date": publication_date,
                 "change_date": fields.get("chapter_date").strip(),
                 "doc_num": doc_num,
-                "doc_name": doc_name
+                "doc_name": doc_name,
+                "display_title": display_title
             }
         source_fqdn = urlparse(source_page_url).netloc
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)

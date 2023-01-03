@@ -180,7 +180,8 @@ class NavyReserveSpider(GCSeleniumSpider):
             "doc_name": doc_title,
             "doc_num": doc_num,
             "doc_title": doc_title,
-            "publication_date": publication_date
+            "publication_date": publication_date,
+            "display_title": display_title
         }
         downloadable_items = [
             {
