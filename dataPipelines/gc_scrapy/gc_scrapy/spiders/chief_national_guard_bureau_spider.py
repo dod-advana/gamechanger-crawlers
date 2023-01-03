@@ -25,16 +25,7 @@ class CNGBISpider(GCSpider):
 
     def parse(self, response):
         rows = response.css('div.WordSection1 table tbody tr')
-        i = 0
         for row in rows:
-            i += 1
-            if i == 107:
-                print("oh")
-            if i == 108:
-                print("oh")
-
-            if i == 109:
-                print("oh")
             href_raw = row.css('td:nth-child(1) a::attr(href)').get()
 
             if not href_raw.startswith('/'):
