@@ -40,7 +40,7 @@ class CNGBISpider(GCSpider):
             downloadable_items = [
                 {
                     "doc_type": file_type,
-                    "web_url": web_url,
+                    "download_url": web_url,
                     "compression_type": None
                 }
             ]
