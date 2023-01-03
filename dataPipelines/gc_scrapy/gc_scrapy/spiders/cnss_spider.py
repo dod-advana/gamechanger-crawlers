@@ -172,6 +172,7 @@ class CNSSSpider(GCSpider):
             "doc_title": doc_title,
             "doc_num": doc_num,
             "publication_date": publication_date,
+            "display_title": display_title
         }
         
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)

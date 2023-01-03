@@ -150,17 +150,18 @@ class ExecutiveOrdersSpider(GCSpider):
         doc_name = f"EO {doc_num}" if doc_num else f"EO {doc_title}"
         download_url = downloadable_items[0]["download_url"]
         file_type = self.get_href_file_extension(download_url)
+        display_title = doc_type + " " + doc_num + ": " + doc_title
         version_hash_fields = {
             "publication_date": publication_date,
             "signing_date": signing_date,
             "disposition_notes": disposition_notes,
             "doc_name": doc_name,
             "doc_num": doc_num,
-            "download_url": download_url
+            "download_url": download_url,
+            "display_title": display_title
         }
         # handles rare case where a num cant be found
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_num + ": " + doc_title
         source_fqdn = urlparse(source_page_url).netloc
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 

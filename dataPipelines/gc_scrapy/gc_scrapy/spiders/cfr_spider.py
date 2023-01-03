@@ -168,7 +168,8 @@ class CFRSpider(GCSpider):
             "doc_name": doc_name,
             "doc_title": doc_title,
             "publication_date": publication_date,
-            "download_url": web_url
+            "download_url": web_url,
+            "display_title": display_title
         }
         source_fqdn = urlparse(source_page_url).netloc
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)

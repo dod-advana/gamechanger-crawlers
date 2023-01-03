@@ -208,6 +208,7 @@ class BupersSpider(GCSpider):
             "doc_name": doc_name,
             "doc_num": doc_num,
             "publication_date": publication_date,
+            "display_title": display_title
         }
         file_ext = downloadable_items[0]["doc_type"]
         source_fqdn = urlparse(source_page_url).netloc

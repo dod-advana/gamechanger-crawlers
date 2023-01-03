@@ -112,11 +112,11 @@ class SASCSpider(GCSpider):
                 'doc_name': base_doc_name,
                 'doc_title': title,
                 'doc_type': hearing_type,
-                'display_doc_type':'Hearing',
+                'display_doc_type': 'Hearing',
                 'cac_login_required': False,
                 'download_url': response.url,
-                'source_page_url':response.url,
-                'downloadable_items':downloadable_items,
+                'source_page_url': response.url,
+                'downloadable_items': downloadable_items,
                 'publication_date': date
             }
             ## Instantiate DocItem class and assign document's metadata values

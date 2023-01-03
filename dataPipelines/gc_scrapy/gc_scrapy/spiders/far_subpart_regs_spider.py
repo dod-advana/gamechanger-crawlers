@@ -137,7 +137,8 @@ class FarSubpartSpider(GCSeleniumSpider):
                 "download_url": fields.get("href_raw"),
                 "doc_name": doc_name,
                 "doc_num": doc_num,
-                "publication_date": publication_date
+                "publication_date": publication_date,
+                "display_title": display_title
             }
         source_fqdn = urlparse(source_page_url).netloc
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)

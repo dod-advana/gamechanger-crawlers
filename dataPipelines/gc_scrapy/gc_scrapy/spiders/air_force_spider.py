@@ -231,7 +231,8 @@ class AirForcePubsSpider(GCSeleniumSpider):
             "doc_name":doc_name,
             "doc_num": doc_num,
             "publication_date": publication_date,
-            "download_url": download_url.split('/')[-1]
+            "download_url": download_url.split('/')[-1],
+            "display_title": display_title
         }
         file_ext = downloadable_items[0]["doc_type"]
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
