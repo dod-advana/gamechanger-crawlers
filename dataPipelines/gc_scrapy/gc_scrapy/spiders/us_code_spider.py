@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import scrapy
 from pathlib import Path
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider

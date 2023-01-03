@@ -4,7 +4,6 @@ from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp
 from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
 from datetime import datetime
 from urllib.parse import urlparse
-import scrapy
 import re
 
 display_types = ["Instruction", "Manual", "Memo", "Regulation"]
