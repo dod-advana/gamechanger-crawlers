@@ -12,9 +12,6 @@ from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
 
 class BrickSetSpider(GCSpider):
     name = 'FASAB Crawler' # Crawler name
-    display_org = "Uncategorized" # Level 1: value TBD for this crawler
-    data_source = "Unlisted Source" # Level 2: value TBD for this crawler
-    source_title = "Unlisted Source" # Level 3 filter
     
     allowed_domains = ['fasab.gov']
     file_type = "pdf"
