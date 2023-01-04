@@ -138,7 +138,8 @@ class ArmyReserveSpider(GCSpider):
         version_hash_fields = {
             "doc_name":doc_name,
             "doc_num": doc_num,
-            "download_url": download_url.split('/')[-1]
+            "download_url": download_url.split('/')[-1],
+            "display_title": display_title
         } # Assign fields used for versioning
         file_ext = downloadable_items[0]["doc_type"]
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)

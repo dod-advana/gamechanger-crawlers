@@ -12,9 +12,6 @@ from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
 
 class BrickSetSpider(GCSpider):
     name = 'FASAB Crawler' # Crawler name
-    display_org = "Uncategorized" # Level 1: value TBD for this crawler
-    data_source = "Unlisted Source" # Level 2: value TBD for this crawler
-    source_title = "Unlisted Source" # Level 3 filter
     
     allowed_domains = ['fasab.gov']
     file_type = "pdf"
@@ -86,7 +83,8 @@ class BrickSetSpider(GCSpider):
             "doc_name": doc_name,
             "doc_num": doc_num,
             "publication_date": publication_date,
-            "download_url": web_url.split('/')[-1]
+            "download_url": web_url.split('/')[-1],
+            "display_title": display_title
         }
 
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)

@@ -4,7 +4,6 @@ from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp
 from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
 from datetime import datetime
 from urllib.parse import urlparse
-import scrapy
 import re
 
 display_types = ["Instruction", "Manual", "Memo", "Regulation"]
@@ -101,7 +100,8 @@ class DHASpider(GCSpider):
             "doc_name": doc_name,
             "doc_num": doc_num,
             "publication_date": publication_date,
-            "download_url": download_url
+            "download_url": download_url,
+            "display_title": display_title
         }
 
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)

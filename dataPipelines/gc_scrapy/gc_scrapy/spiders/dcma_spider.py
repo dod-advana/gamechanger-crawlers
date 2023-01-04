@@ -78,7 +78,8 @@ class DCMASpider(GCSpider):
         file_type = self.get_href_file_extension(href)
         version_hash_fields = {
                     "item_currency": href,
-                    "document_title": doc_title
+                    "document_title": doc_title,
+                    "display_title": display_title
                 }
         download_url = f'https://www.dcma.mil{href}'
         downloadable_items = [{

@@ -307,12 +307,6 @@ class MarineCorpSpider(GCSpider):
 
                 doc_num=raw_data['doc_num']
                 doc_name = self.ascii_clean(raw_data['doc_name'])
-                version_hash_fields = {
-                    "doc_num": doc_num,
-                    "doc_name": doc_name,
-                    "publication_date": None,
-                    "status": doc_status_raw
-                }
                 doc_title = self.ascii_clean(doc_title_raw)
                 if not doc_title:
                     doc_title = doc_name
@@ -329,25 +323,33 @@ class MarineCorpSpider(GCSpider):
                 is_revoked = False
                 source_fqdn = urlparse(source_page_url).netloc
 
+                version_hash_fields = {
+                    "doc_num": doc_num,
+                    "doc_name": doc_name,
+                    "publication_date": None,
+                    "status": doc_status_raw,
+                    "display_title": display_title
+                }
+
                 incomplete_item = {
                     "fields": DocItem(
-                        doc_name = doc_name,
-                        doc_num = doc_num,
-                        doc_type = doc_type,
-                        doc_title = doc_title,
-                        source_page_url = source_page_url,
-                        cac_login_required = cac_login_required,
-                        display_doc_type = display_doc_type,
-                        display_source = display_source,
-                        display_title = display_title,
-                        display_org = display_org,
-                        data_source = data_source,
-                        source_title = source_title,
-                        crawler_used = self.name,
-                        source_fqdn = source_fqdn,
-                        version_hash_raw_data = version_hash_fields,
-                        is_revoked = is_revoked,
-                        publication_date = publication_date,
+                        doc_name=doc_name,
+                        doc_num=doc_num,
+                        doc_type=doc_type,
+                        doc_title=doc_title,
+                        source_page_url=source_page_url,
+                        cac_login_required=cac_login_required,
+                        display_doc_type=display_doc_type,
+                        display_source=display_source,
+                        display_title=display_title,
+                        display_org=display_org,
+                        data_source=data_source,
+                        source_title=source_title,
+                        crawler_used=self.name,
+                        source_fqdn=source_fqdn,
+                        version_hash_raw_data=version_hash_fields,
+                        is_revoked=is_revoked,
+                        publication_date=publication_date,
                     )
                 }
 
