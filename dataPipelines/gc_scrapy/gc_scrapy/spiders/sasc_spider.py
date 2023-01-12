@@ -33,7 +33,7 @@ class SASCSpider(GCSpider):
     @staticmethod
     def get_last_page_number(response) -> str:
         last_page_str = response.css(
-            "#main_column > div.pagination-right.pull-left > div > select > option:last-child::text").get()
+            "div.col-auto option:last-child::text").get()
         return int(last_page_str)
 
     @staticmethod
@@ -53,7 +53,7 @@ class SASCSpider(GCSpider):
         urls = [
             a.strip() for a in
             response.css(
-                "table.table-striped tr.vevent a::attr(href)"
+                "div.LegislationList__item a::attr(href)"
             ).getall()
         ]
         for url in urls:
@@ -64,7 +64,7 @@ class SASCSpider(GCSpider):
 
     def follow_pdf_redirect(self, response):
         redirect_doc_href = response.css(
-            '#content div.row p a::attr(href)').get()
+            'a.Button.Button--link.h-100 ::attr(href)').get()
 
         downloadable_items = [
             {
@@ -86,19 +86,14 @@ class SASCSpider(GCSpider):
             #########################################################
             # Get the hearing detail page as a document
 
-            main = response.css("div#main_column")
-            title = self.join_multitext(
-                main.css("h1:nth-child(1) *::text").getall())
-            meta = main.css("p.hearing-meta.row")
-            # # multiple texts from single elements here, have to join all
-            date = self.join_multitext(meta.css("span.date::text").getall())
+            main = response.css("div.SiteLayout__main")
+            title = main.css("h1.Heading__title ::text").get().strip()
+            date = main.css('div.Hearing__detail time::attr(datetime)').get()
 
-            hearing_type, _, part_was_found = title.partition(' - ')
             spaced_title = f" - {title}" if title else ""
             base_doc_name = f"{self.name} Hearing{spaced_title}"
 
-            if not part_was_found:
-                hearing_type = "Hearing"
+            doc_type = 'Hearing'
 
             downloadable_items = [
                 {
@@ -110,8 +105,9 @@ class SASCSpider(GCSpider):
 
             fields = {
                 'doc_name': base_doc_name,
+                'doc_num': ' ',
                 'doc_title': title,
-                'doc_type': hearing_type,
+                'doc_type': doc_type,
                 'display_doc_type': 'Hearing',
                 'cac_login_required': False,
                 'download_url': response.url,
@@ -126,16 +122,17 @@ class SASCSpider(GCSpider):
 
             #########################################################
             # Get transcript files from hearing
-            asides = response.css("div#asides li.acrobat")
+            asides = response.css("li.Hearing__linkListItem.RelatedIssuesLink.mb-2")
             for aside in asides:
-                aside_text = aside.css('a::text').get()
+                aside_text = aside.css('span::text').get()
                 aside_href = aside.css('a::attr(href)').get()
                 aside_doc_name = f"{base_doc_name} - {aside_text}"
 
                 fields = {
                     'doc_name': aside_doc_name,
+                    'doc_num': ' ',
                     'doc_title': title,
-                    'doc_type': hearing_type,
+                    'doc_type': doc_type,
                     'display_doc_type':'Transcript',
                     'cac_login_required': False,
                     'download_url': '',
@@ -150,40 +147,45 @@ class SASCSpider(GCSpider):
 
             #########################################################
             # Get pdfs of each witness APQ and testimony
-            witness_blocks = main.css('section li.vcard')
-            for witblock in witness_blocks:
-                honorific = self.ascii_clean(
-                    witblock.css('span.honorific-prefix::text').get())
-                name = ' '.join(witblock.css('span.fn::text').get().split())
-                hnr = honorific + ' ' if honorific else ''
-                full_name = f"{hnr}{name}"
+            witness_blocks = main.css('li.col-12.col-md-6.p-2')
+            if witness_blocks is not None:
+                for witblock in witness_blocks:
+                    honorific = self.ascii_clean(witblock.css('h4.Heading__title span::text').get().strip())
+                    print(type(honorific))
+                    print(honorific)
+                    name = witblock.css('h4.Heading__title span ~ span::text').get().strip()
+                    print(name)
+                    print(type(name))
+                    full_name = f"{honorific} {name}"
 
-                witness_docs = witblock.css('li.acrobat')
-                for witdoc in witness_docs:
-                    witness_text = witdoc.css('a::text').get()
-                    witness_href = witdoc.css('a::attr(href)').get()
+                    witness_docs = witblock.css('li.col-12.col-md-6.p-2')
+                    if witdoc is not None:
+                        for witdoc in witness_docs:
+                            witness_text = witdoc.css('i ~ span::text').get().strip()
+                            witness_href = witdoc.css('a::attr(href)').get()
 
-                    wit_doc_type = 'Advance Policy Questions' if witness_text.endswith(
-                        'APQ') else 'Testimony'
-                    witness_doc_name = f"{base_doc_name} - {full_name} {wit_doc_type}"
+                            wit_doc_type = 'Advance Policy Questions' if witness_text.endswith(
+                                'APQ') else 'Testimony'
+                            witness_doc_name = f"{base_doc_name} - {full_name} {wit_doc_type}"
 
-                    full_witness_doc_type = f"{self.name} {hearing_type} {wit_doc_type}"
+                            full_witness_doc_type = f"{self.name} {doc_type} {wit_doc_type}"
 
-                    fields = {
-                        'doc_name': witness_doc_name,
-                        'doc_title': witness_doc_name,
-                        'doc_type': full_witness_doc_type,
-                        'display_doc_type':wit_doc_type,
-                        'cac_login_required': False,
-                        'download_url': '',
-                        'source_page_url':response.url,
-                        'downloadable_items':[],
-                        'publication_date': date
-                    }
+                            fields = {
+                                'doc_name': witness_doc_name,
+                                'doc_num': ' ',
+                                'doc_title': witness_doc_name,
+                                'doc_type': full_witness_doc_type,
+                                'display_doc_type':wit_doc_type,
+                                'cac_login_required': False,
+                                'download_url': '',
+                                'source_page_url':response.url,
+                                'downloadable_items':[],
+                                'publication_date': date
+                            }
 
-                    witness_doc = self.populate_doc_item(fields)
+                            witness_doc = self.populate_doc_item(fields)
 
-                    yield scrapy.Request(witness_href, callback=self.follow_pdf_redirect, meta={'doc': witness_doc})
+                            yield scrapy.Request(witness_href, callback=self.follow_pdf_redirect, meta={'doc': witness_doc})
 
         except Exception as e:
             print(e)
@@ -199,7 +201,7 @@ class SASCSpider(GCSpider):
         source_title = "Senate Armed Services Committee" # Level 3 filter
 
         doc_name = fields['doc_name']
-        #doc_num = fields['doc_num']
+        doc_num = fields['doc_num']
         doc_title = fields['doc_title']
         doc_type = fields['doc_type']
         cac_login_required = fields['cac_login_required']
@@ -218,7 +220,7 @@ class SASCSpider(GCSpider):
         ## Assign fields that will be used for versioning
         version_hash_fields = {
             "doc_name":doc_name,
-            #"doc_num": doc_num,
+            "doc_num": doc_num,
             "publication_date": publication_date,
             "download_url": download_url
         }
@@ -228,7 +230,7 @@ class SASCSpider(GCSpider):
         return DocItem(
                     doc_name = doc_name,
                     doc_title = doc_title,
-                    #doc_num = doc_num,
+                    doc_num = doc_num,
                     doc_type = doc_type,
                     display_doc_type = display_doc_type, #
                     publication_date = publication_date,
