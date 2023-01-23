@@ -15,7 +15,8 @@ class LegislationSpider(GCSpider):
     rotate_user_agent = True
 
     start_urls = [
-        "https://www.govinfo.gov/wssearch/rb/plaw?fetchChildrenOnly=0"
+        "https://www.govinfo.gov/wssearch/rb/plaw?fetchChildrenOnly=0",
+        "https://www.govinfo.gov/wssearch/rb/bills?fetchChildrenOnly=0"
     ]
 
     headers = {
@@ -37,7 +38,8 @@ class LegislationSpider(GCSpider):
     # can be added in command line with arg `-a specific_congress=117`
 
     def start_requests(self):
-        yield scrapy.Request(url=self.start_urls[0], method='GET', headers=self.headers)
+        for start_url in self.start_urls:
+            yield scrapy.Request(url=start_url, method='GET', headers=self.headers)
 
     @staticmethod
     def get_pub_date(publication_date):
@@ -62,12 +64,102 @@ class LegislationSpider(GCSpider):
         return f"https://www.govinfo.gov/wssearch/getContentDetail?packageId={package_id}"
 
     @staticmethod
-    def get_browse_path_url(browse_path) -> str:
-        return f"https://www.govinfo.gov/wssearch/rb//plaw/{browse_path}?fetchChildrenOnly=1&offset=0&pageSize=100"
+    def get_browse_path_url(type, browse_path) -> str:
+        if type == "plaw":
+            return f"https://www.govinfo.gov/wssearch/rb//plaw/{browse_path}?fetchChildrenOnly=1&offset=0&pageSize=100"
+        if type == "bills":
+            return f"https://www.govinfo.gov/wssearch/rb//bills/{browse_path}?fetchChildrenOnly=1&offset=0&pageSize=100"
 
     @staticmethod
     def get_nested_values(data, key='value') -> list:
         return [cnode.get('nodeValue').get(key) for cnode in data.get('childNodes', [])]
+
+    def populate_public_law(self, data) -> dict:
+        package_id = data['documentincontext']['packageId']
+        web_url = f"https:{data['download']['pdflink']}"
+        detail_data = {
+            "Bill Number": "",
+            "Law Number": "",
+            "Full Title": "",
+            "Date Approved": "",
+            "Legislative History": "",
+        }
+        detail_data_list: list[dict] = data['metadata']['columnnamevalueset']
+        for d in detail_data_list:
+            if d['colname'] in detail_data:
+                detail_data[d['colname']] = d['colvalue']
+
+        raw_title = ' '.join(data['title'].split()[6:])
+        doc_title = self.ascii_clean(raw_title)
+        bill_type_raw, _, _ = detail_data.get(
+            'Bill Number').rpartition(' ')
+
+        doc_num = ''.join(detail_data['Law Number'].split()[2:])
+        doc_type = "Public Law"
+        doc_name = f"{detail_data['Law Number']}"
+
+        fields = {
+            "doc_name": doc_name.strip(),
+            "doc_title": doc_title.strip(),
+            "doc_num": doc_num.strip(),
+            "doc_type": doc_type,
+            "display_doc_type": "Law",
+            "source_page_url": self.get_visible_detail_url(package_id),
+            "web_url": web_url,
+            "publication_date": detail_data.get("Date Approved")
+        }
+        return fields
+
+    def populate_enrolled_bill(self, data) -> dict:
+        package_id = data['documentincontext']['packageId']
+        web_url = f"https:{data['download']['pdflink']}"
+
+        detail_data = {
+            "Congress Number": "",
+            "Last Action Date Listed": "",
+            "Bill Number": "",
+            "Bill Version": "",
+            "Full Title": "",
+            "Sponsors": "",
+            "Cosponsors": "",
+            "Committees": "",
+        }
+
+        detail_data_list: list[dict] = data['metadata']['columnnamevalueset']
+        for d in detail_data_list:
+            if d['colname'] in detail_data:
+                detail_data[d['colname']] = d['colvalue']
+
+        doc_title = self.ascii_clean(detail_data.get('Full Title'))
+        congress_num_str = detail_data.get(
+            'Congress Number').replace(' Congress', '')
+
+        bill_type_raw, _, doc_num = detail_data.get(
+            'Bill Number').rpartition(' ')
+
+        doc_type = bill_type_raw.replace(' ', '')
+        bill_version_raw = detail_data.get('Bill Version')
+        bill_version = bill_version_re.search(bill_version_raw).group(1)
+        doc_name = f"{doc_type} {doc_num} {bill_version} {congress_num_str}"
+        display_doc_type = "Enrolled Bill"
+
+        if doc_name == "H.R. 7776 ENR 117th":
+            doc_title = "National Defense Authorization Act (NDAA) for Fiscal Year 2023"
+
+        fields = {
+            "doc_name": doc_name.strip(),
+            "doc_title": doc_title.strip(),
+            "doc_num": doc_num.strip(),
+            "doc_type": doc_type,
+            "display_doc_type": display_doc_type,
+            "source_page_url": self.get_visible_detail_url(package_id),
+            "web_url": web_url,
+            "publication_date": detail_data.get("Last Action Date Listed"),
+            "sponsors": self.ascii_clean(detail_data.get("Sponsors", " ")),
+            "cosoponsors": self.ascii_clean(detail_data.get("Cosponsors", " ")),
+            "committees": self.ascii_clean(detail_data.get("Committees", " "))
+            }
+        return fields
 
     def parse(self, response):
         data = json.loads(response.body)
@@ -78,15 +170,21 @@ class LegislationSpider(GCSpider):
                 congress_num = cong.get('nodeValue').get('value')
             else:
                 congress_num = self.specific_congress
-
+            if congress_num != "117" and congress_num != "118" and "bills" in response.url:
+                continue
             if not congress_num:
                 raise RuntimeError(
                     f'Specific congress not found, specific_congress arg was {self.specific_congress}, congress num searched for was {congress_num}')
             # as of May 2021, the site only goes back to the 103rd congress, so offset iteration isnt necessary
-            specific_congress_url = self.get_browse_path_url(congress_num)
+            if "bills" in response.url:
+                legtype = "bills"
+                specific_congress_url = self.get_browse_path_url("bills", congress_num)
+            elif "plaw" in response.url:
+                legtype = "plaw"
+                specific_congress_url = self.get_browse_path_url("plaw", congress_num)
 
             yield response.follow(url=specific_congress_url, callback=self.get_bill_type_data,
-                                  meta={'congress_num': congress_num}, headers=self.headers)
+                                  meta={'congress_num': congress_num, 'legtype': legtype}, headers=self.headers)
 
     def get_bill_type_data(self, response):
         data = json.loads(response.body)
@@ -97,9 +195,10 @@ class LegislationSpider(GCSpider):
         for bill_type_path in bill_types:
             # there are only 8 bill types, so offset iteration isnt necessary
             # bill_type_url: 117/hconres = https://www.govinfo.gov/wssearch/rb//bills/117/hconres?fetchChildrenOnly=1&offset=0&pageSize=100
-            bill_type_url = self.get_browse_path_url(bill_type_path)
+            bill_type_url = self.get_browse_path_url(response.meta["legtype"], bill_type_path)
 
-            yield response.follow(url=bill_type_url, callback=self.get_bill_num_chunks, headers=self.headers)
+            yield response.follow(url=bill_type_url, callback=self.get_bill_num_chunks,
+                                  meta={'legtype': response.meta['legtype']}, headers=self.headers)
 
     def get_bill_num_chunks(self, response):
         data = json.loads(response.body)
@@ -110,7 +209,7 @@ class LegislationSpider(GCSpider):
         bill_num_chunks = self.get_nested_values(data, key='browsePathAlias')
 
         for bill_num_chunk_path in bill_num_chunks:
-            bill_num_chunk_url = self.get_browse_path_url(bill_num_chunk_path)
+            bill_num_chunk_url = self.get_browse_path_url(response.meta['legtype'], bill_num_chunk_path)
 
             yield response.follow(url=bill_num_chunk_url, callback=self.get_package_ids, meta={"offset": 0},
                                   headers=self.headers)
@@ -138,49 +237,18 @@ class LegislationSpider(GCSpider):
 
     def parse_detail_data(self, response):
         data = json.loads(response.body)
+        colnames = [columns['colname'] for columns in data['metadata']['columnnamevalueset']]
 
-        package_id = data['documentincontext']['packageId']
-        web_url = f"https:{data['download']['pdflink']}"
-
-        detail_data = {
-            "Bill Number": "",
-            "Law Number": "",
-            "Full Title": "",
-            "Date Approved": "",
-            "Legislative History": "",
-        }
-
-        detail_data_list: list[dict] = data['metadata']['columnnamevalueset']
-        for d in detail_data_list:
-            if d['colname'] in detail_data:
-                detail_data[d['colname']] = d['colvalue']
-
-        raw_title = ' '.join(data['title'].split()[6:])
-        doc_title = self.ascii_clean(raw_title)
-        # congress_num_str = detail_data.get(
-        #    'Congress Number').replace(' Congress', '')
-
-        bill_type_raw, _, _ = detail_data.get(
-            'Bill Number').rpartition(' ')
-
-        doc_num = ''.join(detail_data['Law Number'].split()[2:])
-        doc_type = "Public Law"
-        bill_version_raw = detail_data.get('Bill Version')
-        # bill_version = bill_version_re.search(bill_version_raw).group(1)
-        doc_name = f"{detail_data['Law Number']}"
-
-        # last_action_date = detail_data.get("Last Action Date Listed")
-
-        # source_page_url = self.get_visible_detail_url(package_id)
-        fields = {
-            "doc_name": doc_name.strip(),
-            "doc_title": doc_title.strip(),
-            "doc_num": doc_num.strip(),
-            "doc_type": doc_type,
-            "source_page_url": self.get_visible_detail_url(package_id),
-            "web_url": web_url,
-            "publication_date": detail_data.get("Date Approved")
-        }
+        if 'Law Number' in colnames:
+            fields = self.populate_public_law(data)
+        elif 'Bill Version' in colnames:
+            colvalues = [self.ascii_clean(columns['colvalue']) for columns in data['metadata']['columnnamevalueset']]
+            if 'Enrolled Bill (ENR)' in colvalues:
+                fields = self.populate_enrolled_bill(data)
+            else:
+                return
+        else:
+            return
 
         yield self.populate_doc_item(fields)
 
@@ -196,7 +264,7 @@ class LegislationSpider(GCSpider):
         doc_title = fields.get('doc_title')
         doc_num = fields.get('doc_num')
         doc_type = fields.get('doc_type')
-        display_doc_type = "Law"
+        display_doc_type = fields.get('display_doc_type')
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + ": " + doc_title
         web_url = fields.get("web_url")
