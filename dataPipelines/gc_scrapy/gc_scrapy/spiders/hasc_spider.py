@@ -30,7 +30,7 @@ class HASCSpider(GCSpider):
 
     @staticmethod
     def get_next_relative_url(response):
-        return response.css('div#copy-content div.navbar-inner a:nth-child(3):not(.disabled)::attr(href)').get()
+        return response.css("li.pager-next > a::attr(href)").get()
 
     def recursive_parse_hearings(self, response):
 
@@ -44,11 +44,11 @@ class HASCSpider(GCSpider):
     def parse_hearings_table_page(self, response):
 
         rows = response.css(
-            "div#copy-content div.recordsContainer table tbody tr")
+            "div.view-content div")
 
         for row in rows:
             try:
-                link = row.css("td:nth-child(2) a::attr(href)").get()
+                link = row.css("h3.field-content a::attr(href)").get()
 
                 if not link:
                     continue
@@ -56,40 +56,33 @@ class HASCSpider(GCSpider):
                 follow_link = f"{self.base_url}{link}"
                 yield scrapy.Request(url=follow_link, callback=self.parse_hearing_detail_page)
             except Exception as e:
-                print(f'Error following url: {follow_link}', e)
+                print(e)
 
     def parse_hearing_detail_page(self, response):
         try:
 
-            header = response.css(
-                "div#copy-content div.header")
-            title = self.ascii_clean(header.css("h1 a::text").get())
+            title = self.ascii_clean(response.css("#page-title ::text").get())
+            date_el = response.css("span.date-display-single ::text").get()
+            date_split = date_el.split()
+            month = date_split[1]
+            day = date_split[2]
+            year = date_split[3]
 
-            date_el = header.css("span.date")
-            month = date_el.css('span.month::text').get()
-            day = date_el.css('span.day::text').get()
-            year = date_el.css('span.year::text').get()
-
-            date = f"{month} {day}, {year}"
-
-            permalink = response.css(
-                'div#copy-content div.foot p.permalink a::attr(href)').get()
+            date = f"{month} {day} {year}"
 
             doc_type = "HASC Hearing"
             doc_name = f"{doc_type} - {date} - {title}"
-
-            version_hash_raw_data = {
-                'item_currency': permalink,
-            }
+            
+            source_page_url = response.url
 
             fields = {
                 'doc_name': doc_name,
-                #'doc_num': doc_num, # No doc num for this crawler
+                'doc_num': ' ', # No doc num for this crawler
                 'doc_title': title,
                 'doc_type': doc_type,
                 'cac_login_required': False,
-                'source_page_url': permalink,
-                'download_url': permalink,
+                'source_page_url': source_page_url,
+                'download_url': source_page_url,
                 'publication_date': date
             }
             ## Instantiate DocItem class and assign document's metadata values
@@ -99,8 +92,6 @@ class HASCSpider(GCSpider):
 
         except Exception as e:
             print(e)
-
-
 
     def populate_doc_item(self, fields):
         '''
@@ -112,7 +103,7 @@ class HASCSpider(GCSpider):
         source_title = "House Armed Services Committee" # Level 3 filter
 
         doc_name = fields['doc_name']
-        #doc_num = fields['doc_num']
+        doc_num = fields['doc_num']
         doc_title = fields['doc_title']
         doc_type = fields['doc_type']
         cac_login_required = fields['cac_login_required']
@@ -135,7 +126,7 @@ class HASCSpider(GCSpider):
         ## Assign fields that will be used for versioning
         version_hash_fields = {
             "doc_name":doc_name,
-            #"doc_num": doc_num,
+            # "doc_num": doc_num,
             "publication_date": publication_date,
             "download_url": download_url,
             "display_title": display_title
@@ -146,7 +137,7 @@ class HASCSpider(GCSpider):
         return DocItem(
                     doc_name = doc_name,
                     doc_title = doc_title,
-                    #doc_num = doc_num,
+                    doc_num = doc_num,
                     doc_type = doc_type,
                     display_doc_type = display_doc_type, #
                     publication_date = publication_date,

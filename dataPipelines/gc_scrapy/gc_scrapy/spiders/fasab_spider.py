@@ -38,7 +38,9 @@ class BrickSetSpider(GCSpider):
             if "SFFAS" not in str(doc_name) and "SFFAC" not in str(doc_name):
                 doc_name = "FASAB " + str(doc_name)
             doc_num = doc_name.rsplit(' ', 1)[-1]
-            doc_type = doc_name.rsplit(' ', 1)[0]
+            doc_type_raw = re.match('^(\D*)', doc_name).group()
+            doc_type = doc_type_raw.rsplit(' ', 1)[0]
+            doc_type = ' '.join(doc_type.split())                      
             
             if not url.startswith("http"):
                 url = "https:" + url
