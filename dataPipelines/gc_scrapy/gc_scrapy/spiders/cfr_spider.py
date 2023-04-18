@@ -1,6 +1,6 @@
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
-from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp, dict_to_sha256_hex_digest
+from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp, dict_to_sha256_hex_digest, get_pub_date
 from urllib.parse import urlparse
 from datetime import datetime
 import json
@@ -96,7 +96,7 @@ class CFRSpider(GCSpider):
         next_offset_url = response.url.replace(
             f'offset={current_offset}', f'offset={next_offset}')
 
-        yield response.follow(url=next_offset_url, callback=self.get_package_ids, meta={"offset": next_offset},
+        yield response.follow(url=next_offset_url, callback=self.get_package_ids, meta={"offset": next_offset, "year": year},
                               headers=self.headers)
 
     def parse_detail_data(self, response):
@@ -109,6 +109,7 @@ class CFRSpider(GCSpider):
         detail_data = {
             "Publication Title": "",
             "Date": "",
+            "Date Issued": "",
             "Collection": "",
             "Category": ""
         }
@@ -125,6 +126,10 @@ class CFRSpider(GCSpider):
         doc_type = "CFR Title"
         doc_name = (f"{detail_data['Publication Title']} {year}" if year not in detail_data['Publication Title'] else f"{detail_data['Publication Title']}")
         source_page_url = self.get_visible_detail_url(package_id)
+        publication_date = detail_data.get("Date")
+        
+        if publication_date == "":
+            publication_date = detail_data.get("Date Issued")
 
         fields = {
             "doc_name": doc_name.strip(),
@@ -133,7 +138,7 @@ class CFRSpider(GCSpider):
             "doc_type": doc_type,
             "source_page_url": source_page_url,
             "web_url": web_url,
-            "publication_date": detail_data.get("Date Approved")
+            "publication_date": publication_date
         }
 
         yield self.populate_doc_item(fields)
@@ -146,7 +151,7 @@ class CFRSpider(GCSpider):
         cac_login_required = False
         is_revoked = False
 
-        doc_name = fields.get('doc_name')
+        doc_name = self.ascii_clean(fields.get('doc_name'))
         doc_title = fields.get('doc_title')
         doc_num = fields.get('doc_num')
         doc_type = fields.get('doc_type')
@@ -157,7 +162,7 @@ class CFRSpider(GCSpider):
         download_url = web_url.replace(' ', '%20')
         source_page_url = fields.get('source_page_url')
         publication_date = fields.get("publication_date")
-        publication_date = self.get_pub_date(publication_date)
+        publication_date = get_pub_date(publication_date)
         downloadable_items = [{
             "doc_type": file_type,
             "download_url": web_url,

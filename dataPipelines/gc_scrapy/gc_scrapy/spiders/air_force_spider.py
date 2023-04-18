@@ -5,8 +5,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver import Chrome
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 import re
+import time
 
 from dataPipelines.gc_scrapy.gc_scrapy.middleware_utils.selenium_request import SeleniumRequest
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
@@ -35,7 +36,10 @@ class AirForcePubsSpider(GCSeleniumSpider):
 
     allowed_domains = ['e-publishing.af.mil'] # Domains the spider is allowed to crawl
     start_urls = [
-        'https://www.e-publishing.af.mil/Product-Index/#/?view=pubs&orgID=10141&catID=1&series=-1&modID=449&tabID=131/'
+        'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=1', # AIR FORCE
+        'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=16', # AIR NATIONAL GUARD
+        'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=20', # UNITED STATES SPACE FORCE
+        # 'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=2' # MAJOR COMMANDS
     ] # URL where the spider begins crawling
 
     file_type = "pdf" # Define filetype for the spider to identify.
@@ -46,11 +50,12 @@ class AirForcePubsSpider(GCSeleniumSpider):
 
     item_count_dropdown_selector = 'label select[name="data_length"]' # Count of a given dropdown's selection options
     table_selector = "table.epubs-table.dataTable.no-footer.dtr-inline" # Define CSS selector for tables
-
-    selenium_request_overrides = {
-        "wait_until": EC.element_to_be_clickable(
-            (By.CSS_SELECTOR, item_count_dropdown_selector))
-    } # Allow clickable webpage element to load before posting request
+    
+    def select_dropdown(self, driver):
+        dropdown = WebDriverWait(driver, 5).until(
+            EC.visibility_of_element_located((By.CSS_SELECTOR, self.item_count_dropdown_selector)))
+        
+        Select(dropdown).select_by_value("100")
 
     def parse(self, response):
         '''
@@ -59,36 +64,54 @@ class AirForcePubsSpider(GCSeleniumSpider):
         '''
         driver: Chrome = response.meta["driver"] # Assign Chrome as the WebDriver instance to perform "user" actions  ##(**What is .meta['driver']?)
         
-        Select(
-            driver.find_element_by_css_selector(
-                self.item_count_dropdown_selector
-            )
-        ).select_by_value("100") # Select all dropdown option elements. --Changed to 100 items per page  ##(**Why 100 items/ page?)
-
-        anchor_after_current_selector = "div.dataTables_paginate.paging_simple_numbers a.paginate_button.current + a" # Next page button element
-        has_next_page = True# Initial default value; assumes next page exists
-
-        while(has_next_page):
-            try: # Check whether or not there is a next page button
-                el = driver.find_element_by_css_selector(
-                    anchor_after_current_selector)
-
-            except NoSuchElementException:
-                # Exception expected when on the last page. Set while loop exit condition, then parse the table
-                has_next_page = False
-
-            try: # Try to parse table on current page, if exists
+        for page_url in self.start_urls:
+            driver.get(page_url)
+            time.sleep(5)
+            
+            init_webpage = Selector(text=driver.page_source)
+            
+            cat_id_raw = re.search('(catID=\d*)', page_url, re.IGNORECASE) # Find Category ID from URL
+            cat_id = str(cat_id_raw.group(0)).replace("ID=", "-").lower()
+            
+            organizations = init_webpage.css(f'#{cat_id} > div > ul > li a::text').getall() # List of organizations in specified category
+            
+            # if page_url.endswith('catID=2'):  # Optional condition to pull AF Reserve Command docs from Major Commands section
+            #     organizations = ['Air Force Reserve Command'] 
+            
+            for org in organizations:                
+                driver.execute_script("arguments[0].click();", WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable((By.LINK_TEXT, org))))
+                
+                try:
+                    all_pubs = WebDriverWait(driver, 5).until(
+                        EC.visibility_of_element_located((By.LINK_TEXT, '00   ALL PUBLICATIONS')))
+    
+                except:
+                    driver.back()
+                    print(f"Failed to find publications link for: {org} at {page_url}")
+                    continue
+                
+                all_pubs.click()
+ 
+                anchor_after_current_selector = "div.dataTables_paginate.paging_simple_numbers a.paginate_button.current + a" # Next page button element
+                
+                self.select_dropdown(driver)
+                
                 for item in self.parse_table(driver):
                     yield item
-
-            except NoSuchElementException:
-                raise NoSuchElementException(
-                    f"Failed to find table to scrape from using css selector: {self.table_selector}"
-                )
-
-            if has_next_page: # Advance to next page if exists
-                driver.execute_script("arguments[0].click();", WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, anchor_after_current_selector))))
-
+                            
+                last_page_raw = driver.find_element(By.CSS_SELECTOR, '#data_paginate > span > a:last-child')
+                last_page = int(last_page_raw.text)
+                
+                while last_page > 1:
+                    driver.execute_script("arguments[0].click();", WebDriverWait(driver, 5).until(
+                        EC.element_to_be_clickable((By.CSS_SELECTOR, anchor_after_current_selector))))
+                    for item in self.parse_table(driver):
+                        yield item
+                    last_page -= 1
+                
+                driver.get(page_url)
+                time.sleep(5)
                 
 
     def parse_table(self, driver):
@@ -159,6 +182,9 @@ class AirForcePubsSpider(GCSeleniumSpider):
                 doc_num = re.sub(doc_type, '', prod_num)
                 doc_name = ' '.join((doc_type, doc_num))
 
+            if doc_name == 'MCMUS': # Skip over MCMUS doc with broken download link
+                continue
+            
             ## Clean raw metadata values
             doc_title = squash_spaces.sub(' ', title_raw).strip() # Clean any superfluous spaces in raw value
 
@@ -180,6 +206,8 @@ class AirForcePubsSpider(GCSeleniumSpider):
                 or any(x in doc_title for x in self.cac_required_options) \
                 or '-S' in prod_num else False
 
+            source_page_url = driver.current_url
+            
             fields = {
                 'doc_name': doc_name,
                 'doc_num': doc_num,
@@ -187,6 +215,7 @@ class AirForcePubsSpider(GCSeleniumSpider):
                 'doc_type': doc_type,
                 'cac_login_required': cac_login_required,
                 'download_url': web_url,
+                'source_page_url': source_page_url,
                 'publication_date': publication_date
             }
 
@@ -216,8 +245,7 @@ class AirForcePubsSpider(GCSeleniumSpider):
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + ": " + doc_title
         is_revoked = False
-
-        source_page_url = self.start_urls[0]
+        source_page_url = fields['source_page_url']
         source_fqdn = urlparse(source_page_url).netloc
         
         downloadable_items = [{

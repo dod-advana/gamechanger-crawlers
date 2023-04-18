@@ -5,7 +5,7 @@ from urllib.parse import urljoin, urlparse
 from datetime import datetime
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
-from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
 from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp
 import pandas as pd #############
 
@@ -22,7 +22,7 @@ class BupersSpider(GCSpider):
     rotate_user_agent = True #
     allowed_domains = ['mynavyhr.navy.mil']
     start_urls = [
-        "https://www.mynavyhr.navy.mil/References/Instructions/BUPERS-Instructions/"
+        "https://www.mynavyhr.navy.mil/References/BUPERS-Instructions/"
     ]
     v_list = iter(['Vol 1', 'Vol 2'])
 
@@ -98,20 +98,6 @@ class BupersSpider(GCSpider):
             return doc_name
         else:
             return text
-
-    @staticmethod
-    def get_pub_date(publication_date):
-        '''
-        This function convverts publication_date from DD Month YYYY format to YYYY-MM-DDTHH:MM:SS format.
-        T is a delimiter between date and time.
-        '''
-        try:
-            date = parse_timestamp(publication_date, None)
-            if date:
-                publication_date = datetime.strftime(date, '%Y-%m-%dT%H:%M:%S')
-        except:
-            publication_date = ""
-        return publication_date
 
     def get_downloadables(self, href):
         """This function creates a list of downloadable_items dictionaries from a document link"""
@@ -196,7 +182,7 @@ class BupersSpider(GCSpider):
 
         display_source = data_source + " - " + source_title
         source_page_url = fields.get('source_page_url')
-        publication_date = fields.get("publication_date")
+        publication_date = get_pub_date(fields.get("publication_date"))
         doc_num = fields.get("doc_num")
         doc_title = fields.get("doc_title")
         display_title = doc_type + " " + doc_num + ": " + doc_title
