@@ -5,7 +5,7 @@
 # ... is issued, the `.git/` directory will be ignored and won't be exposed to `COPY` directives in Dockerfile
 
 # ignore git dir
-.git/
+#.git/
 
 # ignore tmp dirs
 tmp/

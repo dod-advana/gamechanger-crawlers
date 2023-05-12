@@ -3,6 +3,7 @@ from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 import time
 from dataPipelines.gc_scrapy.gc_scrapy.utils import abs_url
+from selenium import webdriver
 
 from urllib.parse import urljoin, urlparse
 from datetime import datetime
@@ -53,11 +54,27 @@ class ArmySpider(GCSpider):
         table_links = response.css('table td a::attr(href)').extract() # Extract all links in the html table
         yield from response.follow_all([self.pub_url+link for link in table_links], self.parse_detail_page) # Call parse_detail_page function for each link
 
+    def get_cells_from_row(self, row_selector):
+        '''
+        Takes a tr selector and gets all cell values as strings
+        '''
+        cells = row_selector.css('td, th')
+        return [ ''.join(cell.css('*::text').getall()) for cell in cells]
+    
     def parse_detail_page(self, response):
         '''
         This function generates a link and metadata for each document for use by bash download script.
         '''
+        import pdb; pdb.set_trace()
+        
+        driver = webdriver.Chrome()
+        button = driver.find_element_by_xpath("//*[contains(text(), ' View More Details  +  ')]")
+        button.click()
+
         rows = response.css('tr') # Get table row for document
+        x = list(map(self.get_cells_from_row, rows))
+        
+        #rows[0].xpath('td//text()').getall()
         doc_name_raw = rows.css('span#MainContent_PubForm_Number::text').get() # Get 'Number' from table as document name
         doc_title = rows.css('span#MainContent_PubForm_Title::text').get() # Get document 'Title' from table
         doc_num_raw = doc_name_raw.split()[-1] # Get numeric portion of document name as doc_num   #### TODO: Sometimes this is Nonetype and causes an error
