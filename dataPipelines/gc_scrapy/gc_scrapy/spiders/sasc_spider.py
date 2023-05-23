@@ -233,9 +233,6 @@ class SASCSpider(GCSpider):
             "download_url": download_url,
             "display_title": display_title
         }
-
-        if doc_name != doc_title:
-            import ipdb; ipdb.set_trace()
         
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 
