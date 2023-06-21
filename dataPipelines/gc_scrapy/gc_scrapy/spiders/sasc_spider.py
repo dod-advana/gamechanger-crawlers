@@ -217,7 +217,7 @@ class SASCSpider(GCSpider):
 
         display_doc_type = fields['display_doc_type'] # Doc type for display on app
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " - " + doc_title # Different than other crawlers due to lack of doc_num; added a dash for clarity
+        display_title = doc_type + ": " + doc_title # Different than other crawlers due to lack of doc_num; added a dash for clarity
         is_revoked = False
         source_page_url = fields['source_page_url']
         source_fqdn = urlparse(source_page_url).netloc
