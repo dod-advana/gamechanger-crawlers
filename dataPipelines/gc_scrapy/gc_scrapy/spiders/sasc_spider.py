@@ -74,7 +74,7 @@ class SASCSpider(GCSpider):
             # Get the hearing detail page as a document
 
             main = response.css("div.SiteLayout__main")
-            title_raw = self.ascii_clean(main.css("h1.Heading__title ::text").get().strip())
+            title_raw = self.ascii_clean(main.css("h1.Heading__title::text")[-1].get().strip())
             title = ' '.join(title_raw.split())
             date = main.css('div.Hearing__detail time::attr(datetime)').get()
             spaced_title = f" - {title}" if title else ""
@@ -149,9 +149,9 @@ class SASCSpider(GCSpider):
                 for witdoc in witness_docs:
                     witness_href = witdoc.css('a::attr(href)').get()
                     if witness_href is not None:
-                        honorific = witblock.css('h4.Heading__title span:nth-child(1)::text').get()
-                        wit_name = witblock.css('h4.Heading__title span:nth-child(2)::text').get()
-                        member_name = witblock.css('h4.Heading__title ::text').get()
+                        honorific = witblock.css('h3.Heading__title span:nth-child(1)::text').get()
+                        wit_name = witblock.css('h3.Heading__title span:nth-child(2)::text').get()
+                        member_name = witblock.css('h3.Heading__title ::text').get()
                         
                         if honorific and wit_name is not None:
                             full_name_raw = f"{honorific} {wit_name}"
@@ -217,7 +217,7 @@ class SASCSpider(GCSpider):
 
         display_doc_type = fields['display_doc_type'] # Doc type for display on app
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " - " + doc_title # Different than other crawlers due to lack of doc_num; added a dash for clarity
+        display_title = doc_type + ": " + doc_title # Different than other crawlers due to lack of doc_num; added a dash for clarity
         is_revoked = False
         source_page_url = fields['source_page_url']
         source_fqdn = urlparse(source_page_url).netloc
@@ -233,7 +233,7 @@ class SASCSpider(GCSpider):
             "download_url": download_url,
             "display_title": display_title
         }
-
+        
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 
         return DocItem(

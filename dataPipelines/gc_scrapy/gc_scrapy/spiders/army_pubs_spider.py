@@ -56,27 +56,24 @@ class ArmySpider(GCSpider):
     def parse_detail_page(self, response):
         '''
         This function generates a link and metadata for each document for use by bash download script.
-        '''
-        rows = response.css('tr') # Get table row for document
-        doc_name_raw = rows.css('span#MainContent_PubForm_Number::text').get() # Get 'Number' from table as document name
-        doc_title = rows.css('span#MainContent_PubForm_Title::text').get() # Get document 'Title' from table
+        '''        
+        doc_name_raw = response.xpath("//*[contains(text(), 'Pub/Form Number')]/following-sibling::node()[1]/text()").get() # Get 'Number' from table as document name
+        doc_title = response.xpath("//*[contains(text(), 'Pub/Form Title')]/following-sibling::node()[1]/text()").get() # Get document 'Title' from table
         doc_num_raw = doc_name_raw.split()[-1] # Get numeric portion of document name as doc_num   #### TODO: Sometimes this is Nonetype and causes an error
         doc_type_raw = doc_name_raw.split()[0] # Get alphabetic portion of document name as doc_type
-        publication_date = rows.css(
-            "span#MainContent_PubForm_Date::text").get() # Get document publication date
-        dist_stm = rows.css("span#MainContent_PubForm_Dist_Rest::text").get() # Get document distribution statment (re: doc accessibility)
-        proponent = self.ascii_clean(rows.css(
-            "span#MainContent_PubForm_Proponent::text").get(default="")) # Get document "Proponent"
+        publication_date = response.xpath("//*[contains(text(), 'Pub/Form Date')]/following-sibling::node()[1]/text()").get() # Get document publication date
+        dist_stm = response.xpath("//*[contains(text(), 'Dist Restriction Code')]/following-sibling::node()[1]/text()").get() # Get document distribution statment (re: doc accessibility)
+        proponent = self.ascii_clean(response.xpath("//*[contains(text(), 'Pub/Form Proponent')]/following-sibling::node()[1]/text()").get()) # Get document "Proponent"
         if dist_stm and (dist_stm.startswith("A") or dist_stm.startswith("N")):
             cac_login_required = False # The distribution statement is either "A" or "Not Applicable", i.e. anyone can access
         else:
             cac_login_required = True # The distribution statement has more restrictions
 
-        linked_items = rows.css("div#MainContent_uoicontainer a") # Get document link in row
+        linked_items = response.xpath("//*[contains(text(), 'Unit Of Issue(s)')]/following-sibling::node()[1]/a") # Get document link in row
         downloadable_items = []
 
         if not linked_items: # Apply generic metadata if no document link
-            filetype = rows.css("div#MainContent_uoicontainer::text").get() ##(**does this assign 'html' as value?)
+            filetype = response.xpath("//*[contains(text(), 'Unit Of Issue(s)')]/following-sibling::node()[1]/text()").get() ##(**does this assign 'html' as value?)
             if filetype:
                 di = {
                     "doc_type": filetype.strip().lower(),
@@ -89,8 +86,8 @@ class ArmySpider(GCSpider):
         else:
             for item in linked_items: # Get document-specific metadata
                 di = {
-                    "doc_type": item.css("::text").get().strip().lower(),
-                    "download_url": abs_url(self.base_url, item.css("::attr(href)").get()).replace(' ', '%20'),
+                    "doc_type": item.xpath('text()').get().strip().lower(),
+                    "download_url": abs_url(self.base_url, item.attrib['href']).replace(' ', '%20'),
                     "compression_type": None
                 }
                 downloadable_items.append(di)
