@@ -31,9 +31,6 @@ class CFRSpider(GCSpider):
         "x-requested-with": "XMLHttpRequest"
     }
 
-    def start_requests(self):
-        yield scrapy.Request(url=self.start_urls[0], method='GET', headers=self.headers)
-
     @staticmethod
     def get_pub_date(publication_date):
         '''
@@ -90,14 +87,6 @@ class CFRSpider(GCSpider):
             detail_url = self.get_api_detail_url(package_id)
             yield response.follow(url=detail_url, callback=self.parse_detail_data, meta={"offset": 0, "year": year},
                                   headers=self.headers)
-
-        # iterate offset
-        next_offset = current_offset + 1
-        next_offset_url = response.url.replace(
-            f'offset={current_offset}', f'offset={next_offset}')
-
-        yield response.follow(url=next_offset_url, callback=self.get_package_ids, meta={"offset": next_offset, "year": year},
-                              headers=self.headers)
 
     def parse_detail_data(self, response):
         data = json.loads(response.body)
