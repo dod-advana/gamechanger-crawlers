@@ -103,7 +103,7 @@ class MilpersmanSpider(GCSpider):
                 'doc_name': doc_name,
                 'doc_num': doc_num,
                 'doc_title': doc_title,
-                'doc_type': file_type,
+                'doc_type': self.doc_type,
                 'cac_login_required': False,
                 'source_page_url':current_url,
                 'download_url': download_url,
@@ -149,7 +149,8 @@ class MilpersmanSpider(GCSpider):
             "doc_num": doc_num,
             #"publication_date": publication_date,
             "download_url": download_url,
-            "display_title": display_title
+            "display_title": display_title,
+            "doc_type": doc_type,
         }
 
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
