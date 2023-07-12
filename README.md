@@ -37,7 +37,7 @@ Updated as of: 12 Jul 2023
          ```shell
          chromedriver --version
          ```
-     - - changed --> Regular Google Chrome is prohibited and not able to be installed on a BAH machine as of recent.
+     - - changed --> Google Chrome (GC) Ent. is the company default; regular GC installation is prohibited and not able to be installed on a BAH machine as of recent.
 2. Install Miniconda or Anaconda (Miniconda is much smaller)
     - https://docs.conda.io/en/latest/miniconda.html
     - after a successful installation you should be able to run the following from the shell:
@@ -87,7 +87,7 @@ Updated as of: 12 Jul 2023
      ```
 6. After the crawler finishes running, you should have all files downloaded into the crawler output directory
 
-## Quickstart Guide: Running a Crawler (Windows)
+## Quickstart Guide: Running a Crawler (Windows OS)
 1. Follow the environment setup guide above if you have not already
 2. Change to the gamechanger crawlers directory and export the repository path to the PYTHONPATH environment variable:
      ```shell
