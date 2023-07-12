@@ -20,3 +20,6 @@ img/
 # transformer model cache
 transformer_cache/
 transformer_cache.zip
+
+# ignore crawler output path
+./downloads
