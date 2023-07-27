@@ -234,7 +234,8 @@ class FileDownloadPipeline(MediaPipeline):
                 # Build a path to each file associated with an item:
                 if compression_type:
                     file_download_path = Path(self.output_dir, output_file_name).with_suffix(f".{compression_type}") # Path for downloaded zipped file
-                    file_unzipped_path = Path(self.output_dir, output_file_name) # Path for unzipped files
+                    file_unzipped_path = Path(self.output_dir, output_file_name)
+                    # Path for unzipped files
                     metadata_download_path = f"{file_unzipped_path}.metadata" # Path for the accompanying metadata file
                 else:
                     # If it is a jbook crawler (and needs a different file output style)
@@ -267,7 +268,10 @@ class FileDownloadPipeline(MediaPipeline):
 
                                 metadata_download_path = Path(self.output_dir, unzipped_item["doc_name"])
                                 suffix_doc_type = f'{unzipped_item["downloadable_items"][0]["doc_type"]}'
-                                metadata_download_path = metadata_download_path.with_suffix(f'.{suffix_doc_type}.metadata')
+
+                                # when making metadata_download_path, need to add the previous suffix in case there are
+                                # periods in filename. will mess up metadata names otherwise
+                                metadata_download_path = metadata_download_path.with_suffix(metadata_download_path.suffix + f'.{suffix_doc_type}.metadata')
 
                                 with open(metadata_download_path, "w") as f: # Write the metadata for each unzipped file
                                     try:
