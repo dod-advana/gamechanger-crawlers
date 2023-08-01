@@ -1,793 +1,653 @@
-<p><a href="/chapter/chapter-7#C7.15.">C7.15. - Transportation 
-of Arms, Ammunition and Explosives and Sensitive Materiel</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-7#C7.16.">C7.16. - Movements Of Explosive Materiel By Commercial Conveyance</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-7#C7.17.">C7.17. - Export Requirements</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-7#C7.18.">C7.18. - Transportation 
-Of Controlled Substances</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-7#C7.19.">C7.19. - Transportation 
-Of Offshore Procurement Materiel</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-7#C7.20.">C7.20. - Transportation 
-Of Returned Items</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-7#C7.21.">C7.21. - Transportation 
-Discrepancies</a></p>
-</div>
-</div>
-</details>
-
-<details><summary><a href="/chapter/chapter-8">Chapter 8 - End-Use Monitoring</a></summary>
-
-<div class="DSAccordionResponse">
-<div class="RowContainer">
-<p><a href="/chapter/chapter-8#C8.1.">C8.1. - Definition and Purpose of End-Use Monitoring</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-8#C8.2.">C8.2. - Golden Sentry</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-8#C8.3.">C8.3. - Routine End-Use Monitoring</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-8#C8.4.">C8.4. - Enhanced EUM</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-8#C8.5.">C8.5. - Visit Policy and 
-Guidance</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-8#C8.6.">C8.6. - Unauthorized End-Use</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-8#C8.7.">C8.7. - Third Party Transfers, Changes in End-Use, and Disposal</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-8#C8.8.">C8.8. - Changes in End-Use and EUM at the Time of Disposal</a></p>
-</div>
-</div>
-</details>
-
-<details><summary><a href="/chapter/chapter-9">Chapter 9 - Financial Policies and Procedures</a></summary>
-
-<div class="DSAccordionResponse">
-<div class="RowContainer">
-<p><a href="/chapter/chapter-9#C9.1.">C9.1. - Purpose - Financial Policies And Procedures</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-9#C9.2.">C9.2. - Financial Management Legal Provisions</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-9#C9.3.">C9.3. - General Financial Policies</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-9#C9.4.">C9.4. - Specific Line Item Pricing Information</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-9#C9.5.">C9.5. - Foreign Military 
-Sales Charges</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-9#C9.6.">C9.6. - Pricing Waivers</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-9#C9.7.">C9.7. - Methods Of Financing</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-9#C9.8.">C9.8. - Letters Of Offer 
-And Acceptance - Terms Of Sale</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-9#C9.9.">C9.9. - Payment Schedules</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-9#C9.10.">C9.10. - Billing</a></p></div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-9#C9.11.">C9.11. - FMS Payments From Purchasers</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-9#C9.12.">C9.12. - Disbursement For FMS Agreements</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-9#C9.13.">C9.13. - Performance Reporting</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-9#C9.14.">C9.14. - Financial Reviews</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-9#C9.15.">C9.15. - Foreign Military Sales Trust Fund Administrative Surcharge Account Management.</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-9#C9.16.">C9.16. - Foreign Military Sales Contract Administration Services Cost Clearing Account.</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-9#C9.17.">C9.17. - Foreign Military Sales Trust Fund Transportation Cost Clearing Account.</a></p>
-</div>
-</div>
-</details>
-
-<details><summary><a href="/chapter/chapter-10">Chapter 10 - International Education and Training</a></summary>
-
-<div class="DSAccordionResponse">
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.1.">C10.1. - Purpose</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.2.">C10.2. - Authorities For International Education And Training</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.3.">C10.3. - General Policies</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.4.">C10.4. - Key Training Management Tools</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.5.">C10.5. - International 
-Training Management</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.6.">C10.6. - International 
-Military Education and Training Program</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.7.">C10.7. - Training Under The Foreign Military Sales Program</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.8.">C10.8. - International 
-Military Student Screening Requirements</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.9.">C10.9. - Healthcare Coverage</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.10">C10.10. - English Language Requirements</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.11">C10.11. - Invitational 
-Travel Order</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.12">C10.12. - Dependents</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.13">C10.13. - Travel and Living Allowance</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.14">C10.14. - Training Tuition Rates</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.15">C10.15. - Suspensions and Cancellation of Training Programs</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.16">C10.16. - Regional Centers for Security Studies</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.17">C10.17. - Other Training Programs</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.18">C10.18. - Field Studies Program</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.19">C10.19. - Unauthorized 
-Absence of Students</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.20">C10.20. - Other Student Administration</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.21">C10.21. - Annual International Training Reports</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-10#C10.22">C10.22. - Security Cooperation Education and Training Teams</a></p>
-</div>
-</div>
-</details>
-
-<details><summary><a href="/chapter/chapter-11">Chapter 11 - Special Programs and Services</a></summary>
-
-<div class="DSAccordionResponse">
-<div class="RowContainer">
-<p><a href="/chapter/chapter-11#C11.1.">C11.1. - C-12 Aircraft 
-Management</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-11#C11.2.">C11.2. - Drawdowns</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-11#C11.3.">C11.3. - Excess Defense Articles</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-11#C11.4.">C11.4. - Foreign Assistance Act, Section 607 Furnishing of Services and Commodities</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-11#C11.5.">C11.5. - Government Furnished Equipment and Materiel Sales</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-11#C11.6.">C11.6. - Leases of Defense Articles under the Arms Export Control Act</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-11#C11.7.">C11.7. - Loans of Defense Articles</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-11#C11.8.">C11.8. - Security Cooperation Education and Training Teams</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-11#C11.9.">C11.9. - Special Defense Acquisition Fund</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-11#C11.10">C11.10. - Warsaw Initiative Fund</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-11-hpr">C11.HR.1. - Military Assistance Program</a></p>
-</div>
-</div>
-</details>
-
-<details><summary><a href="/chapter/chapter-12">Chapter 12 - Overseas Humanitarian, Disaster, and Civic Aid </a></summary>    
-
-<div class="DSAccordionResponse">
-<div class="RowContainer">
-<p><a href="/chapter/chapter-12#C12.1.">C12.1. - Overview</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-12#C12.2.">C12.2. - Program Management</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-12#C12.3.">C12.3. - Identifying Requirements</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-12#C12.4.">C12.4. - Nomination, Submittal, Review, and Approval</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-12#C12.5.">C12.5. - Execution</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-12#C12.6.">C12.6. - Funds Management</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-12#C12.7.">C12.7. - HA Transportation Programs</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-12#C12.8.">C12.8. - Foreign Disaster Relief</a></p>
-</div>
-</div>
-</details>
-
-<details><summary><a href="/chapter/chapter-13">Chapter 13 - Security Cooperation Information Technology Systems</a></summary>
-<div class="DSAccordionResponse">
-<div class="RowContainer">
-<p><a href="/chapter/chapter-13#C13.1.">C13.1. - Mission And Vision</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-13#C13.2.">C13.2. - Capital Planning And Investment Control </a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-13#C13.3.">C13.3. - Security Cooperation Governance Board And Information Technology Change Review Board</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-13#C13.4.">C13.4. - Executive Steering Committee</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-13#C13.5.">C13.5. - Enterprise Architecture</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-13#C13.6.">C13.6. - Information Technology Portfolio Management</a></p>
-</div>
-</div>
-</details>
-
-<details><summary><a href="/chapter/chapter-14">Chapter 14 - Forecasting, Planning, Programming, Budgeting, and Audits</a></summary>
-
-<div class="DSAccordionResponse">
-<div class="RowContainer">
-<p><a href="/chapter/chapter-14#C14.1.">C14.1. - Overview</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-14#C14.2.">C14.2. - Security Assistance Program and Budget Review</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-14#C14.3.">C14.3. - Security Assistance Program Execution Review</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-14#C14.4.">C14.4. - Foreign Military Sales Forecast and Javits Reports</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-14#C14.5.">C14.5. - Standard Financial Information Structure</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-14#C14.6.">C14.6. - Audits</a></p></div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-14#C14.7.">C14.7. - Dormant Account Review-Quarterly</a></p>
-</div>
-</div>
-</details>
-
-<details><summary><a href="/chapter/chapter-15">Chapter 15 - Building Partner Capacity Programs</a></summary>
-
-<div class="DSAccordionResponse">
-<div class="RowContainer">
-<p><a href="/chapter/chapter-15#C15.1.">C15.1. - Overview</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-15#C15.2.">C15.2. - Building Partner Capacity Planning and Requirements Definition</a></p>       
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-15#C15.3.">C15.3. - Building Partner Capacity Case Development</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-15#C15.4.">C15.4. - Building Partner Capacity Case Implementation</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-15#C15.5.">C15.5. - Building Partner Capacity Case Execution</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-15#C15.6.">C15.6. - Building Partner Capacity Case Closure</a></p>
-</div>
-</div>
-</details>
-
-<details><summary><a href="/chapter/chapter-16">Chapter 16 - Case Reconciliation and Closure</a></summary>
-
-<div class="DSAccordionResponse">
-<div class="RowContainer">
-<p><a href="/chapter/chapter-16#C16.1.">C16.1. - General Overview</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-16#C16.2.">C16.2. - Reconciliation</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-16#C16.3.">C16.3. - Case Reconciliation and Closure Executive Committee</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/chapter/chapter-16#C16.4.">C16.4. - Closure</a></p>
-</div>
-</div>
-</details>
-
-<details><summary><a href="/appendix/appendix-1">AP1 - Nonrecurring Cost Recoupment Charges for Major Defense Equipment</a></summary>
-
-<div class="DSAccordionResponse">
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-all">AP1 - Tables I-XXI - Complete Listing</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml1">AP1 - Table I - Firearms and Related Articles</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml2">AP1 - Table II - Guns and Armament</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml3">AP1 - Table III - Ammunition and Ordnance</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml4">AP1 - Table IV - Launch Vehicles, Guided Missiles, Ballistic Missiles, Rockets, Torpedoes, Bombs, and Mines</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml5">AP1 - Table V - Explosives and Energetic Materials, Propellants, Incendiary Agents, and Their Constituents</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml6">AP1 - Table VI - Surface Vessels of War and Special Naval Equipment</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml7">AP1 - Table VII - Ground Vehicles</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml8">AP1 - Table VIII - Aircraft and Related Articles</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml9">AP1 - Table IX - Military Training Equipment and Training</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml10">AP1 - Table X - Personal Protective Equipment</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml11">AP1 - Table XI - Military Electronics</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml12">AP1 - Table XII - Fire Control, Laser, Imaging, and Guidance Equipment</a></p>       
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml13">AP1 - Table XIII - Materials and Miscellaneous Articles</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml14">AP1 - Table XIV - Toxicological Agents, Including Chemical Agents, Biological Agents, and Associated Equipment</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml15">AP1 - Table XV - Spacecraft and Related Articles</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml16">AP1 - Table XVI - Nuclear Weapons Related Articles</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml17">AP1 - Table XVII - Classified Articles, Technical Data, and Defense Services Not Otherwise Enumerated</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml18">AP1 - Table XVIII - Directed Energy Weapons</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml19">AP1 - Table XIX - Gas 
-Turbine Engines and Associated Equipment</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml20">AP1 - Table XX - Submersible Vessels and Related Articles</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-1-usml21">AP1 - Table XXI - Articles, Technical Data, and Defense Services Not Otherwise Enumerated</a></p>
-</div>
-</div>
-</details>
-
-<details><summary><a href="/appendix/appendix-2">A2 - Transportation Cost Look-up Table</a></summary>
-
-<div class="DSAccordionResponse">
-<div class="RowContainer">
-<p><a href="/appendix/appendix-2">See AP2 listing for available Look-Up Table years.</a></p>
-</div>
-</div>
-</details>
-
-<details><summary><a href="/appendix/appendix-3">A3 - FMF Loan 
-and Grant Agreements</a></summary>
-
-<div class="DSAccordionResponse">
-<div class="RowContainer">
-<p><a href="/appendix/appendix-3">See AP3 listing for available FMF Loan and Grant Agreements figures.</a></p>
-</div>
-</div>
-</details>
-
-<details><summary><a href="/appendix/appendix-4">A4 - Generic Codes</a></summary>
-
-<div class="DSAccordionResponse">
-<div class="RowContainer">
-<p><a href="/appendix/appendix-4-a">Budget Activity Code : A - 
-Aircraft</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-4-b">Budget Activity Code : B - 
-Missiles</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-4-c">Budget Activity Code : C - 
-Ships</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-4-d">Budget Activity Code : D - 
-Combat Vehicles</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-4-e">Budget Activity Code : E - 
-Tactical and Support Vehicles</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-4-f">Budget Activity Code : F - 
-Weapons</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-4-g">Budget Activity Code : G - 
-Ammunition</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-4-h">Budget Activity Code : H - 
-Communications Equipment</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-4-j">Budget Activity Code : J - 
-Support Equipment</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-4-k">Budget Activity Code : K - 
-Supplies</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-4-l">Budget Activity Code : L - 
-Supply Operations</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-4-m">Budget Activity Code : M - 
-Maintenance of Equipment</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-4-n1">Budget Activity Code : N - Training (FMS 1200 System Only)</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-4-n2">Budget Activity Code : N - Training (MAP 1000 System Only)</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-4-p">Budget Activity Code : P - 
-Research &amp; Development</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-4-q">Budget Activity Code : Q - 
-Construction</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-4-r">Budget Activity Code : R - 
-Special Activities</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-4-t">Budget Activity Code : T - 
-Administrative Expenses</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-4-u">Budget Activity Code : U - 
-Foreign Military Sales Order (FMSO) (FMS 1200 System Only)</a></p>
-</div>
-</div>
-</details>
-
-<details><summary><a href="/appendix/appendix-5">A5 - Congressional Reports and DSCA Reports Control System</a></summary>     
-
-<div class="DSAccordionResponse">
-<div class="RowContainer">
-<p><a href="/appendix/appendix-5-1">A5.1. - DSCA Reporting Requirements (Congressional)</a></p>
-</div>
-
-<div class="RowContainer">
-<p><a href="/appendix/appendix-5-2">A5.2. - DSCA Reporting Requirements (Non-Congressional)</a></p>
-</div>
-</div>
-</details>
-
-<details><summary><a href="/appendix/appendix-6">A6 - Letter of Offer and Acceptance Notes</a></summary>
-
-<div class="DSAccordionResponse">
-<div class="RowContainer">
-<p><a href="/appendix/appendix-6">See AP6 listing for available LOA Notes.</a></p>
-</div>
-</div>
-</details>
-
-<details><summary><a href="/rcg/rcg-toc">A7 - Case Reconciliation and Closure Guide (RCG)</a></summary>
-
-<div class="DSAccordionResponse">
-<div class="RowContainer">
-<p><a href="/rcg/rcg-toc">See AP7 TOC for full listing.</a></p></div>
-</div>
-</details>
-</div>
-</div>
-</div>
-</div>
-</div>
-
-          </div>
-  </div>
-</article>
-
-    </div>
-  </div>
-
-  </div>
-
-                          </div>
-                      </section>
-                            </div>
-      </div>
-    </div>
-
-
-
-
-
-
-
-  </div>
-
-          <div id="footer-top" class="clearfix footer-top one-region bicolor">
-      <div class="container">
-                <div id="footer-top-inside" class="clearfix footer-top-inside"
-          >
-          <div class="row">
-                          <div class="col-md-12">
-                                <div id="footer-top-first" class="clearfix footer-top-first">
-                  <div class="footer-top-area">
-                      <div class="region region-footer-top-first">
-    <div id="block-footerofficialsitebar-2" class="settings-tray-editable block block-block-content block-block-content6ed2ea3c-ccce-4e60-82f9-6e48d31553a8" data-drupal-settingstray="editable">
-
-
-      <div class="content">
-
-            <div class="clearfix text-formatted field field--name-body field--type-text-with-summary field--label-hidden field__item"><p style="text-align: center">This is an official site 
-of the Defense Security Cooperation Agency.</p>
-</div>
-
-    </div>
-  </div>
-
-  </div>
-
-                  </div>
-                </div>
-                              </div>
-                                  </div>
-        </div>
-              </div>
-    </div>
-
-          <footer id="footer" class="clearfix footer white-region">
-      <div class="container">
-        <div class="row">
-                      <div class="col-sm-12">
-              <div class="footer-area"
-                >
-                  <div class="region region-footer-first">     
-    <div id="block-footer-2" class="settings-tray-editable block block-block-content block-block-contentbc504754-4451-446d-96bc-6c71d9ad005f" data-drupal-settingstray="editable">
-
-
-      <div class="content">
-
-            <div class="clearfix text-formatted field field--name-body field--type-text-with-summary field--label-hidden field__item"><div id="footer">
-<table style="border-collapse:collapse; border:0px; margin:0px 
-auto 0px auto; padding:2px 4px 2px 4px;">
-        <tbody>
-                <tr>
-                        <th style="width:16%; border:0px; text-align:center;"><a href="http://dodcio.defense.gov/DoDSection508/Std_Stmt.aspx" target="_blank">Accessibility/Section 508</a></th>
-                        <th style="width:16%; border:0px; text-align:center;"><a href="https://www.dsca.mil/external-link-disclaimer">External Link Disclaimer</a></th>
-                        <th style="width:16%; border:0px; text-align:center;"><a href="https://www.dsca.mil/privacy-and-security">Privacy &amp; Security</a></th>
-                        <th style="width:16%; border:0px; text-align:center;"><a href="https://www.usa.gov/">USA.gov</a></th> 
-                        <th style="width:16%; border:0px; text-align:center;"><a href="https://www.dsca.mil/resources/freedom-information-act-foia">FOIA</a></th>
-                        <th style="width:16%; border:0px; text-align:center;"><a href="https://www.dsca.mil/resources/no-fear-act">No Fear Act</a></th>
-                </tr>
-        </tbody>
-</table>
-</div></div>
-
-    </div>
-  </div>
-
-  </div>
-
-              </div>
-            </div>
-                                                </div>
-      </div>
-    </footer>
-
-
-        <div id="toTop" class="to-top"><i class="fa fa-angle-double-up"></i></div>
-
-</div>
-
-  </div>
-
-
-    <script type="application/json" data-drupal-selector="drupal-settings-json">{"path":{"baseUrl":"\/","scriptPath":null,"pathPrefix":"","currentPath":"node\/8","currentPathIsAdmin":false,"isFront":false,"currentLanguage":"en"},"pluralDelimiter":"\u0003","suppressDeprecationErrors":true,"google_analytics":{"account":"G-EZG4L0JD0R","trackOutbound":true,"trackMailto":true,"trackTel":true,"trackDownload":true,"trackDownloadExtensions":"7z|aac|arc|arj|asf|asx|avi|bin|csv|doc(x|m)?|dot(x|m)?|exe|flv|gif|gz|gzip|hqx|jar|jpe?g|js|mp(2|3|4|e?g)|mov(ie)?|msi|msp|pdf|phps|png|ppt(x|m)?|pot(x|m)?|pps(x|m)?|ppam|sld(x|m)?|thmx|qtm?|ra(m|r)?|sea|sit|tar|tgz|torrent|txt|wav|wma|wmv|wpd|xls(x|m|b)?|xlt(x|m)|xlam|xml|z|zip"},"levelplus":{"slideshowCaptionOpacity":0.4,"sliderRevolutionFullWidthInit":{"slideshowFullWidthEffectTime":10000,"slideshowFullWidthInitialHeight":630,"slideshowFullWidthBulletsPosition":"center"},"sliderRevolutionFullScreenInit":{"slideshowFullScreenEffectTime":10000,"slideshowFullScreenBulletsPosition":"left"},"sliderRevolutionBoxedWidthInit":{"slideshowBoxedWidthEffectTime":10000,"slideshowBoxedWidthInitialHeight":630,"slideshowBoxedWidthBulletsPosition":"center"},"sliderRevolutionInternalBannerInit":{"slideshowInternalBannerEffectTime":10000,"slideshowInternalBannerInitialHeight":630,"slideshowInternalBannerBulletsPosition":"left"},"owlCarouselTestimonialsInit":{"owlTestimonialsEffectTime":false},"flexsliderTestimonialsInit":{"TestimonialsSliderEffect":"slide","TestimonialsSliderEffectTime":5000},"flexsliderInPageInit":{"inPageSliderEffect":"slide"},"owlCarouselCompaniesInit":{"owlCompaniesEffectTime":false},"owlCarouselPromotedPostsInit":{"owlPostsEffectTime":false},"owlCarouselTeamInit":{"owlTeamEffectTime":false},"transparentHeader":{"transparentHeaderOpacity":0.9},"ParallaxAndVideoBg":{"ParallaxAndVideoBgOpacity":0.65},"VideoBackgroundInit":{"PathToVideo_mp4":"https:\/\/samm.dsca.mil\/themes\/custom\/levelplus\/videos\/background-video.mp4","PathToVideo_webm":"https:\/\/samm.dsca.mil\/themes\/custom\/levelplus\/videos\/background-video.webm","pathToVideo_jpg":"https:\/\/samm.dsca.mil\/themes\/custom\/levelplus\/videos\/background-video.jpg"},"isotopeFiltersMasonryInit":{"isotopeFiltersText":"All"},"nodeSideAffix":{"affixAdminHeigth":79,"affixFixedHeaderHeigth":72}},"statistics":{"data":{"nid":"8"},"url":"\/core\/modules\/statistics\/statistics.php"},"superfish":{"superfish-main":{"id":"superfish-main","sf":{"animation":{"opacity":"show"},"speed":"fast"},"plugins":{"touchscreen":{"mode":"useragent_predefined"},"smallscreen":{"mode":"window_width","title":"Main menu"},"supposition":true,"supersubs":{"maxWidth":"35"}}}},"user":{"uid":0,"permissionsHash":"c97029b2e41ec3888f00575f9f19510bc1a7a5feef9c371b1609c6a3478b2a8b"}}</script>
-<script src="/sites/default/files/js/js_JsJs2TnO42GaI8XsS5BoceKMlSqv2qC7uT9XoicHPVY.js"></script>
-
-  </body>
-</html>
+2023-08-01 13:37:31 [scrapy.utils.log] INFO: Scrapy 2.9.0 started (bot: scrapybot)
+2023-08-01 13:37:32 [scrapy.utils.log] INFO: Versions: lxml 4.9.2.0, libxml2 2.9.12, cssselect 1.2.0, parsel 1.8.1, w3lib 2.1.1, Twisted 22.10.0, Python 3.11.3 (tags/v3.11.3:f3909b8, Apr  4 2023, 23:49:59) [MSC v.1934 64 bit (AMD64)], pyOpenSSL 23.2.0 
+(OpenSSL 3.1.1 30 May 2023), cryptography 41.0.1, Platform Windows-10-10.0.19045-SP0
+2023-08-01 13:37:32 [scrapy.crawler] INFO: Overridden settings:{'DOWNLOAD_FAIL_ON_DATALOSS': False,
+ 'LOG_LEVEL': 'INFO',
+ 'SPIDER_LOADER_WARN_ONLY': True}
+2023-08-01 13:37:32 [py.warnings] WARNING: C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\utils\request.py:232: ScrapyDeprecationWarning: '2.6' is a deprecated value for the 'REQUEST_FINGERPRINTER_IMPLEMENTATION' setting.
+
+It is also the default value. In other words, it is normal to get this warning if you have not defined a value for the 'REQUEST_FINGERPRINTER_IMPLEMENTATION' setting. This is so for backward compatibility reasons, but it will change in a future version of Scrapy.
+
+See the documentation of the 'REQUEST_FINGERPRINTER_IMPLEMENTATION' setting for information on how to handle this deprecation.  return cls(crawler)
+
+2023-08-01 13:37:32 [scrapy.extensions.telnet] INFO: Telnet Password: fbfaf357f464d6f0
+2023-08-01 13:37:33 [scrapy.middleware] INFO: Enabled extensions:
+['scrapy.extensions.corestats.CoreStats',
+ 'scrapy.extensions.telnet.TelnetConsole',
+ 'scrapy.extensions.feedexport.FeedExporter',
+ 'scrapy.extensions.logstats.LogStats']
+2023-08-01 13:37:33 [scrapy.middleware] INFO: Enabled downloader middlewares:
+['dataPipelines.gc_scrapy.gc_scrapy.downloader_middlewares.BanEvasionMiddleware',
+ 'scrapy.downloadermiddlewares.httpauth.HttpAuthMiddleware',   
+ 'scrapy.downloadermiddlewares.downloadtimeout.DownloadTimeoutMiddleware',
+ 'scrapy.downloadermiddlewares.defaultheaders.DefaultHeadersMiddleware',
+ 'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware', 
+ 'scrapy.downloadermiddlewares.retry.RetryMiddleware',
+ 'scrapy.downloadermiddlewares.redirect.MetaRefreshMiddleware', 'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware',
+ 'scrapy.downloadermiddlewares.redirect.RedirectMiddleware',   
+ 'scrapy.downloadermiddlewares.cookies.CookiesMiddleware',     
+ 'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware', 
+ 'scrapy.downloadermiddlewares.stats.DownloaderStats']
+2023-08-01 13:37:33 [scrapy.middleware] INFO: Enabled spider middlewares:
+['scrapy.spidermiddlewares.httperror.HttpErrorMiddleware',     
+ 'scrapy.spidermiddlewares.offsite.OffsiteMiddleware',
+ 'scrapy.spidermiddlewares.referer.RefererMiddleware',
+ 'scrapy.spidermiddlewares.urllength.UrlLengthMiddleware',     
+ 'scrapy.spidermiddlewares.depth.DepthMiddleware']
+2023-08-01 13:37:33 [py.warnings] WARNING: C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\pipelines\media.py:148: ScrapyDeprecationWarning: media_downloaded(self, response, request, info) is deprecated, please use media_downloaded(self, response, request, info, *, item=None)   
+  self._check_signature(func)
+
+2023-08-01 13:37:33 [scrapy.middleware] INFO: Enabled item pipelines:
+['dataPipelines.gc_scrapy.gc_scrapy.pipelines.FileNameFixerPipeline',
+ 'dataPipelines.gc_scrapy.gc_scrapy.pipelines.DeduplicaterPipeline',
+ 'dataPipelines.gc_scrapy.gc_scrapy.pipelines.AdditionalFieldsPipeline',
+ 'dataPipelines.gc_scrapy.gc_scrapy.pipelines.ValidateJsonPipeline',
+ 'dataPipelines.gc_scrapy.gc_scrapy.pipelines.FileDownloadPipeline']
+2023-08-01 13:37:33 [scrapy.core.engine] INFO: Spider opened   
+++ Initiating downloader for saam_pubs
+Reading in previous manifest
+Previous manifest loaded, will filter 0 hashes
+2023-08-01 13:37:33 [scrapy.extensions.logstats] INFO: Crawled 
+0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)     
+2023-08-01 13:37:33 [scrapy.extensions.telnet] INFO: Telnet console listening on 127.0.0.1:6023
+Processing URL:  /listing/authorization-letter
+Processing URL:  /listing/chapters
+Processing URL:  /listing/esamm-figures
+Processing URL:  /listing/esamm-forms
+Processing URL:  /listing/esamm-tables
+Processing URL:  /listing/esamm-acronyms
+Processing URL:  /listing/esamm-glossary
+Processing URL:  /listing/esamm-references
+Processing URL:  /chapter/chapter-1#C1.1.
+Processing URL:  /chapter/chapter-1#C1.2.
+Processing URL:  /chapter/chapter-1#C1.3.
+Processing URL:  /chapter/chapter-2#C2.1.
+Processing URL:  /chapter/chapter-2#C2.2.
+Processing URL:  /chapter/chapter-2#C2.3.
+Processing URL:  /chapter/chapter-2#C2.4.
+Processing URL:  /chapter/chapter-2#C2.5.
+Processing URL:  /chapter/chapter-3#C3.1.
+Processing URL:  /chapter/chapter-3#C3.2.
+Processing URL:  /chapter/chapter-3#C3.3.
+Processing URL:  /chapter/chapter-3#C3.4.
+Processing URL:  /chapter/chapter-3#C3.5.
+Processing URL:  /chapter/chapter-3#C3.6.
+Processing URL:  /chapter/chapter-3#C3.7.
+Processing URL:  /chapter/chapter-4#C4.1.
+Processing URL:  /chapter/chapter-4#C4.2.
+Processing URL:  /chapter/chapter-4#C4.3.
+Processing URL:  /chapter/chapter-4#C4.4.
+Processing URL:  /chapter/chapter-4#C4.5.
+Processing URL:  /chapter/chapter-5#C5.1.
+Processing URL:  /chapter/chapter-5#C5.2.
+Processing URL:  /chapter/chapter-5#C5.3.
+Processing URL:  /chapter/chapter-5#C5.4.
+Processing URL:  /chapter/chapter-5#C5.5.
+Processing URL:  /chapter/chapter-5#C5.6.
+Processing URL:  /chapter/chapter-6#C6.1.
+Processing URL:  /chapter/chapter-6#C6.2.
+Processing URL:  /chapter/chapter-6#C6.3.
+Processing URL:  /chapter/chapter-6#C6.4.
+Processing URL:  /chapter/chapter-6#C6.5.
+Processing URL:  /chapter/chapter-6#C6.6.
+Processing URL:  /chapter/chapter-6#C6.7.
+Processing URL:  /chapter/chapter-6#C6.8.
+Processing URL:  /chapter/chapter-7#C7.1.
+Processing URL:  /chapter/chapter-7#C7.2.
+Processing URL:  /chapter/chapter-7#C7.3.
+Processing URL:  /chapter/chapter-7#C7.4.
+Processing URL:  /chapter/chapter-7#C7.5.
+Processing URL:  /chapter/chapter-7#C7.6.
+Processing URL:  /chapter/chapter-7#C7.7.
+Processing URL:  /chapter/chapter-7#C7.8.
+Processing URL:  /chapter/chapter-7#C7.9.
+Processing URL:  /chapter/chapter-7#C7.10.
+Processing URL:  /chapter/chapter-7#C7.11.
+Processing URL:  /chapter/chapter-7#C7.12.
+Processing URL:  /chapter/chapter-7#C7.13.
+Processing URL:  /chapter/chapter-7#C7.14.
+Processing URL:  /chapter/chapter-7#C7.15.
+Processing URL:  /chapter/chapter-7#C7.16.
+Processing URL:  /chapter/chapter-7#C7.17.
+Processing URL:  /chapter/chapter-7#C7.18.
+Processing URL:  /chapter/chapter-7#C7.19.
+Processing URL:  /chapter/chapter-7#C7.20.
+Processing URL:  /chapter/chapter-7#C7.21.
+Processing URL:  /chapter/chapter-8#C8.1.
+Processing URL:  /chapter/chapter-8#C8.2.
+Processing URL:  /chapter/chapter-8#C8.3.
+Processing URL:  /chapter/chapter-8#C8.4.
+Processing URL:  /chapter/chapter-8#C8.5.
+Processing URL:  /chapter/chapter-8#C8.6.
+Processing URL:  /chapter/chapter-8#C8.7.
+Processing URL:  /chapter/chapter-8#C8.8.
+Processing URL:  /chapter/chapter-9#C9.1.
+Processing URL:  /chapter/chapter-9#C9.2.
+Processing URL:  /chapter/chapter-9#C9.3.
+Processing URL:  /chapter/chapter-9#C9.4.
+Processing URL:  /chapter/chapter-9#C9.5.
+Processing URL:  /chapter/chapter-9#C9.6.
+Processing URL:  /chapter/chapter-9#C9.7.
+Processing URL:  /chapter/chapter-9#C9.8.
+Processing URL:  /chapter/chapter-9#C9.9.
+Processing URL:  /chapter/chapter-9#C9.10.
+Processing URL:  /chapter/chapter-9#C9.11.
+Processing URL:  /chapter/chapter-9#C9.12.
+Processing URL:  /chapter/chapter-9#C9.13.
+Processing URL:  /chapter/chapter-9#C9.14.
+Processing URL:  /chapter/chapter-9#C9.15.
+Processing URL:  /chapter/chapter-9#C9.16.
+Processing URL:  /chapter/chapter-9#C9.17.
+Processing URL:  /chapter/chapter-10#C10.1.
+Processing URL:  /chapter/chapter-10#C10.2.
+Processing URL:  /chapter/chapter-10#C10.3.
+Processing URL:  /chapter/chapter-10#C10.4.
+Processing URL:  /chapter/chapter-10#C10.5.
+Processing URL:  /chapter/chapter-10#C10.6.
+Processing URL:  /chapter/chapter-10#C10.7.
+Processing URL:  /chapter/chapter-10#C10.8.
+Processing URL:  /chapter/chapter-10#C10.9.
+Processing URL:  /chapter/chapter-10#C10.10
+Processing URL:  /chapter/chapter-10#C10.11
+Processing URL:  /chapter/chapter-10#C10.12
+Processing URL:  /chapter/chapter-10#C10.13
+Processing URL:  /chapter/chapter-10#C10.14
+Processing URL:  /chapter/chapter-10#C10.15
+Processing URL:  /chapter/chapter-10#C10.16
+Processing URL:  /chapter/chapter-10#C10.17
+Processing URL:  /chapter/chapter-10#C10.18
+Processing URL:  /chapter/chapter-10#C10.19
+Processing URL:  /chapter/chapter-10#C10.20
+Processing URL:  /chapter/chapter-10#C10.21
+Processing URL:  /chapter/chapter-10#C10.22
+Processing URL:  /chapter/chapter-11#C11.1.
+Processing URL:  /chapter/chapter-11#C11.2.
+Processing URL:  /chapter/chapter-11#C11.3.
+Processing URL:  /chapter/chapter-11#C11.4.
+Processing URL:  /chapter/chapter-11#C11.5.
+Processing URL:  /chapter/chapter-11#C11.6.
+Processing URL:  /chapter/chapter-11#C11.7.
+Processing URL:  /chapter/chapter-11#C11.8.
+Processing URL:  /chapter/chapter-11#C11.9.
+Processing URL:  /chapter/chapter-11#C11.10
+Processing URL:  /chapter/chapter-11-hpr
+Processing URL:  /chapter/chapter-12#C12.1.
+Processing URL:  /chapter/chapter-12#C12.2.
+Processing URL:  /chapter/chapter-12#C12.3.
+Processing URL:  /chapter/chapter-12#C12.4.
+Processing URL:  /chapter/chapter-12#C12.5.
+Processing URL:  /chapter/chapter-12#C12.6.
+Processing URL:  /chapter/chapter-12#C12.7.
+Processing URL:  /chapter/chapter-12#C12.8.
+Processing URL:  /chapter/chapter-13#C13.1.
+Processing URL:  /chapter/chapter-13#C13.2.
+Processing URL:  /chapter/chapter-13#C13.3.
+Processing URL:  /chapter/chapter-13#C13.4.
+Processing URL:  /chapter/chapter-13#C13.5.
+Processing URL:  /chapter/chapter-13#C13.6.
+Processing URL:  /chapter/chapter-14#C14.1.
+Processing URL:  /chapter/chapter-14#C14.2.
+Processing URL:  /chapter/chapter-14#C14.3.
+Processing URL:  /chapter/chapter-14#C14.4.
+Processing URL:  /chapter/chapter-14#C14.5.
+Processing URL:  /chapter/chapter-14#C14.6.
+Processing URL:  /chapter/chapter-14#C14.7.
+Processing URL:  /chapter/chapter-15#C15.1.
+Processing URL:  /chapter/chapter-15#C15.2.
+Processing URL:  /chapter/chapter-15#C15.3.
+Processing URL:  /chapter/chapter-15#C15.4.
+Processing URL:  /chapter/chapter-15#C15.5.
+Processing URL:  /chapter/chapter-15#C15.6.
+Processing URL:  /chapter/chapter-16#C16.1.
+Processing URL:  /chapter/chapter-16#C16.2.
+Processing URL:  /chapter/chapter-16#C16.3.
+Processing URL:  /chapter/chapter-16#C16.4.
+Processing URL:  /appendix/appendix-1-all
+Processing URL:  /appendix/appendix-1-usml1
+Processing URL:  /appendix/appendix-1-usml2
+Processing URL:  /appendix/appendix-1-usml3
+Processing URL:  /appendix/appendix-1-usml4
+Processing URL:  /appendix/appendix-1-usml5
+Processing URL:  /appendix/appendix-1-usml6
+Processing URL:  /appendix/appendix-1-usml7
+Processing URL:  /appendix/appendix-1-usml8
+Processing URL:  /appendix/appendix-1-usml9
+Processing URL:  /appendix/appendix-1-usml10
+Processing URL:  /appendix/appendix-1-usml11
+Processing URL:  /appendix/appendix-1-usml12
+Processing URL:  /appendix/appendix-1-usml13
+Processing URL:  /appendix/appendix-1-usml14
+Processing URL:  /appendix/appendix-1-usml15
+Processing URL:  /appendix/appendix-1-usml16
+Processing URL:  /appendix/appendix-1-usml17
+Processing URL:  /appendix/appendix-1-usml18
+Processing URL:  /appendix/appendix-1-usml19
+Processing URL:  /appendix/appendix-1-usml20
+Processing URL:  /appendix/appendix-1-usml21
+Processing URL:  /appendix/appendix-2
+Processing URL:  /appendix/appendix-3
+Processing URL:  /appendix/appendix-4-a
+Processing URL:  /appendix/appendix-4-b
+Processing URL:  /appendix/appendix-4-c
+Processing URL:  /appendix/appendix-4-d
+Processing URL:  /appendix/appendix-4-e
+Processing URL:  /appendix/appendix-4-f
+Processing URL:  /appendix/appendix-4-g
+Processing URL:  /appendix/appendix-4-h
+Processing URL:  /appendix/appendix-4-j
+Processing URL:  /appendix/appendix-4-k
+Processing URL:  /appendix/appendix-4-l
+Processing URL:  /appendix/appendix-4-m
+Processing URL:  /appendix/appendix-4-n1
+Processing URL:  /appendix/appendix-4-n2
+Processing URL:  /appendix/appendix-4-p
+Processing URL:  /appendix/appendix-4-q
+Processing URL:  /appendix/appendix-4-r
+Processing URL:  /appendix/appendix-4-t
+Processing URL:  /appendix/appendix-4-u
+Processing URL:  /appendix/appendix-5-1
+Processing URL:  /appendix/appendix-5-2
+Processing URL:  /appendix/appendix-6
+Processing URL:  /rcg/rcg-toc
+2023-08-01 13:37:35 [saam_pubs] ERROR: Error processing row <Selector query='descendant-or-self::table/descendant-or-self::*/tbody/descendant-or-self::*/tr' data='<tr>\n\t\t\t<td class="AlignLeft"><p>Chap...'>: 'NoneType' object has no attribute 'replace'
+2023-08-01 13:37:35 [saam_pubs] ERROR: Error processing row <Selector query='descendant-or-self::table/descendant-or-self::*/tbody/descendant-or-self::*/tr' data='<tr>\n\t\t\t<td class="AlignLeft"><p>Chap...'>: 'NoneType' object has no attribute 'replace'
+2023-08-01 13:37:35 [saam_pubs] ERROR: Error processing row <Selector query='descendant-or-self::table/descendant-or-self::*/tbody/descendant-or-self::*/tr' data='<tr>\n\t\t\t<td class="AlignLeft"><p>Dire...'>: 'NoneType' object has no attribute 'replace'
+2023-08-01 13:37:35 [saam_pubs] ERROR: Error processing row <Selector query='descendant-or-self::table/descendant-or-self::*/tbody/descendant-or-self::*/tr' data='<tr>\n\t\t\t<td class="AlignLeft"><p>Inst...'>: 'NoneType' object has no attribute 'replace'
+2023-08-01 13:37:35 [saam_pubs] ERROR: Error processing row <Selector query='descendant-or-self::table/descendant-or-self::*/tbody/descendant-or-self::*/tr' data='<tr>\n\t\t\t<td class="AlignLeft"><p>Manu...'>: 'NoneType' object has no attribute 'replace'
+2023-08-01 13:37:35 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
+{'cac_login_required': False,
+ 'crawler_used': 'saam_pubs',
+ 'data_source': 'SAAM',
+ 'display_doc_type': 'SAAM',
+ 'display_org': 'SAAM',
+ 'display_source': 'SAAM - Unlisted Source',
+ 'display_title': 'SAAM V0R0: Allotment',
+ 'doc_name': 'glossary',
+ 'doc_num': 'V0R0',
+ 'doc_title': 'Allotment',
+ 'doc_type': 'SAAM',
+ 'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',
+ 'downloadable_items': [{'compression_type': None,
+                         'doc_type': 'pdf',
+                         'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf'}],   
+ 'file_ext': 'pdf',
+ 'is_revoked': False,
+ 'publication_date': '',
+ 'source_fqdn': 'samm.dsca.mil',
+ 'source_page_url': 'https://samm.dsca.mil/listing/esamm-glossary',
+ 'source_title': 'Unlisted Source',
+ 'version_hash': 'dffd981d78a158963e976568f889c3bdc29be2690009409ff29030f1d1a998de',
+ 'version_hash_raw_data': {'display_title': 'SAAM V0R0: Allotment',
+                           'doc_name': 'glossary',
+                           'doc_num': 'V0R0',
+                           'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',   
+                           'publication_date': '',
+                           'scrape_time': 1690915055.7854888}} 
+2023-08-01 13:37:35 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
+{'cac_login_required': False,
+ 'crawler_used': 'saam_pubs',
+ 'data_source': 'SAAM',
+ 'display_doc_type': 'SAAM',
+ 'display_org': 'SAAM',
+ 'display_source': 'SAAM - Unlisted Source',
+ 'display_title': 'SAAM V0R0: Apportionment',
+ 'doc_name': 'glossary',
+ 'doc_num': 'V0R0',
+ 'doc_title': 'Apportionment',
+ 'doc_type': 'SAAM',
+ 'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',
+ 'downloadable_items': [{'compression_type': None,
+                         'doc_type': 'pdf',
+                         'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf'}],   
+ 'file_ext': 'pdf',
+ 'is_revoked': False,
+ 'publication_date': '',
+ 'source_fqdn': 'samm.dsca.mil',
+ 'source_page_url': 'https://samm.dsca.mil/listing/esamm-glossary',
+ 'source_title': 'Unlisted Source',
+ 'version_hash': 'a1c691a9ec641aeb63e93460b14bd2cb24fc22e33d7ff2db4016df371af51964',
+ 'version_hash_raw_data': {'display_title': 'SAAM V0R0: Apportionment',
+                           'doc_name': 'glossary',
+                           'doc_num': 'V0R0',
+                           'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',   
+                           'publication_date': '',
+                           'scrape_time': 1690915055.7935548}} 
+2023-08-01 13:37:35 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
+{'cac_login_required': False,
+ 'crawler_used': 'saam_pubs',
+ 'data_source': 'SAAM',
+ 'display_doc_type': 'SAAM',
+ 'display_org': 'SAAM',
+ 'display_source': 'SAAM - Unlisted Source',
+ 'display_title': 'SAAM V0R0: Budget Authority',
+ 'doc_name': 'glossary',
+ 'doc_num': 'V0R0',
+ 'doc_title': 'Budget Authority',
+ 'doc_type': 'SAAM',
+ 'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',
+ 'downloadable_items': [{'compression_type': None,
+                         'doc_type': 'pdf',
+                         'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf'}],   
+ 'file_ext': 'pdf',
+ 'is_revoked': False,
+ 'publication_date': '',
+ 'source_fqdn': 'samm.dsca.mil',
+ 'source_page_url': 'https://samm.dsca.mil/listing/esamm-glossary',
+ 'source_title': 'Unlisted Source',
+ 'version_hash': 'ccf9b2a4d82644abf09ca3fe8f99b35536a06f3c25fb40c99ed1e6cf39210b83',
+ 'version_hash_raw_data': {'display_title': 'SAAM V0R0: Budget 
+Authority',
+                           'doc_name': 'glossary',
+                           'doc_num': 'V0R0',
+                           'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',   
+                           'publication_date': '',
+                           'scrape_time': 1690915055.8112187}} 
+2023-08-01 13:37:35 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
+{'cac_login_required': False,
+ 'crawler_used': 'saam_pubs',
+ 'data_source': 'SAAM',
+ 'display_doc_type': 'SAAM',
+ 'display_org': 'SAAM',
+ 'display_source': 'SAAM - Unlisted Source',
+ 'display_title': 'SAAM V0R0: Budget Year',
+ 'doc_name': 'a11',
+ 'doc_num': 'V0R0',
+ 'doc_title': 'Budget Year',
+ 'doc_type': 'SAAM',
+ 'download_url': 'https://www.whitehouse.gov/wp-content/uploads/2018/06/a11.pdf',
+ 'downloadable_items': [{'compression_type': None,
+                         'doc_type': 'pdf',
+                         'download_url': 'https://www.whitehouse.gov/wp-content/uploads/2018/06/a11.pdf'}],
+ 'file_ext': 'pdf',
+ 'is_revoked': False,
+ 'publication_date': '',
+ 'source_fqdn': 'samm.dsca.mil',
+ 'source_page_url': 'https://samm.dsca.mil/listing/esamm-glossary',
+ 'source_title': 'Unlisted Source',
+ 'version_hash': '47e9ae9b451f949a3ed608156892cd75c9db37d72419d9fddd4647a1d1123489',
+ 'version_hash_raw_data': {'display_title': 'SAAM V0R0: Budget 
+Year',
+                           'doc_name': 'a11',
+                           'doc_num': 'V0R0',
+                           'download_url': 'https://www.whitehouse.gov/wp-content/uploads/2018/06/a11.pdf',
+                           'publication_date': '',
+                           'scrape_time': 1690915055.8198462}} 
+2023-08-01 13:37:35 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
+{'cac_login_required': False,
+ 'crawler_used': 'saam_pubs',
+ 'data_source': 'SAAM',
+ 'display_doc_type': 'SAAM',
+ 'display_org': 'SAAM',
+ 'display_source': 'SAAM - Unlisted Source',
+ 'display_title': 'SAAM V0R0: Commitment [financial]',
+ 'doc_name': 'glossary',
+ 'doc_num': 'V0R0',
+ 'doc_title': 'Commitment [financial]',
+ 'doc_type': 'SAAM',
+ 'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',
+ 'downloadable_items': [{'compression_type': None,
+                         'doc_type': 'pdf',
+                         'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf'}],   
+ 'file_ext': 'pdf',
+ 'is_revoked': False,
+ 'publication_date': '',
+ 'source_fqdn': 'samm.dsca.mil',
+ 'source_page_url': 'https://samm.dsca.mil/listing/esamm-glossary',
+ 'source_title': 'Unlisted Source',
+ 'version_hash': '6b0ba22dbe1ffc426664fa2d87dcfaa790f6cbbc07c9e7831287db7d61c4373f',
+ 'version_hash_raw_data': {'display_title': 'SAAM V0R0: Commitment [financial]',
+                           'doc_name': 'glossary',
+                           'doc_num': 'V0R0',
+                           'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',   
+                           'publication_date': '',
+                           'scrape_time': 1690915055.8358638}} 
+2023-08-01 13:37:35 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
+{'cac_login_required': False,
+ 'crawler_used': 'saam_pubs',
+ 'data_source': 'SAAM',
+ 'display_doc_type': 'SAAM',
+ 'display_org': 'SAAM',
+ 'display_source': 'SAAM - Unlisted Source',
+ 'display_title': 'SAAM V0R0: Continuing Resolution (CR)',     
+ 'doc_name': 'a11',
+ 'doc_num': 'V0R0',
+ 'doc_title': 'Continuing Resolution (CR)',
+ 'doc_type': 'SAAM',
+ 'download_url': 'https://www.whitehouse.gov/wp-content/uploads/2018/06/a11.pdf',
+ 'downloadable_items': [{'compression_type': None,
+                         'doc_type': 'pdf',
+                         'download_url': 'https://www.whitehouse.gov/wp-content/uploads/2018/06/a11.pdf'}],
+ 'file_ext': 'pdf',
+ 'is_revoked': False,
+ 'publication_date': '',
+ 'source_fqdn': 'samm.dsca.mil',
+ 'source_page_url': 'https://samm.dsca.mil/listing/esamm-glossary',
+ 'source_title': 'Unlisted Source',
+ 'version_hash': '20d2611fccf12f98224834a4a8bdc3a7d112e58329e60b5ee59e67c7ea8f7eb2',
+ 'version_hash_raw_data': {'display_title': 'SAAM V0R0: Continuing Resolution '
+                                            '(CR)',
+                           'doc_name': 'a11',
+                           'doc_num': 'V0R0',
+                           'download_url': 'https://www.whitehouse.gov/wp-content/uploads/2018/06/a11.pdf',
+                           'publication_date': '',
+                           'scrape_time': 1690915055.8444576}} 
+2023-08-01 13:37:36 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
+{'cac_login_required': False,
+ 'crawler_used': 'saam_pubs',
+ 'data_source': 'SAAM',
+ 'display_doc_type': 'SAAM',
+ 'display_org': 'SAAM',
+ 'display_source': 'SAAM - Unlisted Source',
+ 'display_title': 'SAAM V0R0: ',
+ 'doc_name': '510076m',
+ 'doc_num': 'V0R0',
+ 'doc_title': '',
+ 'doc_type': 'SAAM',
+ 'download_url': 'http://www.esd.whs.mil/Portals/54/Documents/DD/issuances/dodm/510076m.pdf',
+ 'downloadable_items': [{'compression_type': None,
+                         'doc_type': 'pdf',
+                         'download_url': 'http://www.esd.whs.mil/Portals/54/Documents/DD/issuances/dodm/510076m.pdf'}],       
+ 'file_ext': 'pdf',
+ 'is_revoked': False,
+ 'publication_date': '',
+ 'source_fqdn': 'samm.dsca.mil',
+ 'source_page_url': 'https://samm.dsca.mil/chapter/chapter-8', 
+ 'source_title': 'Unlisted Source',
+ 'version_hash': '5d5e83225418fed470254fcbb3b3c4584728880e97e4d0089fff27d9eee95e57',
+ 'version_hash_raw_data': {'display_title': 'SAAM V0R0: ',     
+                           'doc_name': '510076m',
+                           'doc_num': 'V0R0',
+                           'download_url': 'http://www.esd.whs.mil/Portals/54/Documents/DD/issuances/dodm/510076m.pdf',       
+                           'publication_date': '',
+                           'scrape_time': 1690915056.1824803}} 
+2023-08-01 13:37:38 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
+{'cac_login_required': False,
+ 'crawler_used': 'saam_pubs',
+ 'data_source': 'SAAM',
+ 'display_doc_type': 'SAAM',
+ 'display_org': 'SAAM',
+ 'display_source': 'SAAM - Unlisted Source',
+ 'display_title': 'SAAM V0R0: ',
+ 'doc_name': '416028m_vol1',
+ 'doc_num': 'V0R0',
+ 'doc_title': '',
+ 'doc_type': 'SAAM',
+ 'download_url': 'http://www.dtic.mil/whs/directives/corres/pdf/416028m_vol1.pdf',
+ 'downloadable_items': [{'compression_type': None,
+                         'doc_type': 'pdf',
+                         'download_url': 'http://www.dtic.mil/whs/directives/corres/pdf/416028m_vol1.pdf'}],
+ 'file_ext': 'pdf',
+ 'is_revoked': False,
+ 'publication_date': '',
+ 'source_fqdn': 'samm.dsca.mil',
+ 'source_page_url': 'https://samm.dsca.mil/chapter/chapter-11-hpr',
+ 'source_title': 'Unlisted Source',
+ 'version_hash': '5d8a60bdb774b0497400d0770b47e5b2d279cd78c8fcf10e82536b695957a063',
+ 'version_hash_raw_data': {'display_title': 'SAAM V0R0: ',     
+                           'doc_name': '416028m_vol1',
+                           'doc_num': 'V0R0',
+                           'download_url': 'http://www.dtic.mil/whs/directives/corres/pdf/416028m_vol1.pdf',
+                           'publication_date': '',
+                           'scrape_time': 1690915058.3623333}} 
+2023-08-01 13:37:38 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
+{'cac_login_required': False,
+ 'crawler_used': 'saam_pubs',
+ 'data_source': 'SAAM',
+ 'display_doc_type': 'SAAM',
+ 'display_org': 'SAAM',
+ 'display_source': 'SAAM - Unlisted Source',
+ 'display_title': 'SAAM V0R0: ',
+ 'doc_name': '203008p',
+ 'doc_num': 'V0R0',
+ 'doc_title': '',
+ 'doc_type': 'SAAM',
+ 'download_url': 'http://www.dtic.mil/whs/directives/corres/pdf/203008p.pdf',
+ 'downloadable_items': [{'compression_type': None,
+                         'doc_type': 'pdf',
+                         'download_url': 'http://www.dtic.mil/whs/directives/corres/pdf/203008p.pdf'}],
+ 'file_ext': 'pdf',
+ 'is_revoked': False,
+ 'publication_date': '',
+ 'source_fqdn': 'samm.dsca.mil',
+ 'source_page_url': 'https://samm.dsca.mil/chapter/chapter-11-hpr',
+ 'source_title': 'Unlisted Source',
+ 'version_hash': '87bd8cf43a7b0cec06306ca21259af822df150efad26d4626de8ad47198e8739',
+ 'version_hash_raw_data': {'display_title': 'SAAM V0R0: ',     
+                           'doc_name': '203008p',
+                           'doc_num': 'V0R0',
+                           'download_url': 'http://www.dtic.mil/whs/directives/corres/pdf/203008p.pdf',
+                           'publication_date': '',
+                           'scrape_time': 1690915058.3728108}} 
+2023-08-01 13:37:38 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
+{'cac_login_required': False,
+ 'crawler_used': 'saam_pubs',
+ 'data_source': 'SAAM',
+ 'display_doc_type': 'SAAM',
+ 'display_org': 'SAAM',
+ 'display_source': 'SAAM - Unlisted Source',
+ 'display_title': 'SAAM V0R0: ',
+ 'doc_name': 'STATUTE-104-Pg1485',
+ 'doc_num': 'V0R0',
+ 'doc_title': '',
+ 'doc_type': 'SAAM',
+ 'download_url': 'https://www.govinfo.gov/content/pkg/STATUTE-104/pdf/STATUTE-104-Pg1485.pdf',
+ 'downloadable_items': [{'compression_type': None,
+                         'doc_type': 'pdf',
+                         'download_url': 'https://www.govinfo.gov/content/pkg/STATUTE-104/pdf/STATUTE-104-Pg1485.pdf'}],      
+ 'file_ext': 'pdf',
+ 'is_revoked': False,
+ 'publication_date': '',
+ 'source_fqdn': 'samm.dsca.mil',
+ 'source_page_url': 'https://samm.dsca.mil/chapter/chapter-10', 'source_title': 'Unlisted Source',
+ 'version_hash': '0c1c842b600ba6669967ddb191015e0f7aa6c74cb66d4dc384e0b65e2d991559',
+ 'version_hash_raw_data': {'display_title': 'SAAM V0R0: ',     
+                           'doc_name': 'STATUTE-104-Pg1485',   
+                           'doc_num': 'V0R0',
+                           'download_url': 'https://www.govinfo.gov/content/pkg/STATUTE-104/pdf/STATUTE-104-Pg1485.pdf',      
+                           'publication_date': '',
+                           'scrape_time': 1690915058.4454172}} 
+2023-08-01 13:37:38 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
+{'cac_login_required': False,
+ 'crawler_used': 'saam_pubs',
+ 'data_source': 'SAAM',
+ 'display_doc_type': 'SAAM',
+ 'display_org': 'SAAM',
+ 'display_source': 'SAAM - Unlisted Source',
+ 'display_title': 'SAAM V0R0: ',
+ 'doc_name': 'r12_15',
+ 'doc_num': 'V0R0',
+ 'doc_title': '',
+ 'doc_type': 'SAAM',
+ 'download_url': 'https://armypubs.army.mil/epubs/DR_pubs/DR_a/pdf/web/r12_15.pdf',
+ 'downloadable_items': [{'compression_type': None,
+                         'doc_type': 'pdf',
+                         'download_url': 'https://armypubs.army.mil/epubs/DR_pubs/DR_a/pdf/web/r12_15.pdf'}],
+ 'file_ext': 'pdf',
+ 'is_revoked': False,
+ 'publication_date': '',
+ 'source_fqdn': 'samm.dsca.mil',
+ 'source_page_url': 'https://samm.dsca.mil/chapter/chapter-10', 'source_title': 'Unlisted Source',
+ 'version_hash': '375cf2d7a62f913459da015e9b3fb0d6e397f2ebb853b679bb8a00d3f7fe034f',
+ 'version_hash_raw_data': {'display_title': 'SAAM V0R0: ',     
+                           'doc_name': 'r12_15',
+                           'doc_num': 'V0R0',
+                           'download_url': 'https://armypubs.army.mil/epubs/DR_pubs/DR_a/pdf/web/r12_15.pdf',
+                           'publication_date': '',
+                           'scrape_time': 1690915058.4537055}} 
+2023-08-01 13:37:38 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
+{'cac_login_required': False,
+ 'crawler_used': 'saam_pubs',
+ 'data_source': 'SAAM',
+ 'display_doc_type': 'SAAM',
+ 'display_org': 'SAAM',
+ 'display_source': 'SAAM - Unlisted Source',
+ 'display_title': 'SAAM V0R0: ',
+ 'doc_name': 'r12_15',
+ 'doc_num': 'V0R0',
+ 'doc_title': '',
+ 'doc_type': 'SAAM',
+ 'download_url': 'https://armypubs.army.mil/epubs/DR_pubs/DR_a/pdf/web/r12_15.pdf',
+ 'downloadable_items': [{'compression_type': None,
+                         'doc_type': 'pdf',
+                         'download_url': 'https://armypubs.army.mil/epubs/DR_pubs/DR_a/pdf/web/r12_15.pdf'}],
+ 'file_ext': 'pdf',
+ 'is_revoked': False,
+ 'publication_date': '',
+ 'source_fqdn': 'samm.dsca.mil',
+ 'source_page_url': 'https://samm.dsca.mil/chapter/chapter-10', 'source_title': 'Unlisted Source',
+ 'version_hash': 'aa8c10973918479b261ecc45c6f0952ecbaf4cd472da83bec41b507be0eb2a4b',
+ 'version_hash_raw_data': {'display_title': 'SAAM V0R0: ',     
+                           'doc_name': 'r12_15',
+                           'doc_num': 'V0R0',
+                           'download_url': 'https://armypubs.army.mil/epubs/DR_pubs/DR_a/pdf/web/r12_15.pdf',
+                           'publication_date': '',
+                           'scrape_time': 1690915058.4678807}} 
+2023-08-01 13:37:39 [scrapy.core.downloader.handlers.http11] WARNING: Expected response size (58955437) larger than download warn size (33554432) in request <GET https://www.govinfo.gov/content/pkg/STATUTE-104/pdf/STATUTE-104-Pg1485.pdf>.
+2023-08-01 13:38:05 [scrapy.core.downloader.handlers.http11] WARNING: Received more bytes than download warn size (33554432) in request <GET https://www.govinfo.gov/content/pkg/STATUTE-104/pdf/STATUTE-104-Pg1485.pdf>.
+2023-08-01 13:38:33 [scrapy.extensions.logstats] INFO: Crawled 
+95 pages (at 95 pages/min), scraped 22 items (at 22 items/min) 
+2023-08-01 13:39:29 [scrapy.downloadermiddlewares.retry] ERROR: Gave up retrying <GET http://www.dtic.mil/whs/directives/corres/pdf/500068p.pdf> (failed 3 times): [<twisted.python.failure.Failure twisted.internet.error.ConnectionDone: Connection was closed cleanly.>]
+**** MEDIA FAILED
+[Failure instance: Traceback: <class 'twisted.web._newclient.ResponseNeverReceived'>: [<twisted.python.failure.Failure twisted.internet.error.ConnectionDone: Connection was closed cleanly.>]
+--- <exception caught here> ---
+C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\core\downloader\middleware.py:54:process_request
+]
+<SaamSpider 'saam_pubs' at 0x1524288af10>
+2023-08-01 13:39:29 [scrapy.core.engine] INFO: Closing spider (finished)
+2023-08-01 13:39:29 [scrapy.extensions.feedexport] INFO: Stored json feed (23 items) in: .\test-samm\output.json
+2023-08-01 13:39:29 [scrapy.statscollectors] INFO: Dumping Scrapy stats:
+{'downloader/exception_count': 3,
+ 'downloader/exception_type_count/twisted.web._newclient.ResponseNeverReceived': 3,
+ 'downloader/request_bytes': 39988,
+ 'downloader/request_count': 108,
+ 'downloader/request_method_count/GET': 108,
+ 'downloader/response_bytes': 94589102,
+ 'downloader/response_count': 105,
+ 'downloader/response_status_count/200': 94,
+ 'downloader/response_status_count/301': 9,
+ 'downloader/response_status_count/302': 1,
+ 'downloader/response_status_count/404': 1,
+ 'dupefilter/filtered': 127,
+ 'elapsed_time_seconds': 116.133071,
+ 'feedexport/success_count/FileFeedStorage': 1,
+ 'finish_reason': 'finished',
+ 'finish_time': datetime.datetime(2023, 8, 1, 18, 39, 29, 933133),
+ 'httpcompression/response_bytes': 38072,
+ 'httpcompression/response_count': 1,
+ 'item_dropped_count': 12,
+ 'item_dropped_reasons_count/DropItem': 12,
+ 'item_scraped_count': 23,
+ 'log_count/ERROR': 6,
+ 'log_count/INFO': 12,
+ 'log_count/WARNING': 16,
+ 'request_depth_max': 1,
+ 'response_received_count': 95,
+ 'retry/count': 2,
+ 'retry/max_reached': 1,
+ 'retry/reason_count/twisted.web._newclient.ResponseNeverReceived': 2,
+ 'scheduler/dequeued': 73,
+ 'scheduler/dequeued/memory': 73,
+ 'scheduler/enqueued': 73,
+ 'scheduler/enqueued/memory': 73,
+ 'start_time': datetime.datetime(2023, 8, 1, 18, 37, 33, 800062)}
+2023-08-01 13:39:29 [scrapy.core.engine] INFO: Spider closed (finished)

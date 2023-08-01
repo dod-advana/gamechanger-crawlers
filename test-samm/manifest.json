@@ -1,13 +1,21 @@
-{"version_hash": "1dcaf927ed97b1f5816d5005b5003683ca0659ce3825b7b1c554e45fcc5eeaba", "doc_name": "SAAM V0R0 ", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T07:55:42"}
-{"version_hash": "736d5653a73fac40ff69c8d0558f1f434cae1e10588f8fc4061bd3c846999ab3", "doc_name": "SAAM V0R0 Coordinating Authority", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T07:55:42"}
-{"version_hash": "1ff0ad26dcc77376c31ac476c66787f7955dee93a64aec9768b15ca66df6d84f", "doc_name": "SAAM V0R0 Invitational Travel Order (ITO)", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T07:55:42"}
-{"version_hash": "19c795b04ee45f6c61e71511460fb6fdd3269b0ffcabfe20f88bd7333dc5a338", "doc_name": "SAAM V0R0 Appropriation", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T07:55:42"}
-{"version_hash": "e7e6b6b2c4d0acdc2dc9d00979d4e09401f13a231441f502140b56bb00d1b769", "doc_name": "SAAM V0R0 Budget Year", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T07:55:42"}
-{"version_hash": "aa2f386b85e2f09e4a37b881f82f7fe722eaacfb42a5cc1cbab7aeabc28f769d", "doc_name": "SAAM V0R0 Continuing Resolution (CR)", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T07:55:42"}
-{"version_hash": "db8c6245e4a74d2fbaccfc5a4db0d14eba81dc7dda65ed2383f19c0ea1aff7cc", "doc_name": "SAAM V0R0 Allotment", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T07:55:42"}
-{"version_hash": "272267d287add67e3bef040fd18e08452c02d7cdef5f1769ed00049c29e80ee7", "doc_name": "SAAM V0R0 Commitment [financial]", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T07:55:42"}
-{"version_hash": "0557f07e499226ecb92914eb5b5cb9d741432e0842ab0fb51ac856f13eab1bcf", "doc_name": "SAAM V0R0 Allocation", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T07:55:42"}
-{"version_hash": "b25895d1e264d5f5059a90850b538f6416a7d7e5db5e4b912f62afdfee064af8", "doc_name": "SAAM V0R0 Apportionment", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T07:55:42"}
-{"version_hash": "c5d64c78be4a284c11da0a5c9ea2f87659b205df6edbce630b08a21d7b618311", "doc_name": "SAAM V0R0 Budget Authority", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T07:55:42"}
-{"version_hash": "a978de91a0866aea54387531aad33cdf65002141b26e8316444b096933412a42", "doc_name": "SAAM V0R0 Commitment Document", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T07:55:42"}
-{"version_hash": "d7b1b323e9e77d329a59cbcf8349e0af545b92d8c7656cd3fd2dc3a33e0d66b3", "doc_name": "SAAM V0R0 Joint Security Cooperation Education and Training Regulation (JSCET)", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T07:55:42"}
+{"version_hash": "4a46c50c2d8f4945f48bbb3e76862b2f75b915ff63cd4fbd49931f1b09c6505c", "doc_name": "15_06", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:35"}
+{"version_hash": "8dff2758604335e6441df13f1f018fb68ba51c90d3e70304a2e8f0ec1a475962", "doc_name": "520575p", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:35"}
+{"version_hash": "68d0f659e8007c17d637a7794a9f7657845213ebe1ac1832dff1e9df115666d8", "doc_name": "glossary", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:35"}
+{"version_hash": "a8bcddfc2de91414dc4744a11c0952671472f8d91dcc7d4099d41b87e78cf9fb", "doc_name": "dd2285", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:35"}
+{"version_hash": "ea291f8449671e508ce0eeccd474f820c36e412926dc68cc99a4a59478da9da9", "doc_name": "520039p", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:36"}
+{"version_hash": "da041471f8e3f0b85037662465d3b79a087986170b3b20df1755d67c9c730920", "doc_name": "03_08", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:35"}
+{"version_hash": "0da50855865bb3ae7302e902e89e2334157260d5a5220fb46bc8e93fb05a8189", "doc_name": "520001m_vol1", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:36"}
+{"version_hash": "5b6c827ee3dcf1cb3f0888624a917804229b38fe4390c5d4892b36e9e82362cb", "doc_name": "510076m", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:35"}
+{"version_hash": "8ba15637f968e632f6094dc05e8ccf714b5bcee662f101c7a861a99a5a408320", "doc_name": "203008p", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:36"}
+{"version_hash": "f8a61ddb1026e77e237bf5b3225db0440f1a288a473e0ff7665d33457d533be8", "doc_name": "414066p", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:36"}
+{"version_hash": "bf5e80a580dfc3a15b5f2ecf19a4c8b6d41de139b4cf591312e3e4a023a5bf8c", "doc_name": "jp3_09", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:35"}
+{"version_hash": "e07041dc5fcf87828326ec9fdbc7d276cd5dfc44c53386e4e0be3fd0b5ae9057", "doc_name": "513203_dodd_2016", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:36"}
+{"version_hash": "a14810b11c1a4eaacf26c65dd27361c6eecae289006e1d4840bf61e5a9d8070f", "doc_name": "416028m_vol1", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:36"}
+{"version_hash": "6568896850bf036b197b1e8e931acd6105902c6146758c11f4c1e14a9621982a", "doc_name": "316001p", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:35"}
+{"version_hash": "ffb86eae7b0253759ab520f6c3e395427f944e58936266aae7b998af1a85407c", "doc_name": "r12_15", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:35"}
+{"version_hash": "23f179556f20ee034708e948895ce7cb78602bb187eb89f8dff8616f9a7f040f", "doc_name": "dd13481a", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:38"}
+{"version_hash": "2fd6a173ec48a36866180e63c46bf87eb4253868338223051b7ff1839b60d192", "doc_name": "451512p", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:38"}
+{"version_hash": "7c188cdd54def781545ca6e50cb851eefd67d4457515f1eaa10976fdb829ee68", "doc_name": "450009p", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:38"}
+{"version_hash": "586cc32d56f6b33df280a983c9e9d5d0ff6db8a7a7a212e28e06475d1a922703", "doc_name": "fpasa49", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:38"}
+{"version_hash": "d03e49ee8aecc15f03bab737645e1d7d0e47ec35e637f2f8b9739575a1043803", "doc_name": "a11", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:35"}
+{"version_hash": "ac8c9ed92d821bcbedc7467dc1d9583e8da971fddc26f92d9ad702760fa484d6", "doc_name": "STATUTE-104-Pg1485", "crawler_used": "saam_pubs", "access_timestamp": "2023-08-01T13:37:38"}

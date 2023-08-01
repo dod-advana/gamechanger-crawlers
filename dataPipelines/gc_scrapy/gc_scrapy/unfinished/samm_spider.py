@@ -5,6 +5,7 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
 import re
 from urllib.parse import urljoin, urlparse
+import time
 
 class SaamSpider(GCSpider):
     name = "saam_pubs" # Crawler name
@@ -15,40 +16,43 @@ class SaamSpider(GCSpider):
 
     @staticmethod
     def extract_doc_number(doc_title):
-        if doc_title.find(" Ver ") != -1:
-            ver_num = (re.findall(r' Ver (\w+)', doc_title))[0]
-        else:
-            if " Version " in doc_title:
-                ver_num = (re.findall(r' Version (\w+)', doc_title))[0]
-            else:
-                ver_num = 0
+        ver_num = 0
+        ref_num = 0
 
-        if doc_title.find(" Rel ") != -1:
-            ref_num = (re.findall(r' Rel (\w+)', doc_title))[0]
-        else:
-            if "Release Memo" in doc_title:
+        if doc_title is not None:
+            if " Ver " in doc_title:
+                ver_matches = re.findall(r' Ver (\w+)', doc_title)
+                ver_num = ver_matches[0] if ver_matches else 0
+            elif " Version " in doc_title:
+                ver_matches = re.findall(r' Version (\w+)', doc_title)
+                ver_num = ver_matches[0] if ver_matches else 0
+
+            if " Rel " in doc_title:
+                ref_matches = re.findall(r' Rel (\w+)', doc_title)
+                ref_num = ref_matches[0] if ref_matches else 0
+            elif "Release Memo" in doc_title:
                 ref_num = 1
-            else:
-                ref_num = 0
 
-        doc_num = "V{}R{}".format(ver_num, ref_num)
+        doc_num = f"V{ver_num}R{ref_num}"
         return doc_title, doc_num
+
 
     def parse(self, response):
         base_url = "https://samm.dsca.mil"
         
-        if response.url.endswith(('chapters')):
-            # Select all detail tags
-            DETAIL_SELECTOR = '.DSAccordion details'
-            details = response.css(DETAIL_SELECTOR)
+        # Select all detail tags
+        ACCORDION_SELECTOR = '.DSAccordionResponse'
+        accordions = response.css(ACCORDION_SELECTOR)
 
-            for detail in details:
-                URL_SELECTOR = 'a::attr(href)'
-                relative_urls = detail.css(URL_SELECTOR).extract()
+        for accordion in accordions:
+            ROW_SELECTOR = '.RowContainer a::attr(href)'
+            relative_urls = accordion.css(ROW_SELECTOR).extract()
 
-                for relative_url in relative_urls:
-                    absolute_url = urljoin(base_url, relative_url)
-                    yield scrapy.Request(absolute_url, callback=self.parse_document_page)
+            for relative_url in relative_urls:
+                print("Processing URL: ", relative_url)
+                absolute_url = urljoin(base_url, relative_url)
+                yield scrapy.Request(absolute_url, callback=self.parse_document_page)
+
 
     def parse_document_page(self, response):
         rows = response.css('table tbody tr')
@@ -63,9 +67,13 @@ class SaamSpider(GCSpider):
                 doc_title = self.ascii_clean(doc_title_text).replace("/ ", " ").replace("/", " ")
                 publication_date = self.ascii_clean(publication_date_raw)
                 doc_title, doc_num = self.extract_doc_number(doc_title)
-                doc_name = f"{self.doc_type} {doc_num} {doc_title}"
+                
+                # Extract file name from href and use it as doc_name
+                doc_name = href_raw.split("/")[-1]
+                doc_name = doc_name.replace(".pdf", "")
+                doc_name = self.ascii_clean(doc_name)
 
-                # Potential if statement in the future
+                # Potential if statement
                 display_doc_type = "SAAM"
 
                 file_type = self.get_href_file_extension(href_raw)
@@ -90,7 +98,6 @@ class SaamSpider(GCSpider):
 
             except Exception as e:
                 self.logger.error(f"Error processing row {row}: {e}")
-
 
     def populate_doc_item(self, fields):
         #
@@ -128,7 +135,8 @@ class SaamSpider(GCSpider):
             "doc_num": doc_num,
             "publication_date": publication_date,
             "download_url": download_url,
-            "display_title": display_title
+            "display_title": display_title,
+            "scrape_time" : time.time() #current time
         }
 
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
