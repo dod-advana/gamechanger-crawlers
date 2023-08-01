@@ -1,0 +1,77 @@
+2023-07-21 11:45:56 [scrapy.utils.log] INFO: Scrapy 2.9.0 started (bot: scrapybot)
+2023-07-21 11:45:57 [scrapy.utils.log] INFO: Versions: lxml 4.9.2.0, libxml2 2.9.12, cssselect 1.2.0, parsel 1.8.1, w3lib 2.1.1, Twisted 22.10.0, Python 3.11.3 (tags/v3.11.3:f3909b8, Apr  4 2023, 23:49:59) [MSC v.1934 64 bit (AMD64)], pyOpenSSL 23.2.0 (OpenSSL 3.1.1 30 May 2023), cryptography 41.0.1, Platform Windows-10-10.0.19045-SP0
+2023-07-21 11:46:03 [scrapy.crawler] INFO: Overridden settings:
+{'DOWNLOAD_FAIL_ON_DATALOSS': False,
+ 'LOG_LEVEL': 'INFO',
+ 'SPIDER_LOADER_WARN_ONLY': True}
+2023-07-21 11:46:03 [py.warnings] WARNING: C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\utils\request.py:232: ScrapyDeprecationWarning: '2.6' is a deprecated value for the 'REQUEST_FINGERPRINTER_IMPLEMENTATION' setting.
+
+It is also the default value. In other words, it is normal to get this warning if you have not defined a value for the 'REQUEST_FINGERPRINTER_IMPLEMENTATION' setting. This is so for backward compatibility reasons, but it will change in a future version of Scrapy.
+
+See the documentation of the 'REQUEST_FINGERPRINTER_IMPLEMENTATION' setting for information on how to handle this deprecation.
+  return cls(crawler)
+
+2023-07-21 11:46:03 [scrapy.extensions.telnet] INFO: Telnet Password: 21921053987c74e2
+2023-07-21 11:46:04 [scrapy.middleware] INFO: Enabled extensions:
+['scrapy.extensions.corestats.CoreStats',
+ 'scrapy.extensions.telnet.TelnetConsole',
+ 'scrapy.extensions.feedexport.FeedExporter',
+ 'scrapy.extensions.logstats.LogStats']
+Unhandled error in Deferred:
+2023-07-21 11:46:04 [twisted] CRITICAL: Unhandled error in Deferred:
+
+Traceback (most recent call last):
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\crawler.py", line 240, in crawl
+    return self._crawl(crawler, *args, **kwargs)
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\crawler.py", line 244, in _crawl
+    d = crawler.crawl(*args, **kwargs)
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\twisted\internet\defer.py", line 1947, in unwindGenerator
+    return _cancellableInlineCallbacks(gen)
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\twisted\internet\defer.py", line 1857, in _cancellableInlineCallbacks
+    _inlineCallbacks(None, gen, status, _copy_context())
+--- <exception caught here> ---
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\twisted\internet\defer.py", line 1697, in _inlineCallbacks
+    result = context.run(gen.send, result)
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\crawler.py", line 129, in crawl
+    self.engine = self._create_engine()
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\crawler.py", line 143, in _create_engine
+    return ExecutionEngine(self, lambda _: self.stop())
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\core\engine.py", line 100, in __init__
+    self.downloader: Downloader = downloader_cls(crawler)
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\core\downloader\__init__.py", line 97, in __init__
+    DownloaderMiddlewareManager.from_crawler(crawler)
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\middleware.py", line 68, in from_crawler
+    return cls.from_settings(crawler.settings, crawler)
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\middleware.py", line 44, in from_settings
+    mw = create_instance(mwcls, settings, crawler)
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\utils\misc.py", line 170, in create_instance
+    instance = objcls.from_crawler(crawler, *args, **kwargs)
+  File "C:\Users\632347\source\repos\gamechanger-crawlers\dataPipelines\gc_scrapy\gc_scrapy\downloader_middlewares.py", line 130, in from_crawler
+    middleware = cls(
+  File "C:\Users\632347\source\repos\gamechanger-crawlers\dataPipelines\gc_scrapy\gc_scrapy\downloader_middlewares.py", line 109, in __init__
+    self.driver = driver_class(**driver_kwargs)
+builtins.TypeError: WebDriver.__init__() got an unexpected keyword argument 'executable_path'
+
+2023-07-21 11:46:04 [twisted] CRITICAL: 
+Traceback (most recent call last):
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\twisted\internet\defer.py", line 1697, in _inlineCallbacks
+    result = context.run(gen.send, result)
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\crawler.py", line 129, in crawl
+    self.engine = self._create_engine()
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\crawler.py", line 143, in _create_engine
+    return ExecutionEngine(self, lambda _: self.stop())
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\core\engine.py", line 100, in __init__
+    self.downloader: Downloader = downloader_cls(crawler)
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\core\downloader\__init__.py", line 97, in __init__
+    DownloaderMiddlewareManager.from_crawler(crawler)
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\middleware.py", line 68, in from_crawler
+    return cls.from_settings(crawler.settings, crawler)
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\middleware.py", line 44, in from_settings
+    mw = create_instance(mwcls, settings, crawler)
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\utils\misc.py", line 170, in create_instance
+    instance = objcls.from_crawler(crawler, *args, **kwargs)
+  File "C:\Users\632347\source\repos\gamechanger-crawlers\dataPipelines\gc_scrapy\gc_scrapy\downloader_middlewares.py", line 130, in from_crawler
+    middleware = cls(
+  File "C:\Users\632347\source\repos\gamechanger-crawlers\dataPipelines\gc_scrapy\gc_scrapy\downloader_middlewares.py", line 109, in __init__
+    self.driver = driver_class(**driver_kwargs)
+TypeError: WebDriver.__init__() got an unexpected keyword argument 'executable_path'

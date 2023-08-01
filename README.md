@@ -96,7 +96,7 @@ Updated as of: 12 Jul 2023
      ```
 3. Create an empty directory for the crawler file outputs:
      ```shell
-     CRAWLER_DATA_ROOT= "./path/to/download/location"
+     $CRAWLER_DATA_ROOT= "./path/to/download/location"
      New-Item -ItemType Directory -Force -Path $CRAWLER_DATA_ROOT| Out-Null
      ```
 4. Create an empty previous manifest file:

@@ -101,12 +101,12 @@ class SeleniumMiddleware:
         }
 
         # locally installed driver
-        if driver_executable_path is not None:
-            driver_kwargs = {
-                'executable_path': driver_executable_path,
-                f'{driver_name}_options': driver_options
-            }
-            self.driver = driver_class(**driver_kwargs)
+        # if driver_executable_path is not None:
+        #     driver_kwargs = {
+        #         'executable_path': driver_executable_path,
+        #         f'{driver_name}_options': driver_options
+        #     }
+        #     self.driver = driver_class(**driver_kwargs)
 
     @classmethod
     def from_crawler(cls, crawler):

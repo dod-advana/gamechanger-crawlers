@@ -20,7 +20,7 @@ general_settings = {
 
 selenium_settings = {
     "SELENIUM_DRIVER_NAME": "chrome",
-    "SELENIUM_DRIVER_EXECUTABLE_PATH": "/usr/local/bin/chromedriver",
+    "SELENIUM_DRIVER_EXECUTABLE_PATH": "C:/Program Files/chromedriver/chromedriver.exe",
     "SELENIUM_DRIVER_ARGUMENTS": [
         "--headless",
         "--no-sandbox",

@@ -6,6 +6,11 @@ from urllib.parse import urljoin, urlparse
 from datetime import datetime
 from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
 
+# Troubleshooting SSL error --> 19 / 7 / 2023
+import tldextract
+
+tldextract.TLDExtract(suffix_list_url=None)
+
 class StigSpider(GCSpider):
     name = "stig_pubs" # Crawler name
     

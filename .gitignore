@@ -56,6 +56,7 @@ coverage.xml
 .pytest_cache/
 cover/
 
+
 # Translations
 *.mo
 *.pot
@@ -150,3 +151,6 @@ cython_debug/
 # TMP files
 tmp/
 testoutput/
+
+# Chromedriver
+.exe
