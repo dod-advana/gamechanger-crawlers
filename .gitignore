@@ -154,3 +154,7 @@ testoutput/
 
 # Chromedriver
 .exe
+
+# Test Env
+./test-env
+./test-samm
