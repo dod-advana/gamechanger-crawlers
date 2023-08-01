@@ -62,7 +62,8 @@ class SaamSpider(GCSpider):
         for row in rows:
             try:
                 href_raw = row.css('a::attr(href)').get()
-                doc_title_text = row.css('td:nth-child(1)::text').get()
+                # doc_title_text = row.css('td:nth-child(1)::text').get()
+                doc_title_text = row.css('a::text').get().strip() 
                 publication_date_raw = row.css('td:nth-child(2)::text').get()
                 doc_title = self.ascii_clean(doc_title_text).replace("/ ", " ").replace("/", " ")
                 publication_date = self.ascii_clean(publication_date_raw)
@@ -70,17 +71,23 @@ class SaamSpider(GCSpider):
                 
                 # Extract file name from href and use it as doc_name
                 doc_name = href_raw.split("/")[-1]
-                doc_name = doc_name.replace(".pdf", "")
+                # doc_name = doc_name.replace(".pdf", "")
+                doc_name = doc_title_text.replace(" ", "_")  # Change this line
                 doc_name = self.ascii_clean(doc_name)
 
                 # Potential if statement
                 display_doc_type = "SAAM"
+
+                # Generate the unique doc name
+                unique_doc_name = self.generate_unique_doc_name({'doc_name': doc_name, 'doc_title': doc_title})
+
 
                 file_type = self.get_href_file_extension(href_raw)
                 web_url = self.ensure_full_href_url(href_raw, response.url)
 
                 fields = {
                     'doc_name': doc_name,
+                    'unique_doc_name': unique_doc_name,
                     'doc_num': doc_num,
                     'doc_title': doc_title,
                     'doc_type': self.doc_type,
@@ -98,6 +105,10 @@ class SaamSpider(GCSpider):
 
             except Exception as e:
                 self.logger.error(f"Error processing row {row}: {e}")
+
+    def generate_unique_doc_name(self, data):
+        return data['doc_name'] + "_" + data['doc_title'].replace(" ", "_")
+
 
     def populate_doc_item(self, fields):
         #
