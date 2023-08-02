@@ -7,12 +7,12 @@ import re
 from urllib.parse import urljoin, urlparse
 import time
 
-class SaamSpider(GCSpider):
-    name = "saam_pubs" # Crawler name
+class SammSpider(GCSpider):
+    name = "samm_pubs" # Crawler name
     allowed_domains = ["samm.dsca.mil"]
     start_urls = ["https://samm.dsca.mil/listing/chapters"]
     rotate_user_agent = True
-    doc_type = "SAAM"
+    doc_type = "SAMM"
 
     @staticmethod
     def extract_doc_number(doc_title):
@@ -76,7 +76,7 @@ class SaamSpider(GCSpider):
                 doc_name = self.ascii_clean(doc_name)
 
                 # Potential if statement
-                display_doc_type = "SAAM"
+                display_doc_type = "SAMM"
 
                 # Generate the unique doc name
                 unique_doc_name = self.generate_unique_doc_name({'doc_name': doc_name, 'doc_title': doc_title})
@@ -107,16 +107,23 @@ class SaamSpider(GCSpider):
                 self.logger.error(f"Error processing row {row}: {e}")
 
     def generate_unique_doc_name(self, data):
-        return data['doc_name'] + "_" + data['doc_title'].replace(" ", "_")
+        # Clean doc_name
+        doc_name = re.sub(r'[(),]|\.{2,}', '', data['doc_name'])  # Remove parentheses, commas and consecutive dots
+        doc_name = "_".join([word.title() for word in doc_name.split("_")])  # Capitalize words
 
+        # Clean doc_title
+        doc_title = re.sub(r'[(),]|\.{2,}', '', data['doc_title'])  # Remove parentheses, commas and consecutive dots
+        doc_title = "_".join([word.title() for word in doc_title.split("_")])  # Capitalize words
+
+        return doc_name + "_" + doc_title
 
     def populate_doc_item(self, fields):
         #
         # This functions provides both hardcoded and computed values for the variables
         # in the imported DocItem object and returns the populated metadata object
         #
-        display_org = "SAAM"    # Level 1: GC app 'Source' filter for docs from this crawler
-        data_source = "SAAM"    # Level 2: GC app 'Source' metadata field for docs from this crawler
+        display_org = "SAMM"    # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "SAMM"    # Level 2: GC app 'Source' metadata field for docs from this crawler
         source_title = "Unlisted Source" 
 
         doc_name = fields['doc_name']

@@ -1,55 +1,56 @@
-2023-08-01 14:09:05 [scrapy.utils.log] INFO: Scrapy 2.9.0 started (bot: scrapybot)
-2023-08-01 14:09:06 [scrapy.utils.log] INFO: Versions: lxml 4.9.2.0, libxml2 2.9.12, cssselect 1.2.0, parsel 1.8.1, w3lib 2.1.1, Twisted 22.10.0, Python 3.11.3 (tags/v3.11.3:f3909b8, Apr  4 2023, 23:49:59) [MSC v.1934 64 bit (AMD64)], pyOpenSSL 23.2.0 
-(OpenSSL 3.1.1 30 May 2023), cryptography 41.0.1, Platform Windows-10-10.0.19045-SP0
-2023-08-01 14:09:06 [scrapy.crawler] INFO: Overridden settings:{'DOWNLOAD_FAIL_ON_DATALOSS': False,
+2023-08-02 09:32:18 [scrapy.utils.log] INFO: Scrapy 2.9.0 started (bot: scrapybot)
+2023-08-02 09:32:19 [scrapy.utils.log] INFO: Versions: lxml 4.9.2.0, libxml2 2.9.12, cssselect 1.2.0, parsel 1.8.1, w3lib 2.1.1, Twisted 22.10.0, Python 3.11.3 (tags/v3.11.3:f3909b8, Apr  4 2023, 23:49:59) [MSC v.1934 64 bit (AMD64)], pyOpenSSL 23.2.0 (OpenSSL 3.1.1 30 May 2023), cryptography 41.0.1, Platform Windows-10-10.0.19045-SP0    
+2023-08-02 09:32:24 [scrapy.crawler] INFO: Overridden settings:
+{'DOWNLOAD_FAIL_ON_DATALOSS': False,
  'LOG_LEVEL': 'INFO',
  'SPIDER_LOADER_WARN_ONLY': True}
-2023-08-01 14:09:06 [py.warnings] WARNING: C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\utils\request.py:232: ScrapyDeprecationWarning: '2.6' is a deprecated value for the 'REQUEST_FINGERPRINTER_IMPLEMENTATION' setting.
+2023-08-02 09:32:24 [py.warnings] WARNING: C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\utils\request.py:232: ScrapyDeprecationWarning: '2.6' is a deprecated value for the 'REQUEST_FINGERPRINTER_IMPLEMENTATION' setting.
 
 It is also the default value. In other words, it is normal to get this warning if you have not defined a value for the 'REQUEST_FINGERPRINTER_IMPLEMENTATION' setting. This is so for backward compatibility reasons, but it will change in a future version of Scrapy.
 
-See the documentation of the 'REQUEST_FINGERPRINTER_IMPLEMENTATION' setting for information on how to handle this deprecation.  return cls(crawler)
+See the documentation of the 'REQUEST_FINGERPRINTER_IMPLEMENTATION' setting for information on how to handle this deprecation.
+  return cls(crawler)
 
-2023-08-01 14:09:07 [scrapy.extensions.telnet] INFO: Telnet Password: 318c30d3724b2a9f
-2023-08-01 14:09:07 [scrapy.middleware] INFO: Enabled extensions:
+2023-08-02 09:32:24 [scrapy.extensions.telnet] INFO: Telnet Password: 08b1812857342456
+2023-08-02 09:32:24 [scrapy.middleware] INFO: Enabled extensions:
 ['scrapy.extensions.corestats.CoreStats',
  'scrapy.extensions.telnet.TelnetConsole',
  'scrapy.extensions.feedexport.FeedExporter',
  'scrapy.extensions.logstats.LogStats']
-2023-08-01 14:09:07 [scrapy.middleware] INFO: Enabled downloader middlewares:
+2023-08-02 09:32:25 [scrapy.middleware] INFO: Enabled downloader middlewares:
 ['dataPipelines.gc_scrapy.gc_scrapy.downloader_middlewares.BanEvasionMiddleware',
- 'scrapy.downloadermiddlewares.httpauth.HttpAuthMiddleware',   
+ 'scrapy.downloadermiddlewares.httpauth.HttpAuthMiddleware',
  'scrapy.downloadermiddlewares.downloadtimeout.DownloadTimeoutMiddleware',
  'scrapy.downloadermiddlewares.defaultheaders.DefaultHeadersMiddleware',
- 'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware', 
+ 'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware',
  'scrapy.downloadermiddlewares.retry.RetryMiddleware',
- 'scrapy.downloadermiddlewares.redirect.MetaRefreshMiddleware', 'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware',
- 'scrapy.downloadermiddlewares.redirect.RedirectMiddleware',   
- 'scrapy.downloadermiddlewares.cookies.CookiesMiddleware',     
- 'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware', 
+ 'scrapy.downloadermiddlewares.redirect.MetaRefreshMiddleware',
+ 'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware',
+ 'scrapy.downloadermiddlewares.redirect.RedirectMiddleware',
+ 'scrapy.downloadermiddlewares.cookies.CookiesMiddleware',
+ 'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware',
  'scrapy.downloadermiddlewares.stats.DownloaderStats']
-2023-08-01 14:09:07 [scrapy.middleware] INFO: Enabled spider middlewares:
-['scrapy.spidermiddlewares.httperror.HttpErrorMiddleware',     
+2023-08-02 09:32:25 [scrapy.middleware] INFO: Enabled spider middlewares:
+['scrapy.spidermiddlewares.httperror.HttpErrorMiddleware',
  'scrapy.spidermiddlewares.offsite.OffsiteMiddleware',
  'scrapy.spidermiddlewares.referer.RefererMiddleware',
- 'scrapy.spidermiddlewares.urllength.UrlLengthMiddleware',     
+ 'scrapy.spidermiddlewares.urllength.UrlLengthMiddleware',
  'scrapy.spidermiddlewares.depth.DepthMiddleware']
-2023-08-01 14:09:08 [py.warnings] WARNING: C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\pipelines\media.py:148: ScrapyDeprecationWarning: media_downloaded(self, response, request, info) is deprecated, please use media_downloaded(self, response, request, info, *, item=None)   
+2023-08-02 09:32:25 [py.warnings] WARNING: C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\pipelines\media.py:148: ScrapyDeprecationWarning: media_downloaded(self, response, request, info) is deprecated, please use media_downloaded(self, response, request, info, *, item=None)
   self._check_signature(func)
 
-2023-08-01 14:09:08 [scrapy.middleware] INFO: Enabled item pipelines:
+2023-08-02 09:32:25 [scrapy.middleware] INFO: Enabled item pipelines:
 ['dataPipelines.gc_scrapy.gc_scrapy.pipelines.FileNameFixerPipeline',
  'dataPipelines.gc_scrapy.gc_scrapy.pipelines.DeduplicaterPipeline',
  'dataPipelines.gc_scrapy.gc_scrapy.pipelines.AdditionalFieldsPipeline',
  'dataPipelines.gc_scrapy.gc_scrapy.pipelines.ValidateJsonPipeline',
  'dataPipelines.gc_scrapy.gc_scrapy.pipelines.FileDownloadPipeline']
-2023-08-01 14:09:08 [scrapy.core.engine] INFO: Spider opened   
+2023-08-02 09:32:25 [scrapy.core.engine] INFO: Spider opened
 ++ Initiating downloader for saam_pubs
 Reading in previous manifest
 Previous manifest loaded, will filter 0 hashes
-2023-08-01 14:09:08 [scrapy.extensions.logstats] INFO: Crawled 
-0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)     
-2023-08-01 14:09:08 [scrapy.extensions.telnet] INFO: Telnet console listening on 127.0.0.1:6023
+2023-08-02 09:32:25 [scrapy.extensions.logstats] INFO: Crawled 0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)
+2023-08-02 09:32:25 [scrapy.extensions.telnet] INFO: Telnet console listening on 127.0.0.1:6023
 Processing URL:  /listing/authorization-letter
 Processing URL:  /listing/chapters
 Processing URL:  /listing/esamm-figures
@@ -249,314 +250,138 @@ Processing URL:  /appendix/appendix-5-1
 Processing URL:  /appendix/appendix-5-2
 Processing URL:  /appendix/appendix-6
 Processing URL:  /rcg/rcg-toc
-2023-08-01 14:09:09 [saam_pubs] ERROR: Error processing row <Selector query='descendant-or-self::table/descendant-or-self::*/tbody/descendant-or-self::*/tr' data='<tr>\n\t\t\t<td class="AlignLeft"><p>Dire...'>: 'NoneType' object has no attribute 'replace'
-2023-08-01 14:09:09 [saam_pubs] ERROR: Error processing row <Selector query='descendant-or-self::table/descendant-or-self::*/tbody/descendant-or-self::*/tr' data='<tr>\n\t\t\t<td class="AlignLeft"><p>Inst...'>: 'NoneType' object has no attribute 'replace'
-2023-08-01 14:09:09 [saam_pubs] ERROR: Error processing row <Selector query='descendant-or-self::table/descendant-or-self::*/tbody/descendant-or-self::*/tr' data='<tr>\n\t\t\t<td class="AlignLeft"><p>Manu...'>: 'NoneType' object has no attribute 'replace'
-2023-08-01 14:09:09 [saam_pubs] ERROR: Error processing row <Selector query='descendant-or-self::table/descendant-or-self::*/tbody/descendant-or-self::*/tr' data='<tr>\n\t\t\t<td class="AlignLeft"><p>Chap...'>: 'NoneType' object has no attribute 'replace'
-2023-08-01 14:09:09 [saam_pubs] ERROR: Error processing row <Selector query='descendant-or-self::table/descendant-or-self::*/tbody/descendant-or-self::*/tr' data='<tr>\n\t\t\t<td class="AlignLeft"><p>Chap...'>: 'NoneType' object has no attribute 'replace'
-2023-08-01 14:09:10 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
+No supported downloadable item for Chairman_of_the_Joint_Chiefs_of_Staff_Instruction_(CJCSI)_3207.01B,_Military_Support_to_Humanitarian_Mine_Actions
+2023-08-02 09:32:27 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
 {'cac_login_required': False,
  'crawler_used': 'saam_pubs',
  'data_source': 'SAAM',
  'display_doc_type': 'SAAM',
  'display_org': 'SAAM',
  'display_source': 'SAAM - Unlisted Source',
- 'display_title': 'SAAM V0R0: Allotment',
- 'doc_name': 'glossary',
+ 'display_title': 'SAAM V0R0: DoD Financial Management Regulation Glossary',
+ 'doc_name': 'DoD_Financial_Management_Regulation_Glossary',
  'doc_num': 'V0R0',
- 'doc_title': 'Allotment',
+ 'doc_title': 'DoD Financial Management Regulation Glossary',
  'doc_type': 'SAAM',
  'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',
  'downloadable_items': [{'compression_type': None,
                          'doc_type': 'pdf',
-                         'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf'}],   
+                         'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf'}],
  'file_ext': 'pdf',
  'is_revoked': False,
  'publication_date': '',
  'source_fqdn': 'samm.dsca.mil',
  'source_page_url': 'https://samm.dsca.mil/listing/esamm-glossary',
  'source_title': 'Unlisted Source',
- 'version_hash': '1e0e9404438dd547e953c52eeda5481a6cd3a3688a23b956d0d2c51fbde3a9da',
- 'version_hash_raw_data': {'display_title': 'SAAM V0R0: Allotment',
-                           'doc_name': 'glossary',
+ 'version_hash': '110ec17cb204ee4a4d08e25bc781bba79af7409418a659d77cab51b644f584fc',
+ 'version_hash_raw_data': {'display_title': 'SAAM V0R0: DoD Financial '
+                                            'Management Regulation Glossary',
+                           'doc_name': 'DoD_Financial_Management_Regulation_Glossary',
                            'doc_num': 'V0R0',
-                           'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',   
+                           'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',
                            'publication_date': '',
-                           'scrape_time': 1690916950.3079386}} 
-2023-08-01 14:09:10 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
+                           'scrape_time': 1690986747.8631737}}
+2023-08-02 09:32:27 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
 {'cac_login_required': False,
  'crawler_used': 'saam_pubs',
  'data_source': 'SAAM',
  'display_doc_type': 'SAAM',
  'display_org': 'SAAM',
  'display_source': 'SAAM - Unlisted Source',
- 'display_title': 'SAAM V0R0: Apportionment',
- 'doc_name': 'glossary',
+ 'display_title': 'SAAM V0R0: DoD Financial Management Regulation Glossary',
+ 'doc_name': 'DoD_Financial_Management_Regulation_Glossary',
  'doc_num': 'V0R0',
- 'doc_title': 'Apportionment',
+ 'doc_title': 'DoD Financial Management Regulation Glossary',
  'doc_type': 'SAAM',
  'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',
  'downloadable_items': [{'compression_type': None,
                          'doc_type': 'pdf',
-                         'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf'}],   
+                         'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf'}],
  'file_ext': 'pdf',
  'is_revoked': False,
  'publication_date': '',
  'source_fqdn': 'samm.dsca.mil',
  'source_page_url': 'https://samm.dsca.mil/listing/esamm-glossary',
  'source_title': 'Unlisted Source',
- 'version_hash': 'cf67276c0241750a92833df12ec06610c96c85e976d10b2abeeaf94b5224ba15',
- 'version_hash_raw_data': {'display_title': 'SAAM V0R0: Apportionment',
-                           'doc_name': 'glossary',
+ 'version_hash': '50afbac86a763e0caef0acc2e05fed816799b8fb8f6cce20aa2d4bd49aa042ba',
+ 'version_hash_raw_data': {'display_title': 'SAAM V0R0: DoD Financial '
+                                            'Management Regulation Glossary',
+                           'doc_name': 'DoD_Financial_Management_Regulation_Glossary',
                            'doc_num': 'V0R0',
-                           'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',   
+                           'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',
                            'publication_date': '',
-                           'scrape_time': 1690916950.318602}}  
-2023-08-01 14:09:10 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
+                           'scrape_time': 1690986747.8698037}}
+2023-08-02 09:32:27 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
 {'cac_login_required': False,
  'crawler_used': 'saam_pubs',
  'data_source': 'SAAM',
  'display_doc_type': 'SAAM',
  'display_org': 'SAAM',
  'display_source': 'SAAM - Unlisted Source',
- 'display_title': 'SAAM V0R0: Budget Authority',
- 'doc_name': 'glossary',
+ 'display_title': 'SAAM V0R0: DoD Financial Management Regulation Glossary',
+ 'doc_name': 'DoD_Financial_Management_Regulation_Glossary',
  'doc_num': 'V0R0',
- 'doc_title': 'Budget Authority',
+ 'doc_title': 'DoD Financial Management Regulation Glossary',
  'doc_type': 'SAAM',
  'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',
  'downloadable_items': [{'compression_type': None,
                          'doc_type': 'pdf',
-                         'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf'}],   
+                         'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf'}],
  'file_ext': 'pdf',
  'is_revoked': False,
  'publication_date': '',
  'source_fqdn': 'samm.dsca.mil',
  'source_page_url': 'https://samm.dsca.mil/listing/esamm-glossary',
  'source_title': 'Unlisted Source',
- 'version_hash': '4b461e17da4b473438404a47a10d2e36814a535651932b213ee58385f69b3798',
- 'version_hash_raw_data': {'display_title': 'SAAM V0R0: Budget 
-Authority',
-                           'doc_name': 'glossary',
+ 'version_hash': '558d4af3e47e91167e929c4218e3e89e4a23bb3b88d29ed23be73dfa398d948b',
+ 'version_hash_raw_data': {'display_title': 'SAAM V0R0: DoD Financial '
+                                            'Management Regulation Glossary',
+                           'doc_name': 'DoD_Financial_Management_Regulation_Glossary',
                            'doc_num': 'V0R0',
-                           'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',   
+                           'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',
                            'publication_date': '',
-                           'scrape_time': 1690916950.3372006}} 
-2023-08-01 14:09:10 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
+                           'scrape_time': 1690986747.8901906}}
+2023-08-02 09:32:27 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
 {'cac_login_required': False,
  'crawler_used': 'saam_pubs',
  'data_source': 'SAAM',
  'display_doc_type': 'SAAM',
  'display_org': 'SAAM',
  'display_source': 'SAAM - Unlisted Source',
- 'display_title': 'SAAM V0R0: Budget Year',
- 'doc_name': 'a11',
+ 'display_title': 'SAAM V0R0: DoD Financial Management Regulation Glossary',
+ 'doc_name': 'DoD_Financial_Management_Regulation_Glossary',
  'doc_num': 'V0R0',
- 'doc_title': 'Budget Year',
- 'doc_type': 'SAAM',
- 'download_url': 'https://www.whitehouse.gov/wp-content/uploads/2018/06/a11.pdf',
- 'downloadable_items': [{'compression_type': None,
-                         'doc_type': 'pdf',
-                         'download_url': 'https://www.whitehouse.gov/wp-content/uploads/2018/06/a11.pdf'}],
- 'file_ext': 'pdf',
- 'is_revoked': False,
- 'publication_date': '',
- 'source_fqdn': 'samm.dsca.mil',
- 'source_page_url': 'https://samm.dsca.mil/listing/esamm-glossary',
- 'source_title': 'Unlisted Source',
- 'version_hash': '5684ed007687f5db2a21deae4c227e58e1ec41b72ca2ea41470b393125c26fe4',
- 'version_hash_raw_data': {'display_title': 'SAAM V0R0: Budget 
-Year',
-                           'doc_name': 'a11',
-                           'doc_num': 'V0R0',
-                           'download_url': 'https://www.whitehouse.gov/wp-content/uploads/2018/06/a11.pdf',
-                           'publication_date': '',
-                           'scrape_time': 1690916950.3459454}} 
-2023-08-01 14:09:10 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
-{'cac_login_required': False,
- 'crawler_used': 'saam_pubs',
- 'data_source': 'SAAM',
- 'display_doc_type': 'SAAM',
- 'display_org': 'SAAM',
- 'display_source': 'SAAM - Unlisted Source',
- 'display_title': 'SAAM V0R0: Commitment [financial]',
- 'doc_name': 'glossary',
- 'doc_num': 'V0R0',
- 'doc_title': 'Commitment [financial]',
+ 'doc_title': 'DoD Financial Management Regulation Glossary',
  'doc_type': 'SAAM',
  'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',
  'downloadable_items': [{'compression_type': None,
                          'doc_type': 'pdf',
-                         'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf'}],   
+                         'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf'}],
  'file_ext': 'pdf',
  'is_revoked': False,
  'publication_date': '',
  'source_fqdn': 'samm.dsca.mil',
  'source_page_url': 'https://samm.dsca.mil/listing/esamm-glossary',
  'source_title': 'Unlisted Source',
- 'version_hash': '9574bbbecb2647f23d741f71d0d3f75bfc425e830be426438f6888b9eb6330ef',
- 'version_hash_raw_data': {'display_title': 'SAAM V0R0: Commitment [financial]',
-                           'doc_name': 'glossary',
+ 'version_hash': '7113398daed12499c93870498efa3680837393e41c3a0d194cbe4c75f6625a1c',
+ 'version_hash_raw_data': {'display_title': 'SAAM V0R0: DoD Financial '
+                                            'Management Regulation Glossary',
+                           'doc_name': 'DoD_Financial_Management_Regulation_Glossary',
                            'doc_num': 'V0R0',
-                           'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',   
+                           'download_url': 'https://comptroller.defense.gov/Portals/45/documents/fmr/current/glossary.pdf',
                            'publication_date': '',
-                           'scrape_time': 1690916950.3539684}} 
-2023-08-01 14:09:10 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
+                           'scrape_time': 1690986747.8978674}}
+2023-08-02 09:32:33 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
 {'cac_login_required': False,
  'crawler_used': 'saam_pubs',
  'data_source': 'SAAM',
  'display_doc_type': 'SAAM',
  'display_org': 'SAAM',
  'display_source': 'SAAM - Unlisted Source',
- 'display_title': 'SAAM V0R0: Continuing Resolution (CR)',     
- 'doc_name': 'a11',
+ 'display_title': 'SAAM V0R0: AR 12-15 SECNAVINST 4950.4B AFI 16-105',
+ 'doc_name': 'AR_12-15_SECNAVINST_4950.4B_AFI_16-105',
  'doc_num': 'V0R0',
- 'doc_title': 'Continuing Resolution (CR)',
- 'doc_type': 'SAAM',
- 'download_url': 'https://www.whitehouse.gov/wp-content/uploads/2018/06/a11.pdf',
- 'downloadable_items': [{'compression_type': None,
-                         'doc_type': 'pdf',
-                         'download_url': 'https://www.whitehouse.gov/wp-content/uploads/2018/06/a11.pdf'}],
- 'file_ext': 'pdf',
- 'is_revoked': False,
- 'publication_date': '',
- 'source_fqdn': 'samm.dsca.mil',
- 'source_page_url': 'https://samm.dsca.mil/listing/esamm-glossary',
- 'source_title': 'Unlisted Source',
- 'version_hash': '6b6d221929581452a235d4439f57aae5c1c2c5b17f0ac3d930fcc4260d499d3a',
- 'version_hash_raw_data': {'display_title': 'SAAM V0R0: Continuing Resolution '
-                                            '(CR)',
-                           'doc_name': 'a11',
-                           'doc_num': 'V0R0',
-                           'download_url': 'https://www.whitehouse.gov/wp-content/uploads/2018/06/a11.pdf',
-                           'publication_date': '',
-                           'scrape_time': 1690916950.3639064}} 
-2023-08-01 14:09:13 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
-{'cac_login_required': False,
- 'crawler_used': 'saam_pubs',
- 'data_source': 'SAAM',
- 'display_doc_type': 'SAAM',
- 'display_org': 'SAAM',
- 'display_source': 'SAAM - Unlisted Source',
- 'display_title': 'SAAM V0R0: ',
- 'doc_name': '203008p',
- 'doc_num': 'V0R0',
- 'doc_title': '',
- 'doc_type': 'SAAM',
- 'download_url': 'http://www.esd.whs.mil/Portals/54/Documents/DD/issuances/dodi/203008p.pdf',
- 'downloadable_items': [{'compression_type': None,
-                         'doc_type': 'pdf',
-                         'download_url': 'http://www.esd.whs.mil/Portals/54/Documents/DD/issuances/dodi/203008p.pdf'}],       
- 'file_ext': 'pdf',
- 'is_revoked': False,
- 'publication_date': '',
- 'source_fqdn': 'samm.dsca.mil',
- 'source_page_url': 'https://samm.dsca.mil/chapter/chapter-8', 
- 'source_title': 'Unlisted Source',
- 'version_hash': '4e00229d1f3a28c281acf111165582c818e84879674e7d2691db1b89621feb62',
- 'version_hash_raw_data': {'display_title': 'SAAM V0R0: ',     
-                           'doc_name': '203008p',
-                           'doc_num': 'V0R0',
-                           'download_url': 'http://www.esd.whs.mil/Portals/54/Documents/DD/issuances/dodi/203008p.pdf',       
-                           'publication_date': '',
-                           'scrape_time': 1690916953.1337395}} 
-2023-08-01 14:09:13 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
-{'cac_login_required': False,
- 'crawler_used': 'saam_pubs',
- 'data_source': 'SAAM',
- 'display_doc_type': 'SAAM',
- 'display_org': 'SAAM',
- 'display_source': 'SAAM - Unlisted Source',
- 'display_title': 'SAAM V0R0: ',
- 'doc_name': '416028m_vol1',
- 'doc_num': 'V0R0',
- 'doc_title': '',
- 'doc_type': 'SAAM',
- 'download_url': 'http://www.esd.whs.mil/Portals/54/Documents/DD/issuances/dodm/416028m_vol1.pdf',
- 'downloadable_items': [{'compression_type': None,
-                         'doc_type': 'pdf',
-                         'download_url': 'http://www.esd.whs.mil/Portals/54/Documents/DD/issuances/dodm/416028m_vol1.pdf'}],  
- 'file_ext': 'pdf',
- 'is_revoked': False,
- 'publication_date': '',
- 'source_fqdn': 'samm.dsca.mil',
- 'source_page_url': 'https://samm.dsca.mil/chapter/chapter-8', 
- 'source_title': 'Unlisted Source',
- 'version_hash': 'db184163eb59f736da8e6f7448a1d181221fc41f6c0ba2114621170118982e53',
- 'version_hash_raw_data': {'display_title': 'SAAM V0R0: ',     
-                           'doc_name': '416028m_vol1',
-                           'doc_num': 'V0R0',
-                           'download_url': 'http://www.esd.whs.mil/Portals/54/Documents/DD/issuances/dodm/416028m_vol1.pdf',  
-                           'publication_date': '',
-                           'scrape_time': 1690916953.1702764}} 
-2023-08-01 14:09:13 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
-{'cac_login_required': False,
- 'crawler_used': 'saam_pubs',
- 'data_source': 'SAAM',
- 'display_doc_type': 'SAAM',
- 'display_org': 'SAAM',
- 'display_source': 'SAAM - Unlisted Source',
- 'display_title': 'SAAM V0R0: ',
- 'doc_name': '510076m',
- 'doc_num': 'V0R0',
- 'doc_title': '',
- 'doc_type': 'SAAM',
- 'download_url': 'http://www.esd.whs.mil/Portals/54/Documents/DD/issuances/dodm/510076m.pdf',
- 'downloadable_items': [{'compression_type': None,
-                         'doc_type': 'pdf',
-                         'download_url': 'http://www.esd.whs.mil/Portals/54/Documents/DD/issuances/dodm/510076m.pdf'}],       
- 'file_ext': 'pdf',
- 'is_revoked': False,
- 'publication_date': '',
- 'source_fqdn': 'samm.dsca.mil',
- 'source_page_url': 'https://samm.dsca.mil/chapter/chapter-8', 
- 'source_title': 'Unlisted Source',
- 'version_hash': 'd4aaa2f4e9d5253adbb8bce357af6f7a69c8353f522808396fd523b01a1c6351',
- 'version_hash_raw_data': {'display_title': 'SAAM V0R0: ',     
-                           'doc_name': '510076m',
-                           'doc_num': 'V0R0',
-                           'download_url': 'http://www.esd.whs.mil/Portals/54/Documents/DD/issuances/dodm/510076m.pdf',       
-                           'publication_date': '',
-                           'scrape_time': 1690916953.179469}}  
-2023-08-01 14:09:13 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
-{'cac_login_required': False,
- 'crawler_used': 'saam_pubs',
- 'data_source': 'SAAM',
- 'display_doc_type': 'SAAM',
- 'display_org': 'SAAM',
- 'display_source': 'SAAM - Unlisted Source',
- 'display_title': 'SAAM V0R0: ',
- 'doc_name': 'STATUTE-104-Pg1485',
- 'doc_num': 'V0R0',
- 'doc_title': '',
- 'doc_type': 'SAAM',
- 'download_url': 'https://www.govinfo.gov/content/pkg/STATUTE-104/pdf/STATUTE-104-Pg1485.pdf',
- 'downloadable_items': [{'compression_type': None,
-                         'doc_type': 'pdf',
-                         'download_url': 'https://www.govinfo.gov/content/pkg/STATUTE-104/pdf/STATUTE-104-Pg1485.pdf'}],      
- 'file_ext': 'pdf',
- 'is_revoked': False,
- 'publication_date': '',
- 'source_fqdn': 'samm.dsca.mil',
- 'source_page_url': 'https://samm.dsca.mil/chapter/chapter-10', 'source_title': 'Unlisted Source',
- 'version_hash': '1be5d275425a94b7123ddf680357f1ecdc3551eeccaa28c8d2957e39274cc50d',
- 'version_hash_raw_data': {'display_title': 'SAAM V0R0: ',     
-                           'doc_name': 'STATUTE-104-Pg1485',   
-                           'doc_num': 'V0R0',
-                           'download_url': 'https://www.govinfo.gov/content/pkg/STATUTE-104/pdf/STATUTE-104-Pg1485.pdf',      
-                           'publication_date': '',
-                           'scrape_time': 1690916953.2372382}} 
-2023-08-01 14:09:13 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
-{'cac_login_required': False,
- 'crawler_used': 'saam_pubs',
- 'data_source': 'SAAM',
- 'display_doc_type': 'SAAM',
- 'display_org': 'SAAM',
- 'display_source': 'SAAM - Unlisted Source',
- 'display_title': 'SAAM V0R0: ',
- 'doc_name': 'r12_15',
- 'doc_num': 'V0R0',
- 'doc_title': '',
+ 'doc_title': 'AR 12-15 SECNAVINST 4950.4B AFI 16-105',
  'doc_type': 'SAAM',
  'download_url': 'https://armypubs.army.mil/epubs/DR_pubs/DR_a/pdf/web/r12_15.pdf',
  'downloadable_items': [{'compression_type': None,
@@ -566,97 +391,120 @@ Year',
  'is_revoked': False,
  'publication_date': '',
  'source_fqdn': 'samm.dsca.mil',
- 'source_page_url': 'https://samm.dsca.mil/chapter/chapter-10', 'source_title': 'Unlisted Source',
- 'version_hash': '8d252ab2793b65fd2251934e001df252a0f3993f13c26f2995f351a43b507e85',
- 'version_hash_raw_data': {'display_title': 'SAAM V0R0: ',     
-                           'doc_name': 'r12_15',
+ 'source_page_url': 'https://samm.dsca.mil/chapter/chapter-10',
+ 'source_title': 'Unlisted Source',
+ 'version_hash': 'f79d873cfc18cdfa1fc8bd5284859d0abbc5522881b33355dc74e4538a499f4c',
+ 'version_hash_raw_data': {'display_title': 'SAAM V0R0: AR 12-15 SECNAVINST '
+                                            '4950.4B AFI 16-105',
+                           'doc_name': 'AR_12-15/SECNAVINST_4950.4B/AFI_16-105',
                            'doc_num': 'V0R0',
                            'download_url': 'https://armypubs.army.mil/epubs/DR_pubs/DR_a/pdf/web/r12_15.pdf',
                            'publication_date': '',
-                           'scrape_time': 1690916953.245472}}  
-2023-08-01 14:09:13 [scrapy.core.scraper] WARNING: Dropped: Duplicate doc_name found
-{'cac_login_required': False,
+                           'scrape_time': 1690986753.4884534}}
+2023-08-02 09:32:33 [scrapy.core.scraper] ERROR: Error processing {'access_timestamp': '2023-08-02T09:32:33',
+ 'cac_login_required': False,
  'crawler_used': 'saam_pubs',
  'data_source': 'SAAM',
  'display_doc_type': 'SAAM',
  'display_org': 'SAAM',
  'display_source': 'SAAM - Unlisted Source',
- 'display_title': 'SAAM V0R0: ',
- 'doc_name': 'r12_15',
+ 'display_title': 'SAAM V0R0: DD Form 1348-1a, "Issue Release Receipt '
+                  'Document;"',
+ 'doc_name': 'DD_Form_1348-1a,_"Issue_Release_Receipt_Document;"',
  'doc_num': 'V0R0',
- 'doc_title': '',
+ 'doc_title': 'DD Form 1348-1a, "Issue Release Receipt Document;"',
  'doc_type': 'SAAM',
- 'download_url': 'https://armypubs.army.mil/epubs/DR_pubs/DR_a/pdf/web/r12_15.pdf',
+ 'download_url': 'http://www.esd.whs.mil/Portals/54/Documents/DD/forms/dd/dd13481a.pdf',
  'downloadable_items': [{'compression_type': None,
                          'doc_type': 'pdf',
-                         'download_url': 'https://armypubs.army.mil/epubs/DR_pubs/DR_a/pdf/web/r12_15.pdf'}],
+                         'download_url': 'http://www.esd.whs.mil/Portals/54/Documents/DD/forms/dd/dd13481a.pdf'}],
  'file_ext': 'pdf',
  'is_revoked': False,
- 'publication_date': '',
+ 'publication_date': None,
  'source_fqdn': 'samm.dsca.mil',
- 'source_page_url': 'https://samm.dsca.mil/chapter/chapter-10', 'source_title': 'Unlisted Source',
- 'version_hash': '43642805497a59fb1fa1f02bbddfe97e70b368479da3978e63a9473fa059ed9c',
- 'version_hash_raw_data': {'display_title': 'SAAM V0R0: ',     
-                           'doc_name': 'r12_15',
+ 'source_page_url': 'https://samm.dsca.mil/chapter/chapter-11',
+ 'source_title': 'Unlisted Source',
+ 'version_hash': '22cc2310bd3354d29412a162b080488715e98f97cf2ec6a78e8ad84ed27062b8',
+ 'version_hash_raw_data': {'display_title': 'SAAM V0R0: DD Form 1348-1a, '
+                                            '"Issue Release Receipt Document;"',
+                           'doc_name': 'DD_Form_1348-1a,_"Issue_Release/Receipt_Document;"',
                            'doc_num': 'V0R0',
-                           'download_url': 'https://armypubs.army.mil/epubs/DR_pubs/DR_a/pdf/web/r12_15.pdf',
+                           'download_url': 'http://www.esd.whs.mil/Portals/54/Documents/DD/forms/dd/dd13481a.pdf',
                            'publication_date': '',
-                           'scrape_time': 1690916953.2604988}} 
-2023-08-01 14:09:13 [scrapy.core.downloader.handlers.http11] WARNING: Expected response size (58955437) larger than download warn size (33554432) in request <GET https://www.govinfo.gov/content/pkg/STATUTE-104/pdf/STATUTE-104-Pg1485.pdf>.
-2023-08-01 14:09:35 [scrapy.core.downloader.handlers.http11] WARNING: Received more bytes than download warn size (33554432) in request <GET https://www.govinfo.gov/content/pkg/STATUTE-104/pdf/STATUTE-104-Pg1485.pdf>.
-2023-08-01 14:10:08 [scrapy.extensions.logstats] INFO: Crawled 
-93 pages (at 93 pages/min), scraped 20 items (at 20 items/min) 
-2023-08-01 14:11:03 [scrapy.downloadermiddlewares.retry] ERROR: Gave up retrying <GET http://www.dtic.mil/whs/directives/corres/pdf/500068p.pdf> (failed 3 times): [<twisted.python.failure.Failure twisted.internet.error.ConnectionDone: Connection was closed cleanly.>]
+                           'scrape_time': 1690986753.2077243}}
+Traceback (most recent call last):
+  File "C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\twisted\internet\defer.py", line 892, in _runCallbacks
+    current.result = callback(  # type: ignore[misc]
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\632347\source\repos\gamechanger-crawlers\dataPipelines\gc_scrapy\gc_scrapy\pipelines.py", line 251, in item_completed
+    with open(file_download_path, "wb") as f: # Download each file to it's download path
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 22] Invalid argument: 'C:\\Users\\632347\\source\\repos\\gamechanger-crawlers\\test-samm\\DD_Form_1348-1a,_"Issue_Release_Receipt_Document;".pdf'
+2023-08-02 09:32:34 [scrapy.core.downloader.handlers.http11] WARNING: Expected response size (58955437) larger than download warn size (33554432) in request <GET https://www.govinfo.gov/content/pkg/STATUTE-104/pdf/STATUTE-104-Pg1485.pdf>.
+2023-08-02 09:32:59 [scrapy.core.downloader.handlers.http11] WARNING: Received more bytes than download warn size (33554432) in request <GET https://www.govinfo.gov/content/pkg/STATUTE-104/pdf/STATUTE-104-Pg1485.pdf>.
+2023-08-02 09:33:25 [scrapy.extensions.logstats] INFO: Crawled 97 pages (at 97 pages/min), scraped 31 items (at 31 items/min)
+2023-08-02 09:33:48 [scrapy.downloadermiddlewares.retry] ERROR: Gave up retrying <GET https://samm.dsca.mil/appendix/appendix-1-all> (failed 3 times): 500 Internal Server Error
+2023-08-02 09:33:48 [scrapy.spidermiddlewares.httperror] INFO: Ignoring response <500 https://samm.dsca.mil/appendix/appendix-1-all>: HTTP status code is not handled or not allowed
+2023-08-02 09:34:21 [scrapy.downloadermiddlewares.retry] ERROR: Gave up retrying <GET http://www.dtic.mil/whs/directives/corres/pdf/500068p.pdf> (failed 3 times): [<twisted.python.failure.Failure twisted.internet.error.ConnectionDone: Connection was closed cleanly.>]
 **** MEDIA FAILED
 [Failure instance: Traceback: <class 'twisted.web._newclient.ResponseNeverReceived'>: [<twisted.python.failure.Failure twisted.internet.error.ConnectionDone: Connection was closed cleanly.>]
 --- <exception caught here> ---
 C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\core\downloader\middleware.py:54:process_request
 ]
-<SaamSpider 'saam_pubs' at 0x28be92cf4d0>
-2023-08-01 14:11:06 [scrapy.downloadermiddlewares.retry] ERROR: Gave up retrying <GET http://www.dtic.mil/whs/directives/corres/pdf/416028m_vol1.pdf> (failed 3 times): [<twisted.python.failure.Failure twisted.internet.error.ConnectionDone: Connection was closed cleanly.>]
+<SaamSpider 'saam_pubs' at 0x13195e8b0d0>
+2023-08-02 09:34:25 [scrapy.extensions.logstats] INFO: Crawled 99 pages (at 2 pages/min), scraped 32 items (at 1 items/min)
+2023-08-02 09:34:26 [scrapy.downloadermiddlewares.retry] ERROR: Gave up retrying <GET http://www.dtic.mil/whs/directives/corres/pdf/416028m_vol1.pdf> (failed 3 times): [<twisted.python.failure.Failure twisted.internet.error.ConnectionDone: Connection was closed cleanly.>]
 **** MEDIA FAILED
 [Failure instance: Traceback: <class 'twisted.web._newclient.ResponseNeverReceived'>: [<twisted.python.failure.Failure twisted.internet.error.ConnectionDone: Connection was closed cleanly.>]
 --- <exception caught here> ---
 C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\core\downloader\middleware.py:54:process_request
 ]
-<SaamSpider 'saam_pubs' at 0x28be92cf4d0>
-2023-08-01 14:11:06 [scrapy.downloadermiddlewares.retry] ERROR: Gave up retrying <GET http://www.dtic.mil/whs/directives/corres/pdf/203008p.pdf> (failed 3 times): [<twisted.python.failure.Failure twisted.internet.error.ConnectionDone: Connection was closed cleanly.>]
+<SaamSpider 'saam_pubs' at 0x13195e8b0d0>
+2023-08-02 09:34:26 [scrapy.downloadermiddlewares.retry] ERROR: Gave up retrying <GET http://www.dtic.mil/whs/directives/corres/pdf/203008p.pdf> (failed 3 times): [<twisted.python.failure.Failure twisted.internet.error.ConnectionDone: Connection was closed cleanly.>]
 **** MEDIA FAILED
 [Failure instance: Traceback: <class 'twisted.web._newclient.ResponseNeverReceived'>: [<twisted.python.failure.Failure twisted.internet.error.ConnectionDone: Connection was closed cleanly.>]
 --- <exception caught here> ---
 C:\Users\632347\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\scrapy\core\downloader\middleware.py:54:process_request
 ]
-<SaamSpider 'saam_pubs' at 0x28be92cf4d0>
-2023-08-01 14:11:06 [scrapy.core.engine] INFO: Closing spider (finished)
-2023-08-01 14:11:06 [scrapy.extensions.feedexport] INFO: Stored json feed (23 items) in: .\test-samm\output.json
-2023-08-01 14:11:06 [scrapy.statscollectors] INFO: Dumping Scrapy stats:
+<SaamSpider 'saam_pubs' at 0x13195e8b0d0>
+2023-08-02 09:34:26 [scrapy.core.engine] INFO: Closing spider (finished)
+2023-08-02 09:34:26 [scrapy.extensions.feedexport] INFO: Stored json feed (34 items) in: .\test-samm\output.json
+2023-08-02 09:34:26 [scrapy.statscollectors] INFO: Dumping Scrapy stats:
 {'downloader/exception_count': 9,
  'downloader/exception_type_count/twisted.web._newclient.ResponseNeverReceived': 9,
- 'downloader/request_bytes': 40386,
- 'downloader/request_count': 109,
- 'downloader/request_method_count/GET': 109,
- 'downloader/response_bytes': 93956707,
- 'downloader/response_count': 100,
- 'downloader/response_status_count/200': 91,
- 'downloader/response_status_count/301': 7,
+ 'downloader/request_bytes': 44577,
+ 'downloader/request_count': 121,
+ 'downloader/request_method_count/GET': 121,
+ 'downloader/response_bytes': 92717832,
+ 'downloader/response_count': 112,
+ 'downloader/response_status_count/200': 96,
+ 'downloader/response_status_count/301': 11,
  'downloader/response_status_count/404': 2,
+ 'downloader/response_status_count/500': 3,
  'dupefilter/filtered': 127,
- 'elapsed_time_seconds': 118.75908,
+ 'elapsed_time_seconds': 120.490087,
  'feedexport/success_count/FileFeedStorage': 1,
  'finish_reason': 'finished',
- 'finish_time': datetime.datetime(2023, 8, 1, 19, 11, 6, 976575),
- 'item_dropped_count': 12,
- 'item_dropped_reasons_count/DropItem': 12,
- 'item_scraped_count': 23,
- 'log_count/ERROR': 8,
- 'log_count/INFO': 12,
- 'log_count/WARNING': 16,
+ 'finish_time': datetime.datetime(2023, 8, 2, 14, 34, 26, 454748),
+ 'httpcompression/response_bytes': 813955,
+ 'httpcompression/response_count': 2,
+ 'httperror/response_ignored_count': 1,
+ 'httperror/response_ignored_status_count/500': 1,
+ 'item_dropped_count': 5,
+ 'item_dropped_reasons_count/DropItem': 5,
+ 'item_scraped_count': 34,
+ 'log_count/ERROR': 5,
+ 'log_count/INFO': 14,
+ 'log_count/WARNING': 9,
  'request_depth_max': 1,
- 'response_received_count': 93,
- 'retry/count': 6,
- 'retry/max_reached': 3,
+ 'response_received_count': 99,
+ 'retry/count': 8,
+ 'retry/max_reached': 4,
+ 'retry/reason_count/500 Internal Server Error': 2,
  'retry/reason_count/twisted.web._newclient.ResponseNeverReceived': 6,
- 'scheduler/dequeued': 73,
- 'scheduler/dequeued/memory': 73,
- 'scheduler/enqueued': 73,
-2023-08-01 14:11:06 [scrapy.core.engine] INFO: Spider closed (finished)
+ 'scheduler/dequeued': 75,
+ 'scheduler/dequeued/memory': 75,
+ 'scheduler/enqueued': 75,
+ 'scheduler/enqueued/memory': 75,
+ 'start_time': datetime.datetime(2023, 8, 2, 14, 32, 25, 964661)}
+2023-08-02 09:34:26 [scrapy.core.engine] INFO: Spider closed (finished)
