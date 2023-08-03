@@ -49,7 +49,6 @@ class SammSpider(GCSpider):
             relative_urls = accordion.css(ROW_SELECTOR).extract()
 
             for relative_url in relative_urls:
-                print("Processing URL: ", relative_url)
                 absolute_url = urljoin(base_url, relative_url)
                 yield scrapy.Request(absolute_url, callback=self.parse_document_page)
 
@@ -62,7 +61,6 @@ class SammSpider(GCSpider):
         for row in rows:
             try:
                 href_raw = row.css('a::attr(href)').get()
-                # doc_title_text = row.css('td:nth-child(1)::text').get()
                 doc_title_text = row.css('a::text').get().strip() 
                 publication_date_raw = row.css('td:nth-child(2)::text').get()
                 doc_title = self.ascii_clean(doc_title_text).replace("/ ", " ").replace("/", " ")
@@ -71,16 +69,13 @@ class SammSpider(GCSpider):
                 
                 # Extract file name from href and use it as doc_name
                 doc_name = href_raw.split("/")[-1]
-                # doc_name = doc_name.replace(".pdf", "")
-                doc_name = doc_title_text.replace(" ", "_")  # Change this line
+                doc_name = doc_title_text.replace(" ", "_")  
                 doc_name = self.ascii_clean(doc_name)
 
-                # Potential if statement
                 display_doc_type = "SAMM"
 
                 # Generate the unique doc name
-                unique_doc_name = self.generate_unique_doc_name({'doc_name': doc_name, 'doc_title': doc_title})
-
+                doc_name, doc_title, unique_doc_name = self.generate_unique_doc_name({'doc_name': doc_name, 'doc_title': doc_title})
 
                 file_type = self.get_href_file_extension(href_raw)
                 web_url = self.ensure_full_href_url(href_raw, response.url)
@@ -98,6 +93,7 @@ class SammSpider(GCSpider):
                     'source_page_url':response.url,
                     'publication_date': publication_date
                 }
+
                 ## Instantiate DocItem class and assign document's metadata values
                 doc_item = self.populate_doc_item(fields)
 
@@ -108,14 +104,28 @@ class SammSpider(GCSpider):
 
     def generate_unique_doc_name(self, data):
         # Clean doc_name
-        doc_name = re.sub(r'[(),]|\.{2,}', '', data['doc_name'])  # Remove parentheses, commas and consecutive dots
-        doc_name = "_".join([word.title() for word in doc_name.split("_")])  # Capitalize words
+        doc_name = re.sub(r'[\(\),]', '', data['doc_name'])  # Remove parentheses and commas
+        doc_name = re.sub(r'[\W_\.]+$', '', doc_name)  # Remove any special characters at the end
 
         # Clean doc_title
-        doc_title = re.sub(r'[(),]|\.{2,}', '', data['doc_title'])  # Remove parentheses, commas and consecutive dots
-        doc_title = "_".join([word.title() for word in doc_title.split("_")])  # Capitalize words
+        doc_title = re.sub(r'[\(\),]', '', data['doc_title'])  # Remove parentheses and commas
+        doc_title = re.sub(r'[\W_\.]+$', '', doc_title)  # Remove any special characters at the end
 
-        return doc_name + "_" + doc_title
+        # Generate unique doc name
+        unique_doc_name = doc_name + "_" + doc_title
+
+        # Remove any trailing underscores
+        unique_doc_name = re.sub(r'_+$', '', unique_doc_name)
+
+        # Remove any trailing special characters, including periods and underscores
+        unique_doc_name = re.sub(r'[\W_\.]+$', '', unique_doc_name)
+
+        return doc_name, doc_title, unique_doc_name
+
+
+
+
+
 
     def populate_doc_item(self, fields):
         #
