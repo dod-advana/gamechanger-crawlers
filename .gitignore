@@ -41,7 +41,6 @@ pip-delete-this-directory.txt
 
 # Unit test / coverage reports
 dataPipelines/gc_scrapy/gc_scrapy/output_samples
-./downloads
 htmlcov/
 .tox/
 .nox/
@@ -157,5 +156,7 @@ testoutput/
 
 # Test Env
 ./test-env
-./test-samm
+./test-samm/
+./downloads
+
 
