@@ -1,677 +1,194 @@
+import scrapy
+from urllib.parse import urljoin
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
-import datetime
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
 import re
-
+from urllib.parse import urljoin, urlparse
+import time
 
 class SammSpider(GCSpider):
-    download_warnsize = 0
-    name = 'SAMM'
-    allowed_domains = ["samm.dsca.mil/"]
-    start_urls = [
-        "https://samm.dsca.mil/listing/chapters",
-        "https://samm.dsca.mil/policy-memoranda/PolicyMemoList-All",
-        "https://samm.dsca.mil/rcg/rcg-toc",
-        "https://samm.dsca.mil/appendix/appendix-1",
-        "https://samm.dsca.mil/appendix/appendix-2",
-        "https://samm.dsca.mil/appendix/appendix-3",
-        "https://samm.dsca.mil/appendix/appendix-4",
-        "https://samm.dsca.mil/appendix/appendix-5",
-        "https://samm.dsca.mil/appendix/appendix-6",
-        "https://samm.dsca.mil/samm-archive/2003-samm-archive",
-        "https://samm.dsca.mil/samm-archive/1988-samm-archive",
-        "https://samm.dsca.mil/samm-archive/1984-samm-archive",
-        "https://samm.dsca.mil/samm-archive/1983-masm-b-3",
-        "https://samm.dsca.mil/samm-archive/1978-masm-archive",
-        "https://samm.dsca.mil/samm-archive/1973-masm-archive",
-        "https://samm.dsca.mil/samm-archive/1970-masm-archive"
-    ]
-    display_source="Defense Security Cooperation Agency Distribution Portal"
-    cac_login_required = False
-    randomly_delay_request = True
+    name = "samm_pubs" # Crawler name
+    allowed_domains = ["samm.dsca.mil"]
+    start_urls = ["https://samm.dsca.mil/listing/chapters"]
+    rotate_user_agent = True
+    doc_type = "SAMM"
+
+    @staticmethod
+    def extract_doc_number(doc_title):
+        ver_num = 0
+        ref_num = 0
+
+        if doc_title is not None:
+            if " Ver " in doc_title:
+                ver_matches = re.findall(r' Ver (\w+)', doc_title)
+                ver_num = ver_matches[0] if ver_matches else 0
+            elif " Version " in doc_title:
+                ver_matches = re.findall(r' Version (\w+)', doc_title)
+                ver_num = ver_matches[0] if ver_matches else 0
+
+            if " Rel " in doc_title:
+                ref_matches = re.findall(r' Rel (\w+)', doc_title)
+                ref_num = ref_matches[0] if ref_matches else 0
+            elif "Release Memo" in doc_title:
+                ref_num = 1
+
+        doc_num = f"V{ver_num}R{ref_num}"
+        return doc_title, doc_num
+
 
     def parse(self, response):
         base_url = "https://samm.dsca.mil"
-        if response.url.endswith(('chapters')):
-            SET_SELECTOR = 'tr'
-        elif response.url.endswith('PolicyMemoList-All'):
-            SET_SELECTOR = 'tr'
-        elif response.url.endswith('rcg-toc'):
-            SET_SELECTOR = 'tr'
-        elif response.url.endswith('appendix-1'):
-            SET_SELECTOR = 'div.field__item'
-        elif response.url.endswith('appendix-2'):
-            SET_SELECTOR = 'tr'
-        elif response.url.endswith('appendix-3'):
-            SET_SELECTOR = 'tr'
-        elif response.url.endswith('appendix-4'):
-            SET_SELECTOR = 'tr'
-        elif response.url.endswith('appendix-5'):
-            SET_SELECTOR = 'tr'
-        elif response.url.endswith('appendix-6'):
-            SET_SELECTOR = 'tbody'
-        elif response.url.endswith('archive'):
-            SET_SELECTOR = 'tr'
-        elif response.url.endswith('1983-masm-b-3'):
-            SET_SELECTOR = 'tr'
+        
+        # Select all detail tags
+        ACCORDION_SELECTOR = '.DSAccordionResponse'
+        accordions = response.css(ACCORDION_SELECTOR)
 
-        for brickset in response.css(SET_SELECTOR):
+        for accordion in accordions:
+            ROW_SELECTOR = '.RowContainer a::attr(href)'
+            relative_urls = accordion.css(ROW_SELECTOR).extract()
 
-            if response.url.endswith(('chapters')):
-                TITLE_SELECTOR = 'a ::text'
-                URL_SELECTOR = 'a::attr(href)'
-                NUM_SELECTOR = 'p::text'
-                doc_num = brickset.css(NUM_SELECTOR).extract_first()
-                url = brickset.css(URL_SELECTOR).extract()
-                doc_title = brickset.css(TITLE_SELECTOR).extract_first()
-                if doc_num is None:
-                    continue
-                if url is None:
-                    continue
-                if doc_title is None:
-                    continue
-                doc_num = doc_title
-                doc_type = "SAMM"
-                doc_name = doc_type + ' ' + doc_num
-                if url[-1].startswith("http"):
-                    url = url[-1]
-                else:
-                    url = base_url + url[-1]
-                url = url.replace(" ", "%20")
+            for relative_url in relative_urls:
+                absolute_url = urljoin(base_url, relative_url)
+                yield scrapy.Request(absolute_url, callback=self.parse_document_page)
 
-                if "pdf" in url:
-                    continue
-                else:
-                    doc_extension = "html"
 
+    def parse_document_page(self, response):
+        rows = response.css('table tbody tr')
+        rows = [a for a in rows if a.css('a::attr(href)').get()]
+        rows = [a for a in rows if a.css('a::attr(href)').get().endswith("pdf")]
+
+        for row in rows:
+            try:
+                href_raw = row.css('a::attr(href)').get()
+                doc_title_text = row.css('a::text').get().strip() 
+                publication_date_raw = row.css('td:nth-child(2)::text').get()
+                doc_title = self.ascii_clean(doc_title_text).replace("/ ", " ").replace("/", " ")
+                publication_date = self.ascii_clean(publication_date_raw)
+                doc_title, doc_num = self.extract_doc_number(doc_title)
+                
+                # Extract file name from href and use it as doc_name
+                doc_name = href_raw.split("/")[-1]
+                doc_name = doc_title_text.replace(" ", "_")  
                 doc_name = self.ascii_clean(doc_name)
-                doc_title = self.ascii_clean(doc_title)
-                doc_num = self.ascii_clean(doc_num)
 
-                downloadable_items = [
-                    {
-                        "doc_type": doc_extension,
-                        "web_url": url,
-                        "compression_type": None
-                    }
-                ]
-                version_hash_fields = {
-                    # version metadata found on pdf links
-                    "item_currency": url.split('/')[-1],
-                    "doc_name": doc_name,
-                }
-                yield DocItem(
-                    doc_name=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_name),
-                    doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
-                    doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
-                    doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                    downloadable_items=downloadable_items,
-                    version_hash_raw_data=version_hash_fields,
-                    source_page_url=response.url,
-                    display_doc_type="Manual",
-                    display_org="Defense Security Cooperation Agency",
-                    display_source=self.display_source
-                )
-            elif response.url.endswith('PolicyMemoList-All'):
-                NAME_SELECTOR = 'a ::text'
-                URL_SELECTOR = 'a::attr(href)'
-                TITLE_SELECTOR = 'td.views-field-field-memo-title::text'
-                DATE_SELECTOR = 'time::text'
-                doc_name = brickset.css(NAME_SELECTOR).extract_first()
-                url = brickset.css(URL_SELECTOR).extract()
-                doc_title = brickset.css(TITLE_SELECTOR).extract_first()
-                date = brickset.css(DATE_SELECTOR).extract_first()
-                if doc_name is None:
-                    continue
-                if url is None:
-                    continue
-                if doc_title is None:
-                    continue
-                if ' ' in doc_name:
-                    doc_num = doc_name.split(" ")[1]
-                    doc_type = doc_name.split(" ")[0]
-                    doc_name = doc_name
-                else:
-                    doc_num = doc_title
-                    doc_type = "SAMM"
-                    doc_name = doc_type + ' ' + doc_num
-                if url[-1].startswith("http"):
-                    url = url[-1]
-                else:
-                    url = base_url + url[-1]
-                url = url.replace(" ", "%20")
+                display_doc_type = "SAMM"
 
-                if "pdf" in url:
-                    continue
-                else:
-                    doc_extension = "html"
+                # Generate the unique doc name
+                doc_name, doc_title, unique_doc_name = self.generate_unique_doc_name({'doc_name': doc_name, 'doc_title': doc_title})
 
-                doc_name = self.ascii_clean(doc_name)
-                doc_title = self.ascii_clean(doc_title)
-                doc_num = self.ascii_clean(doc_num)
+                file_type = self.get_href_file_extension(href_raw)
+                web_url = self.ensure_full_href_url(href_raw, response.url)
 
-                downloadable_items = [
-                    {
-                        "doc_type": doc_extension,
-                        "web_url": url,
-                        "compression_type": None
-                    }
-                ]
-                version_hash_fields = {
-                    # version metadata found on pdf links
-                    "item_currency": url.split('/')[-1],
-                    "doc_name": doc_name,
+                fields = {
+                    'doc_name': doc_name,
+                    'unique_doc_name': unique_doc_name,
+                    'doc_num': doc_num,
+                    'doc_title': doc_title,
+                    'doc_type': self.doc_type,
+                    'display_doc_type':display_doc_type,
+                    'file_type':file_type,
+                    'cac_login_required': False,
+                    'download_url': web_url,
+                    'source_page_url':response.url,
+                    'publication_date': publication_date
                 }
 
-                yield DocItem(
-                    doc_name=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_name),
-                    doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
-                    doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
-                    doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                    publication_date=date,
-                    downloadable_items=downloadable_items,
-                    version_hash_raw_data=version_hash_fields,
-                    source_page_url=response.url,
-                    display_doc_type="Memo",
-                    display_org="Defense Security Cooperation Agency",
-                    display_source=self.display_source
-                )
-            elif response.url.endswith('rcg-toc'):
-                TITLE_SELECTOR = 'a ::text'
-                URL_SELECTOR = 'a::attr(href)'
-                NUM_SELECTOR = 'td.AlignCenter::text'
-                doc_num = brickset.css(NUM_SELECTOR).extract_first()
-                url = brickset.css(URL_SELECTOR).extract()
-                doc_title = brickset.css(TITLE_SELECTOR).extract_first()
-                if doc_num is None:
-                    continue
-                if url is None:
-                    continue
-                if doc_title is None:
-                    continue
+                ## Instantiate DocItem class and assign document's metadata values
+                doc_item = self.populate_doc_item(fields)
 
-                doc_num = doc_title
-                doc_type = "SAMM"
-                doc_name = doc_type + ' ' + doc_num
-                if url[-1].startswith("http"):
-                    url = url[-1]
-                else:
-                    url = base_url + url[-1]
-                url = url.replace(" ", "%20")
+                yield doc_item
 
-                if "pdf" in url:
-                    continue
-                else:
-                    doc_extension = "html"
+            except Exception as e:
+                self.logger.error(f"Error processing row {row}: {e}")
 
-                doc_name = self.ascii_clean(doc_name)
-                doc_title = self.ascii_clean(doc_title)
-                doc_num = self.ascii_clean(doc_num)
+    def generate_unique_doc_name(self, data):
+        # Clean doc_name
+        doc_name = re.sub(r'[\(\),]', '', data['doc_name'])  # Remove parentheses and commas
+        doc_name = re.sub(r'[\W_\.]+$', '', doc_name)  # Remove any special characters at the end
 
-                downloadable_items = [
-                    {
-                        "doc_type": doc_extension,
-                        "web_url": url,
-                        "compression_type": None
-                    }
-                ]
-                version_hash_fields = {
-                    # version metadata found on pdf links
-                    "item_currency": url.split('/')[-1],
-                    "doc_name": doc_name,
-                }
+        # Clean doc_title
+        doc_title = re.sub(r'[\(\),]', '', data['doc_title'])  # Remove parentheses and commas
+        doc_title = re.sub(r'[\W_\.]+$', '', doc_title)  # Remove any special characters at the end
 
-                yield DocItem(
-                    doc_name=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_name),
-                    doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
-                    doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
-                    doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                    downloadable_items=downloadable_items,
-                    version_hash_raw_data=version_hash_fields,
-                    source_page_url=response.url,
-                    display_doc_type="Manual",
-                    display_org="Defense Security Cooperation Agency",
-                    display_source=self.display_source
-                )
-            elif response.url.endswith('appendix-1'):
-                TITLE_SELECTOR = 'a.ChapterTitle ::text'
-                URL_SELECTOR = 'a::attr(href)'
-                NUM_SELECTOR = 'td.AlignCenter::text'
-                # doc_num=brickset.css(NUM_SELECTOR).extract_first()
-                url = brickset.css(URL_SELECTOR).extract_first()
-                doc_title = brickset.css(TITLE_SELECTOR).extract_first()
-                if url is None:
-                    continue
-                if doc_title is None:
-                    continue
+        # Generate unique doc name
+        unique_doc_name = doc_name + "_" + doc_title
 
-                doc_num = doc_title
-                doc_type = "SAMM"
-                doc_name = doc_type + ' ' + doc_num
-                if url.startswith("http"):
-                    url = url
-                else:
-                    url = base_url + url
-                url = url.replace(" ", "%20")
+        # Remove any trailing underscores
+        unique_doc_name = re.sub(r'_+$', '', unique_doc_name)
 
-                if "pdf" in url:
-                    continue
-                else:
-                    doc_extension = "html"
+        # Remove any trailing special characters, including periods and underscores
+        unique_doc_name = re.sub(r'[\W_\.]+$', '', unique_doc_name)
 
-                doc_name = self.ascii_clean(doc_name)
-                doc_title = self.ascii_clean(doc_title)
-                doc_num = self.ascii_clean(doc_num)
+        return doc_name, doc_title, unique_doc_name
 
-                downloadable_items = [
-                    {
-                        "doc_type": doc_extension,
-                        "web_url": url,
-                        "compression_type": None
-                    }
-                ]
-                version_hash_fields = {
-                    # version metadata found on pdf links
-                    "item_currency": url.split('/')[-1],
-                    "doc_name": doc_name,
-                }
 
-                yield DocItem(
-                    doc_name=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_name),
-                    doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
-                    doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
-                    doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                    downloadable_items=downloadable_items,
-                    version_hash_raw_data=version_hash_fields,
-                    source_page_url=response.url,
-                    display_doc_type="Manual",
-                    display_org="Defense Security Cooperation Agency",
-                    display_source=self.display_source
-                )
-            elif response.url.endswith('appendix-2'):
-                NUM_SELECTOR = 'td.AlignCenter::text'
-                URL_SELECTOR = 'a::attr(href)'
-                TITLE_SELECTOR = 'a::text'
-                doc_name = brickset.css(NUM_SELECTOR).extract_first()
-                url = brickset.css(URL_SELECTOR).extract()
-                doc_title = brickset.css(TITLE_SELECTOR).extract()
-                if doc_name is None:
-                    continue
-                if len(url) == 0:
-                    continue
-                if len(doc_title) == 0:
-                    continue
-                if doc_name == "A2.1.":
-                    doc_title = doc_title[0]
-                    doc_num = doc_title
-                    doc_type = "SAMM"
-                    doc_name = doc_type + ' ' + doc_num
-                    if url[0].startswith("http"):
-                        url = url[0]
-                    else:
-                        url = base_url + url[0]
-                    url = url.replace(" ", "%20")
 
-                    if "pdf" in url:
-                        continue
-                    else:
-                        doc_extension = "html"
 
-                    doc_name = self.ascii_clean(doc_name)
-                    doc_title = self.ascii_clean(doc_title)
-                    doc_num = self.ascii_clean(doc_num)
 
-                    downloadable_items = [
-                        {
-                            "doc_type": doc_extension,
-                            "web_url": url,
-                            "compression_type": None
-                        }
-                    ]
-                    version_hash_fields = {
-                        # version metadata found on pdf links
-                        "item_currency": url.split('/')[-1],
-                        "doc_name": doc_name,
-                    }
 
-                    yield DocItem(
-                        doc_name=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_name),
-                        doc_title=re.sub(
-                            r'[^a-zA-Z0-9 ()\\-]', '', str(doc_title)),
-                        doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
-                        doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                        downloadable_items=downloadable_items,
-                        version_hash_raw_data=version_hash_fields,
-                        source_page_url=response.url,
-                        display_doc_type="Manual",
-                        display_org="Defense Security Cooperation Agency",
-                        display_source=self.display_source
-                    )
-                else:
-                    for i in range(len(doc_title)):
-                        doc_title2 = doc_title[i]
-                        doc_num = doc_title2
-                        doc_type = "SAMM"
-                        doc_name2 = doc_type + ' ' + doc_num
-                        if url[i].startswith("http"):
-                            url2 = url[i]
-                        else:
-                            url2 = base_url + url[i]
-                        url2 = url2.replace(" ", "%20")
+    def populate_doc_item(self, fields):
+        #
+        # This functions provides both hardcoded and computed values for the variables
+        # in the imported DocItem object and returns the populated metadata object
+        #
+        display_org = "SAMM"    # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "SAMM"    # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "Unlisted Source" 
 
-                        if "pdf" in url2:
-                            continue
-                        else:
-                            doc_extension = "html"
+        doc_name = fields['doc_name']
+        doc_num = fields['doc_num']
+        doc_title = fields['doc_title']
+        doc_type = fields['doc_type']
+        cac_login_required = fields['cac_login_required']
+        download_url = fields['download_url']
+        publication_date = get_pub_date(fields['publication_date'])
 
-                        doc_name2 = self.ascii_clean(doc_name2)
-                        doc_title2 = self.ascii_clean(doc_title2)
-                        doc_num = self.ascii_clean(doc_num)
+        display_doc_type = fields['display_doc_type'] # Doc type for display on app
+        display_source = data_source + " - " + source_title
+        display_title = doc_type + " " + doc_num + ": " + doc_title
+        is_revoked = False
+        source_page_url = fields['source_page_url']
+        source_fqdn = urlparse(source_page_url).netloc
 
-                        downloadable_items = [
-                            {
-                                "doc_type": doc_extension,
-                                "web_url": url2,
-                                "compression_type": None
-                            }
-                        ]
-                        version_hash_fields = {
-                            # version metadata found on pdf links
-                            "item_currency": url2.split('/')[-1],
-                            "doc_name": doc_name2,
-                        }
+        downloadable_items = [{
+                "doc_type": fields['file_type'],
+                "download_url": download_url.replace(' ', '%20'),
+                "compression_type": None,
+            }]
 
-                        yield DocItem(
-                            doc_name=re.sub(
-                                r'[^a-zA-Z0-9 ()\\-]', '', doc_name2),
-                            doc_title=re.sub(
-                                r'[^a-zA-Z0-9 ()\\-]', '', doc_title2),
-                            doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
-                            doc_type=re.sub(
-                                r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                            downloadable_items=downloadable_items,
-                            version_hash_raw_data=version_hash_fields,
-                            source_page_url=response.url,
-                            display_doc_type="Manual",
-                            display_org="Defense Security Cooperation Agency",
-                            display_source=self.display_source
-                        )
-            elif response.url.endswith('appendix-3'):
-                TITLE_SELECTOR = 'a ::text'
-                URL_SELECTOR = 'a::attr(href)'
-                NUM_SELECTOR = 'td.AlignCenter::text'
-                doc_num = brickset.css(NUM_SELECTOR).extract_first()
-                url = brickset.css(URL_SELECTOR).extract()
-                doc_title = brickset.css(TITLE_SELECTOR).extract_first()
-                if doc_num is None:
-                    continue
-                if url is None:
-                    continue
-                if doc_title is None:
-                    continue
-                doc_num = doc_title
-                doc_type = "SAMM"
-                doc_name = doc_type + ' ' + doc_num
-                if url[-1].startswith("http"):
-                    url = url[-1]
-                else:
-                    url = base_url + url[-1]
-                url = url.replace(" ", "%20")
+        ## Assign fields that will be used for versioning
+        version_hash_fields = {
+            "doc_name":doc_name,
+            "doc_num": doc_num,
+            "publication_date": publication_date,
+            "download_url": download_url,
+            "display_title": display_title,
+            "scrape_time" : time.time() #current time
+        }
 
-                if "pdf" in url:
-                    continue
-                else:
-                    doc_extension = "html"
+        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 
-                doc_name = self.ascii_clean(doc_name)
-                doc_title = self.ascii_clean(doc_title)
-                doc_num = self.ascii_clean(doc_num)
-
-                downloadable_items = [
-                    {
-                        "doc_type": doc_extension,
-                        "web_url": url,
-                        "compression_type": None
-                    }
-                ]
-                version_hash_fields = {
-                    # version metadata found on pdf links
-                    "item_currency": url.split('/')[-1],
-                    "doc_name": doc_name,
-                }
-
-                yield DocItem(
-                    doc_name=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_name),
-                    doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
-                    doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
-                    doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                    downloadable_items=downloadable_items,
-                    version_hash_raw_data=version_hash_fields,
-                    source_page_url=response.url,
-                    display_doc_type="Manual",
-                    display_org="Defense Security Cooperation Agency",
-                    display_source=self.display_source
-                )
-            elif response.url.endswith('appendix-4'):
-                TITLE_SELECTOR = 'a ::text'
-                URL_SELECTOR = 'a::attr(href)'
-                NUM_SELECTOR = 'td.AlignCenter::text'
-                doc_num = brickset.css(NUM_SELECTOR).extract_first()
-                url = brickset.css(URL_SELECTOR).extract()
-                doc_title = brickset.css(TITLE_SELECTOR).extract_first()
-                if doc_num is None:
-                    continue
-                if url is None:
-                    continue
-                if doc_title is None:
-                    continue
-
-                doc_num = doc_title
-                doc_type = "SAMM"
-                doc_name = doc_type + ' ' + doc_num
-                if url[-1].startswith("http"):
-                    url = url[-1]
-                else:
-                    url = base_url + url[-1]
-                url = url.replace(" ", "%20")
-
-                if "pdf" in url:
-                    continue
-                else:
-                    doc_extension = "html"
-
-                doc_name = self.ascii_clean(doc_name)
-                doc_title = self.ascii_clean(doc_title)
-                doc_num = self.ascii_clean(doc_num)
-
-                downloadable_items = [
-                    {
-                        "doc_type": doc_extension,
-                        "web_url": url,
-                        "compression_type": None
-                    }
-                ]
-                version_hash_fields = {
-                    # version metadata found on pdf links
-                    "item_currency": url.split('/')[-1],
-                    "doc_name": doc_name,
-                }
-
-                yield DocItem(
-                    doc_name=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_name),
-                    doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
-                    doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
-                    doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                    downloadable_items=downloadable_items,
-                    version_hash_raw_data=version_hash_fields,
-                    source_page_url=response.url,
-                    display_doc_type="Manual",
-                    display_org="Defense Security Cooperation Agency",
-                    display_source=self.display_source
-                )
-            elif response.url.endswith('appendix-5'):
-                TITLE_SELECTOR = 'a ::text'
-                URL_SELECTOR = 'a::attr(href)'
-                NUM_SELECTOR = 'td.AlignCenter::text'
-                doc_num = brickset.css(NUM_SELECTOR).extract_first()
-                url = brickset.css(URL_SELECTOR).extract()
-                doc_title = brickset.css(TITLE_SELECTOR).extract_first()
-                if doc_num is None:
-                    continue
-                if url is None:
-                    continue
-                if doc_title is None:
-                    continue
-
-                doc_num = doc_title
-                doc_type = "SAMM"
-                doc_name = doc_type + ' ' + doc_num
-                if url[-1].startswith("http"):
-                    url = url[-1]
-                else:
-                    url = base_url + url[-1]
-                url = url.replace(" ", "%20")
-
-                if "pdf" in url:
-                    continue
-                else:
-                    doc_extension = "html"
-
-                doc_name = self.ascii_clean(doc_name)
-                doc_title = self.ascii_clean(doc_title)
-                doc_num = self.ascii_clean(doc_num)
-
-                downloadable_items = [
-                    {
-                        "doc_type": doc_extension,
-                        "web_url": url,
-                        "compression_type": None
-                    }
-                ]
-                version_hash_fields = {
-                    # version metadata found on pdf links
-                    "item_currency": url.split('/')[-1],
-                    "doc_name": doc_name,
-                }
-
-                yield DocItem(
-                    doc_name=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_name),
-                    doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
-                    doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
-                    doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                    downloadable_items=downloadable_items,
-                    version_hash_raw_data=version_hash_fields,
-                    source_page_url=response.url,
-                    display_doc_type="Manual",
-                    display_org="Defense Security Cooperation Agency",
-                    display_source=self.display_source
-                )
-            elif response.url.endswith('appendix-6'):
-                TITLE_SELECTOR = 'a ::text'
-                URL_SELECTOR = 'a::attr(href)'
-                url2 = brickset.css(URL_SELECTOR).extract()
-                doc_title2 = brickset.css(TITLE_SELECTOR).extract()
-                if len(url2) == 0:
-                    continue
-                if len(doc_title2) == 0:
-                    continue
-                for i in range(len(url2)):
-                    doc_title = doc_title2[i]
-                    doc_num = doc_title
-                    doc_type = "SAMM"
-                    doc_name = doc_type + ' ' + doc_num
-                    if url2[i].startswith("http"):
-                        url = url2[i]
-                    else:
-                        url = base_url + url2[i]
-                    url = url.replace(" ", "%20")
-
-                    if "pdf" in url:
-                        continue
-                    else:
-                        doc_extension = "html"
-
-                    doc_name = self.ascii_clean(doc_name)
-                    doc_title = self.ascii_clean(doc_title)
-                    doc_num = self.ascii_clean(doc_num)
-
-                    downloadable_items = [
-                        {
-                            "doc_type": doc_extension,
-                            "web_url": url,
-                            "compression_type": None
-                        }
-                    ]
-                    version_hash_fields = {
-                        # version metadata found on pdf links
-                        "item_currency": url.split('/')[-1],
-                        "doc_name": doc_name,
-                    }
-
-                yield DocItem(
-                    doc_name=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_name),
-                    doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
-                    doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
-                    doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                    downloadable_items=downloadable_items,
-                    version_hash_raw_data=version_hash_fields,
-                    source_page_url=response.url,
-                    display_doc_type="Manual",
-                    display_org="Defense Security Cooperation Agency",
-                    display_source=self.display_source
-                )
-            elif response.url.endswith('archive') or response.url.endswith('1983-masm-b-3'):
-                TITLE_SELECTOR = 'a ::text'
-                URL_SELECTOR = 'a::attr(href)'
-                url = brickset.css(URL_SELECTOR).extract()
-                doc_title = brickset.css(TITLE_SELECTOR).extract_first()
-                if url is None:
-                    continue
-                if doc_title is None:
-                    continue
-
-                doc_num = doc_title.replace("SAMM", "")
-                doc_type = "SAMM"
-                doc_name = doc_type + ' ' + doc_num
-                if url[-1].startswith("http"):
-                    url = url[-1]
-                else:
-                    url = base_url + url[-1]
-                url = url.replace(" ", "%20")
-                if "pdf" not in url:
-                    continue
-
-                if "pdf" in url:
-                    doc_extension = "pdf"
-                else:
-                    doc_extension = "html"
-
-                doc_name = self.ascii_clean(doc_name)
-                doc_title = self.ascii_clean(doc_title)
-                doc_num = self.ascii_clean(doc_num)
-
-                downloadable_items = [
-                    {
-                        "doc_type": doc_extension,
-                        "web_url": url,
-                        "compression_type": None
-                    }
-                ]
-                version_hash_fields = {
-                    # version metadata found on pdf links
-                    "item_currency": url.split('/')[-1],
-                    "doc_name": doc_name,
-                }
-
-                yield DocItem(
-                    doc_name=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_name),
-                    doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),
-                    doc_num=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_num),
-                    doc_type=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_type),
-                    downloadable_items=downloadable_items,
-                    version_hash_raw_data=version_hash_fields,
-                    source_page_url=response.url,
-                    display_doc_type="Manual",
-                    display_org="Defense Security Cooperation Agency",
-                    display_source=self.display_source
+        return DocItem(
+                    doc_name = doc_name,
+                    doc_title = doc_title,
+                    doc_num = doc_num,
+                    doc_type = doc_type,
+                    display_doc_type = display_doc_type, 
+                    publication_date = publication_date,
+                    cac_login_required = cac_login_required,
+                    crawler_used = self.name,
+                    downloadable_items = downloadable_items,
+                    source_page_url = source_page_url,
+                    source_fqdn = source_fqdn,
+                    download_url = download_url,
+                    version_hash_raw_data = version_hash_fields,
+                    version_hash = version_hash,
+                    display_org = display_org,
+                    data_source = data_source,
+                    source_title = source_title,
+                    display_source = display_source,
+                    display_title = display_title,
+                    file_ext = fields['file_type'],
+                    is_revoked = is_revoked,
                 )
