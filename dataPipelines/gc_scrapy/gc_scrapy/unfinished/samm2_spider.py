@@ -29,21 +29,28 @@ class SammPolicyMemorandaSpider(GCSpider):
             pm_status = pm_status_text.strip() if pm_status_text is not None else ""
             if pm_status != "Incorporated": 
                 relative_urls = row.xpath('td[2]/a/@href').get()
+                doc_title = row.xpath('td[2]/a/text()').get().strip()
+
+                pub_date_text = row.xpath('td[1]/text()').get()
+                pub_date = get_pub_date(pub_date_text.strip()) if pub_date_text is not None else None
 
                 absolute_url = urljoin(base_url, relative_urls)
-                yield scrapy.Request(absolute_url, callback=self.parse_document_page)
+                yield scrapy.Request(
+                    absolute_url, 
+                    callback=self.parse_document_page, 
+                    cb_kwargs={'doc_title': doc_title, 'publication_date': pub_date}
+                )
 
-    def parse_document_page(self, response):
+    def parse_document_page(self, response, doc_title, publication_date):
             pdf_link = response.xpath('//div[contains(@class, "PM_PDF_ink")]//a/@href').get()
             if pdf_link is not None:
                 doc_name = self.ascii_clean(pdf_link.split("/")[-1])
-                doc_title_text = "test"
-                doc_title, doc_num = self.extract_doc_number(doc_title_text)
+                doc_title, doc_num = self.extract_doc_number(doc_title)
 
-                doc_name = self.ascii_clean(doc_title_text.replace(" ", "_"))
+                doc_name = self.ascii_clean(doc_title.replace(" ", "_"))
                 display_doc_type = "SAMM"
 
-                doc_name, doc_title, unique_doc_name = self.generate_unique_doc_name({'doc_name': doc_name, 'doc_title': "test"})
+                doc_name, doc_title, unique_doc_name = self.generate_unique_doc_name({'doc_name': doc_name, 'doc_title': doc_title})
                 file_type = self.get_href_file_extension(pdf_link)
                 web_url = self.ensure_full_href_url(pdf_link, response.url)
                 
@@ -58,12 +65,13 @@ class SammPolicyMemorandaSpider(GCSpider):
                     'cac_login_required': False,
                     'download_url': web_url,
                     'source_page_url': response.url,
-                    'publication_date': None
+                    'publication_date': publication_date
                 }
 
                 doc_item = self.populate_doc_item(fields)
 
                 yield doc_item
+
 
     def generate_unique_doc_name(self, data):
         # Clean doc_name
