@@ -13,7 +13,6 @@ class SammSpider(GCSpider):
     start_urls = ["https://samm.dsca.mil/listing/chapters", "https://samm.dsca.mil/policy-memoranda/PolicyMemoList-All"]
     rotate_user_agent = True
     randomly_delay_request = True
-    doc_type = "SAMM Policy Memoranda"
 
     headers = {
         "accept": "application/json",
@@ -94,7 +93,7 @@ class SammSpider(GCSpider):
                 doc_name = href_raw.split("/")[-1]
                 doc_name = doc_title_text.replace(" ", "_")
                 doc_name = self.ascii_clean(doc_name)
-                doc_type = "SAMM Policy Memoranda"
+                doc_type = "SAMM"
 
                 display_doc_type = "SAMM"
 
@@ -131,7 +130,7 @@ class SammSpider(GCSpider):
             if pdf_link is not None:
                 doc_name = self.ascii_clean(pdf_link.split("/")[-1])
                 doc_title, doc_num = self.extract_doc_number(doc_title)
-                doc_type = "SAMM Policy"
+                doc_type = "SAMM Policy Memoranda"
 
                 doc_name = self.ascii_clean(doc_title.replace(" ", "_"))
                 display_doc_type = "SAMM"
