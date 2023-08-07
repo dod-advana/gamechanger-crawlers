@@ -14,20 +14,6 @@ class SammSpider(GCSpider):
     rotate_user_agent = True
     randomly_delay_request = True
 
-    headers = {
-        "accept": "application/json",
-        "accept-language": "en-US,en;q=0.9",
-        "cache-control": "no-cache",
-        "content-type": "application/json",
-        "pragma": "no-cache",
-        "sec-ch-ua": "\" Not;A Brand\";v=\"99\", \"Google Chrome\";v=\"91\", \"Chromium\";v=\"91\"",
-        "sec-ch-ua-mobile": "?0",
-        "sec-fetch-dest": "empty",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "same-origin",
-        "x-requested-with": "XMLHttpRequest"
-    }
-
     @staticmethod
     def extract_doc_number(doc_title):
         ver_num = 0
@@ -55,7 +41,6 @@ class SammSpider(GCSpider):
                         url=absolute_url,
                         callback=self.parse_document_page_memo,
                         cb_kwargs={'doc_title': doc_title, 'publication_date': pub_date},
-                        headers=self.headers
                 )
         elif response.url == "https://samm.dsca.mil/listing/chapters":
             time.sleep(1)
@@ -72,7 +57,6 @@ class SammSpider(GCSpider):
                     yield response.follow(
                         url=absolute_url,
                         callback=self.parse_document_page_listing,
-                        headers=self.headers
                     )
 
     def parse_document_page_listing(self, response):
