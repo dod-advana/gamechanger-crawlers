@@ -39,7 +39,13 @@ class AirForcePubsSpider(GCSeleniumSpider):
         'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=1', # AIR FORCE
         'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=16', # AIR NATIONAL GUARD
         'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=20', # UNITED STATES SPACE FORCE
-        # 'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=2' # MAJOR COMMANDS
+        'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=2', # MAJOR COMMANDS
+        'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=18', # LEAD COMMANDS
+        'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=3', # DRUs
+        'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=4', # FOAs
+        'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=5', # NUMBERED AIR FORCES
+        'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=7' # UNITS
+
     ] # URL where the spider begins crawling
 
     file_type = "pdf" # Define filetype for the spider to identify.
