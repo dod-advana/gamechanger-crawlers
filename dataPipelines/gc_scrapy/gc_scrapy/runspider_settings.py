@@ -16,13 +16,6 @@ general_settings = {
     "ROBOTSTXT_OBEY": False,
     "LOG_LEVEL": "INFO",
     "DOWNLOAD_FAIL_ON_DATALOSS": False,
-    # Testing SAAM 403 kick
-    "DOWNLOAD_DELAY": 3,  # Delay between requests
-    "DOWNLOAD_TIMEOUT": 120,  # 2 min
-    "RETRY_ENABLE": True,
-    "RETRY_TIMES": 3,
-    "CONCURRENT_REQUESTS": 5,
-    "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537"
 }
 
 selenium_settings = {

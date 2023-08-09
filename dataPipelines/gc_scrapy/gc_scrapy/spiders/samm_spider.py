@@ -1,5 +1,3 @@
-import scrapy
-from urllib.parse import urljoin
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
@@ -10,17 +8,20 @@ import time
 class SammSpider(GCSpider):
     name = "samm_policy"
     allowed_domains = ["samm.dsca.mil"]
-    start_urls = ["https://samm.dsca.mil/listing/chapters", "https://samm.dsca.mil/policy-memoranda/PolicyMemoList-All"]
+    start_urls = ["https://samm.dsca.mil/listing/chapters"]
     rotate_user_agent = True
     randomly_delay_request = True
 
     @staticmethod
-    def extract_doc_number(doc_title):
-        ver_num = 0
-        ref_num = 0
+    def extract_doc_number(doc_name):
+        match = re.search(r'(\d+-\d+)', doc_name)
 
-        doc_num = f"V{ver_num}R{ref_num}"
-        return doc_title, doc_num
+        if match:
+            doc_num = match.group(0)
+        else:
+            doc_num = ""
+
+        return doc_num
 
     def parse(self, response):
         base_url = "https://samm.dsca.mil"
@@ -31,101 +32,91 @@ class SammSpider(GCSpider):
                 pm_status = pm_status_text.strip() if pm_status_text is not None else ""
                 if pm_status != "Incorporated":
                     relative_urls = row.xpath('td[2]/a/@href').get()
-                    doc_title = row.xpath('td[2]/a/text()').get().strip()
+                    doc_name = row.xpath('td[2]/a/text()').get().strip()
+                    doc_title = row.xpath('normalize-space(td[5]/text())').get()
 
-                    pub_date_text = row.xpath('td[1]/text()').get()
+                    pub_date_text = row.xpath('substring-before(td[1]/time/@datetime, "T")').get()
                     pub_date = get_pub_date(pub_date_text.strip()) if pub_date_text is not None else None
+                    status = row.xpath('normalize-space(td[6]/text())').get()
 
                     absolute_url = urljoin(base_url, relative_urls)
                     yield response.follow(
                         url=absolute_url,
                         callback=self.parse_document_page_memo,
-                        cb_kwargs={'doc_title': doc_title, 'publication_date': pub_date},
+                        cb_kwargs={'doc_title': doc_title, 'doc_name': doc_name, 'publication_date': pub_date, 'status': status}
                 )
         elif response.url == "https://samm.dsca.mil/listing/chapters":
-            time.sleep(1)
-            #Select all detail tags
-            ACCORDION_SELECTOR = '.DSAccordionResponse'
-            accordions = response.css(ACCORDION_SELECTOR)
+            chapter_data = response.xpath(
+                '//*[@id="main-menu-link-content98ac5aa1-6408-4c0c-bf10-d333b494fdbf"]//a[starts-with(@href, "/chapter/")]'
+            )
+            chapter_links = [chap.xpath('@href').get() for chap in chapter_data]
+            chapter_names = [chap.xpath('text()').get() for chap in chapter_data]
+            chapter_titles = [chap.attrib['title'] for chap in chapter_data]
+            for relative_url, chapter, chapter_title in zip(chapter_links, chapter_names, chapter_titles):
+                absolute_url = urljoin(base_url, relative_url)
+                yield response.follow(
+                    url=absolute_url,
+                    callback=self.parse_document_page_listing,
+                    cb_kwargs={'chapter': chapter, 'chapter_title': chapter_title}
+                )
 
-            for accordion in accordions:
-                ROW_SELECTOR = '.RowContainer a::attr(href)'
-                relative_urls = accordion.css(ROW_SELECTOR).extract()
+    def parse_document_page_listing(self, response, chapter, chapter_title):
+        # NOTE: this function doesn't do anything on the chapter webpage currently, but we'll keep it in case of
+        # future functionality
+        doc_title = self.ascii_clean(chapter_title).replace("/ ", " ").replace("/", " ")
+        publication_date = get_pub_date(" ")
 
-                for relative_url in relative_urls:
-                    absolute_url = urljoin(base_url, relative_url)
-                    yield response.follow(
-                        url=absolute_url,
-                        callback=self.parse_document_page_listing,
-                    )
+        doc_num = chapter
+        doc_type = "SAMM"
+        display_doc_type = "SAMM"
+        doc_name = " ".join([doc_type, chapter])
+        doc_name = doc_name.replace(" ", "_")
 
-    def parse_document_page_listing(self, response):
-        rows = response.css('table tbody tr')
-        rows = [a for a in rows if a.css('a::attr(href)').get()]
-        rows = [a for a in rows if a.css('a::attr(href)').get().endswith("pdf")]
+        # hardcoded status for the chapters. should remove this for SAMM chapters
+        status = 'N/A'
 
-        for row in rows:
-            try:
-                href_raw = row.css('a::attr(href)').get()
-                doc_title_text = row.css('a::text').get().strip()
-                publication_date_raw = row.css('td:nth-child(2)::text').get()
-                doc_title = self.ascii_clean(doc_title_text).replace("/ ", " ").replace("/", " ")
-                publication_date = self.ascii_clean(publication_date_raw)
-                doc_title, doc_num = self.extract_doc_number(doc_title)
+        file_type = "html"
+        web_url = response.url
 
-                # Extract file name from href and use it as doc_name
-                doc_name = href_raw.split("/")[-1]
-                doc_name = doc_title_text.replace(" ", "_")
-                doc_name = self.ascii_clean(doc_name)
-                doc_type = "SAMM"
+        fields = {
+            'doc_name': doc_name,
+            'doc_num': doc_num,
+            'doc_title': doc_title,
+            'doc_type': doc_type,
+            'display_doc_type': display_doc_type,
+            'file_type': file_type,
+            'status': status,
+            'cac_login_required': False,
+            'is_revoked': False,
+            'download_url': web_url.replace(' ', '%20'),
+            'source_page_url': response.url,
+            'publication_date': publication_date
+        }
 
-                display_doc_type = "SAMM"
+        ## Instantiate DocItem class and assign document's metadata values
+        doc_item = self.populate_doc_item(fields)
 
-                # Generate the unique doc name
-                doc_name, doc_title, unique_doc_name = self.generate_unique_doc_name({'doc_name': doc_name, 'doc_title': doc_title})
+        yield doc_item
 
-                file_type = self.get_href_file_extension(href_raw)
-                web_url = self.ensure_full_href_url(href_raw, response.url)
 
-                fields = {
-                    'doc_name': doc_name,
-                    'unique_doc_name': unique_doc_name,
-                    'doc_num': doc_num,
-                    'doc_title': doc_title,
-                    'doc_type': doc_type,
-                    'display_doc_type':display_doc_type,
-                    'file_type':file_type,
-                    'cac_login_required': False,
-                    'download_url': web_url,
-                    'source_page_url':response.url,
-                    'publication_date': publication_date
-                }
-
-                ## Instantiate DocItem class and assign document's metadata values
-                doc_item = self.populate_doc_item(fields)
-
-                yield doc_item
-
-            except Exception as e:
-                self.logger.error(f"Error processing row {row}: {e}")
-
-    def parse_document_page_memo(self, response, doc_title, publication_date):
+    def parse_document_page_memo(self, response, doc_title, doc_name, publication_date, status):
             pdf_link = response.xpath('//div[contains(@class, "PM_PDF_ink")]//a/@href').get()
             if pdf_link is not None:
-                doc_name = self.ascii_clean(pdf_link.split("/")[-1])
-                doc_title, doc_num = self.extract_doc_number(doc_title)
+                doc_num = self.extract_doc_number(doc_name)
                 doc_type = "SAMM Policy Memoranda"
 
-                doc_name = self.ascii_clean(doc_title.replace(" ", "_"))
+                doc_name = self.ascii_clean(doc_name.replace(" ", "_"))
                 display_doc_type = "SAMM"
 
-                doc_name, doc_title, unique_doc_name = self.generate_unique_doc_name({'doc_name': doc_name, 'doc_title': doc_title})
+                doc_name = re.sub(r'[\(\),]', '', doc_name)  # Remove parentheses and commas
+                doc_name = re.sub(r'[\W_\.]+$', '', doc_name)  # Remove any special characters at the end
                 file_type = self.get_href_file_extension(pdf_link)
                 web_url = self.ensure_full_href_url(pdf_link, response.url)
 
+                is_revoked = False if status == 'Active' or status == 'Incorporated' else True
+
                 fields = {
                     'doc_name': doc_name,
-                    'unique_doc_name': unique_doc_name,
                     'doc_num': doc_num,
                     'doc_title': doc_title,
                     'doc_type': doc_type,
@@ -135,33 +126,13 @@ class SammSpider(GCSpider):
                     'download_url': web_url,
                     'source_page_url': response.url,
                     'publication_date': publication_date,
+                    'status': status,
+                    'is_revoked': is_revoked
                 }
 
                 doc_item = self.populate_doc_item(fields)
 
                 yield doc_item
-
-
-    def generate_unique_doc_name(self, data):
-        # Clean doc_name
-        doc_name = re.sub(r'[\(\),]', '', data['doc_name'])  # Remove parentheses and commas
-        doc_name = re.sub(r'[\W_\.]+$', '', doc_name)  # Remove any special characters at the end
-
-        # Clean doc_title
-        doc_title = re.sub(r'[\(\),]', '', data['doc_title'])  # Remove parentheses and commas
-        doc_title = re.sub(r'[\W_\.]+$', '', doc_title)  # Remove any special characters at the end
-
-        # Generate unique doc name
-        unique_doc_name = doc_name + "_" + doc_title
-
-        # Remove any trailing underscores
-        unique_doc_name = re.sub(r'_+$', '', unique_doc_name)
-
-        # Remove any trailing special characters, including periods and underscores
-        unique_doc_name = re.sub(r'[\W_\.]+$', '', unique_doc_name)
-
-        return doc_name, doc_title, unique_doc_name
-
 
     def populate_doc_item(self, fields):
         #
@@ -178,12 +149,13 @@ class SammSpider(GCSpider):
         doc_type = fields['doc_type']
         cac_login_required = fields['cac_login_required']
         download_url = fields['download_url']
+        is_revoked = fields['is_revoked']
+        status = fields['status']
         publication_date = get_pub_date(fields['publication_date'])
 
         display_doc_type = fields['display_doc_type'] # Doc type for display on app
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + ": " + doc_title
-        is_revoked = False
         source_page_url = fields['source_page_url']
         source_fqdn = urlparse(source_page_url).netloc
 
@@ -195,12 +167,13 @@ class SammSpider(GCSpider):
 
         ## Assign fields that will be used for versioning
         version_hash_fields = {
-            "doc_name":doc_name,
+            "doc_name": doc_name,
             "doc_num": doc_num,
             "publication_date": publication_date,
             "download_url": download_url,
             "display_title": display_title,
-            "scrape_time" : time.time() #current time
+            "is_revoked": is_revoked,
+            "status": status
         }
 
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
