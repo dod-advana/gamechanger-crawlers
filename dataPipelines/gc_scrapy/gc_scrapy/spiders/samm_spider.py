@@ -8,7 +8,7 @@ import time
 class SammSpider(GCSpider):
     name = "samm_policy"
     allowed_domains = ["samm.dsca.mil"]
-    start_urls = ["https://samm.dsca.mil/listing/chapters"]
+    start_urls = ["https://samm.dsca.mil/listing/chapters", "https://samm.dsca.mil/policy-memoranda/PolicyMemoList-All"]
     rotate_user_agent = True
     randomly_delay_request = True
 
@@ -65,7 +65,7 @@ class SammSpider(GCSpider):
         # future functionality
 
         doc_title = self.ascii_clean(chapter_title).replace("/ ", " ").replace("/", " ")
-        publication_date = get_pub_date(" ")
+        publication_date = "N/A"
 
         doc_num = chapter
         doc_type = "SAMM"
