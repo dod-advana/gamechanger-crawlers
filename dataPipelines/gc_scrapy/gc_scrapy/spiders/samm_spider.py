@@ -42,7 +42,7 @@ class SammSpider(GCSpider):
                     absolute_url = urljoin(base_url, relative_urls)
                     yield response.follow(
                         url=absolute_url,
-                        callback=self.parse_document_page_memo,
+                        callback=self.parse_document_page_memos,
                         cb_kwargs={'doc_title': doc_title, 'doc_name': doc_name, 'publication_date': pub_date, 'status': status}
                 )
         elif response.url == "https://samm.dsca.mil/listing/chapters":
@@ -56,11 +56,11 @@ class SammSpider(GCSpider):
                 absolute_url = urljoin(base_url, relative_url)
                 yield response.follow(
                     url=absolute_url,
-                    callback=self.parse_document_page_listing,
+                    callback=self.parse_document_page_chapters,
                     cb_kwargs={'chapter': chapter, 'chapter_title': chapter_title}
                 )
 
-    def parse_document_page_listing(self, response, chapter, chapter_title):
+    def parse_document_page_chapters(self, response, chapter, chapter_title):
         # NOTE: this function doesn't do anything on the chapter webpage currently, but we'll keep it in case of
         # future functionality
 
@@ -100,7 +100,7 @@ class SammSpider(GCSpider):
         yield doc_item
 
 
-    def parse_document_page_memo(self, response, doc_title, doc_name, publication_date, status):
+    def parse_document_page_memos(self, response, doc_title, doc_name, publication_date, status):
             pdf_link = response.xpath('//div[contains(@class, "PM_PDF_ink")]//a/@href').get()
             if pdf_link is not None:
                 doc_num = self.extract_doc_number(doc_name)
