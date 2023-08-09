@@ -63,6 +63,7 @@ class SammSpider(GCSpider):
     def parse_document_page_listing(self, response, chapter, chapter_title):
         # NOTE: this function doesn't do anything on the chapter webpage currently, but we'll keep it in case of
         # future functionality
+
         doc_title = self.ascii_clean(chapter_title).replace("/ ", " ").replace("/", " ")
         publication_date = get_pub_date(" ")
 
