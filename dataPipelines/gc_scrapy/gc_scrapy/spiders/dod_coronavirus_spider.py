@@ -1,7 +1,9 @@
 import typing
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
 import re
+from urllib.parse import urlparse
 
 covid_re = re.compile(r'covid|covid\-19|coronavirus', flags=re.IGNORECASE)
 
@@ -23,15 +25,14 @@ class DODCoronavirusSpider(GCSpider):
             base_url = self.start_urls[0]
 
         file_type = self.get_href_file_extension(href)
-        web_url = self.ensure_full_href_url(href, base_url)
+        download_url = self.ensure_full_href_url(href, base_url)
         return {
             "doc_type": file_type,
-            "web_url": web_url.replace(' ', '%20'),
+            "download_url": download_url.replace(' ', '%20'),
             "compression_type": None
         }
 
     def parse(self, response):
-
         blocks = response.css('div.dgov-grid div.block')
 
         for block in blocks:
@@ -43,7 +44,7 @@ class DODCoronavirusSpider(GCSpider):
                 doc_title = self.ascii_clean(doc_title_raw)
 
                 href_raw = item.css('a.title::attr(href)').get()
-                web_url = self.ensure_full_href_url(
+                download_url = self.ensure_full_href_url(
                     href_raw, self.start_urls[0])
 
                 (file_type, has_ext) = self.get_href_file_extension_does_exist(
@@ -66,17 +67,45 @@ class DODCoronavirusSpider(GCSpider):
                         self.get_downloadable_item(href) for href in supplamental_hrefs
                     ]
 
+                doc_name = f"{category_text}: {doc_title}"
+                display_doc_type = "Document" # Doc type for display on app
+                display_source = self.data_source + " - " + self.source_title
+                display_title = self.doc_type + ": " + doc_title
+                is_revoked = False
+                source_page_url = download_url
+                source_fqdn = urlparse(source_page_url).netloc
+
                 version_hash_fields = {
                     "publication_date": publication_date,
-                    "noted": noted
+                    "noted": noted,
+                    "doc_name": doc_name,
+                    "display_title": display_title,
+                    "download_url": source_page_url
                 }
+                
+                version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 
-                doc_name = f"{category_text}: {doc_title}"
                 item = DocItem(
-                    doc_name=doc_name,
-                    doc_title=doc_title,
                     publication_date=publication_date,
-                    version_hash_raw_data=version_hash_fields,
+                    doc_name = doc_name,
+                    doc_title = doc_title,
+                    doc_type = self.doc_type,
+                    display_doc_type = display_doc_type, #
+                    cac_login_required = self.cac_login_required,
+                    crawler_used = self.name,
+                    source_page_url = source_page_url, #
+                    source_fqdn = source_fqdn, #
+                    version_hash_raw_data = version_hash_fields, #
+                    display_org = self.display_org, #
+                    data_source = self.data_source, #
+                    source_title = self.source_title, #
+                    display_source = display_source, #
+                    display_title = display_title, #
+                    file_ext = self.doc_type, #
+                    is_revoked = is_revoked, #
+                    version_hash = version_hash,
+                    download_url=source_page_url,
+                    doc_num = "None",
                 )
 
                 # some are downloadable items straight from start url
@@ -84,14 +113,14 @@ class DODCoronavirusSpider(GCSpider):
                     item["downloadable_items"] = [
                         {
                             "doc_type": file_type,
-                            "web_url": web_url.replace(' ', '%20'),
+                            "download_url": download_url.replace(' ', '%20'),
                             "compression_type": None
                         }
                     ]
                     item["downloadable_items"] + supp_downloadable_items
 
                     item["version_hash_raw_data"].update({
-                        "item_currency": item["downloadable_items"][0]["web_url"],
+                        "item_currency": item["downloadable_items"][0]["download_url"],
                     })
 
                     yield item
@@ -123,12 +152,12 @@ class DODCoronavirusSpider(GCSpider):
 
         for href in hrefs:
             (file_type, has_ext) = self.get_href_file_extension_does_exist(href)
-            web_url = self.ensure_full_href_url(href, self.start_urls[0])
+            download_url = self.ensure_full_href_url(href, self.start_urls[0])
             if has_ext:
                 doc_item["downloadable_items"].append(
                     {
                         "doc_type": file_type,
-                        "web_url": web_url.replace(' ', '%20'),
+                        "download_url": download_url.replace(' ', '%20'),
                         "compression_type": None
                     }
                 )
@@ -138,7 +167,7 @@ class DODCoronavirusSpider(GCSpider):
             doc_item["downloadable_items"] = [
                 {
                     "doc_type": 'html',
-                    "web_url": response.url.replace(' ', '%20'),
+                    "download_url": response.url.replace(' ', '%20'),
                     "compression_type": None
                 }
             ]
@@ -146,7 +175,9 @@ class DODCoronavirusSpider(GCSpider):
             doc_item["downloadable_items"] + supp_downloadable_items
 
         doc_item["version_hash_raw_data"].update({
-            "item_currency": doc_item["downloadable_items"][0]["web_url"],
+            "item_currency": doc_item["downloadable_items"][0]["download_url"],
         })
+
+        doc_item["version_hash"] = dict_to_sha256_hex_digest(doc_item["version_hash_raw_data"])
 
         yield doc_item
