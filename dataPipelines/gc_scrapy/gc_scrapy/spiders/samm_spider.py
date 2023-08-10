@@ -69,7 +69,7 @@ class SammSpider(GCSpider):
 
         doc_num = chapter
         doc_type = "SAMM"
-        display_doc_type = "SAMM"
+        display_doc_type = "Document"
         doc_name = " ".join([doc_type, chapter])
         doc_name = doc_name.replace(" ", "_")
 
@@ -107,7 +107,7 @@ class SammSpider(GCSpider):
                 doc_type = "SAMM Policy Memoranda"
 
                 doc_name = self.ascii_clean(doc_name.replace(" ", "_"))
-                display_doc_type = "SAMM"
+                display_doc_type = "Memorandum"
 
                 doc_name = re.sub(r'[\(\),]', '', doc_name)  # Remove parentheses and commas
                 doc_name = re.sub(r'[\W_\.]+$', '', doc_name)  # Remove any special characters at the end
