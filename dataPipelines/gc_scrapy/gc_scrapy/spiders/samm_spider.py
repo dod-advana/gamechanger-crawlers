@@ -140,7 +140,7 @@ class SammSpider(GCSpider):
         # This functions provides both hardcoded and computed values for the variables
         # in the imported DocItem object and returns the populated metadata object
         #
-        display_org = "SAMM"    # Level 1: GC app 'Source' filter for docs from this crawler
+        display_org = "Defense Security Cooperation Agency"    # Level 1: GC app 'Source' filter for docs from this crawler
         data_source = "SAMM"    # Level 2: GC app 'Source' metadata field for docs from this crawler
         source_title = "Unlisted Source"
 
@@ -169,6 +169,7 @@ class SammSpider(GCSpider):
         ## Assign fields that will be used for versioning
         version_hash_fields = {
             "doc_name": doc_name,
+            "display_org": display_org,
             "doc_num": doc_num,
             "publication_date": publication_date,
             "download_url": download_url,
