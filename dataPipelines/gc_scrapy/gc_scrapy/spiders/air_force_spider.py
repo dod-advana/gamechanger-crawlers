@@ -17,6 +17,8 @@ from urllib.parse import urljoin, urlparse
 from datetime import datetime
 from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
 
+from selenium import webdriver
+
 ## Universal variables - Regular expression matching
 squash_spaces = re.compile(r'\s*[\n\t\r\s+]\s*') # Find redundant spaces in a string
 type_pattern_start = re.compile('^[A-Z]+') # Find the first letter in a capital letter string
