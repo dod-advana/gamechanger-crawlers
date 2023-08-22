@@ -94,9 +94,10 @@ RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.
 ## Getting chrome driver
 RUN \
      wget -O /tmp/chromedriver.zip \
-         https://chromedriver.storage.googleapis.com/$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip \
-     && unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/ \
-     && rm /tmp/chromedriver.zip
+         https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/116.0.5845.96/linux64/chromedriver-linux64.zip \
+     && unzip /tmp/chromedriver.zip chromedriver-linux64/chromedriver -d /tmp/ \
+     && mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/ \
+     && rm -rf /tmp/chromedriver*
 
 #####
 ## ## Python packages

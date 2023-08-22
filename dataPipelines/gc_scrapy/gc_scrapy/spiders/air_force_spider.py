@@ -130,8 +130,7 @@ class AirForcePubsSpider(GCSeleniumSpider):
 
         ## Iterate through each row in table get column values as metadata for each downloadable document
         for row in webpage.css(row_selector):
-            product_number_raw = row.css(
-                f'td:nth-child(1) a::text').get(default='')
+            product_number_raw = ''.join(row.css('tr.odd:nth-child(1) > td:nth-child(1)::text').extract()).strip()
             web_url = row.css(
                 f'td:nth-child(1) a::attr(href)').get(default='')
             title_raw = row.css(
@@ -213,7 +212,7 @@ class AirForcePubsSpider(GCSeleniumSpider):
                 or '-S' in prod_num else False
 
             source_page_url = driver.current_url
-            
+
             fields = {
                 'doc_name': doc_name,
                 'doc_num': doc_num,
