@@ -84,14 +84,13 @@ class AirForcePubsSpider(GCSeleniumSpider):
             # if page_url.endswith('catID=2'):  # Optional condition to pull AF Reserve Command docs from Major Commands section
             #     organizations = ['Air Force Reserve Command'] 
             
-            for org in organizations:                
-                driver.execute_script("arguments[0].click();", WebDriverWait(driver, 10).until(
-                    EC.element_to_be_clickable((By.LINK_TEXT, org))))
-                
+            for org in organizations:
                 try:
+                    driver.execute_script("arguments[0].click();", WebDriverWait(driver, 10).until(
+                        EC.element_to_be_clickable((By.LINK_TEXT, org))))
+                
                     all_pubs = WebDriverWait(driver, 5).until(
                         EC.visibility_of_element_located((By.LINK_TEXT, '00   ALL PUBLICATIONS')))
-    
                 except:
                     driver.back()
                     print(f"Failed to find publications link for: {org} at {page_url}")
