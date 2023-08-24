@@ -130,7 +130,10 @@ class AirForcePubsSpider(GCSeleniumSpider):
 
         ## Iterate through each row in table get column values as metadata for each downloadable document
         for row in webpage.css(row_selector):
-            product_number_raw = ''.join(row.css('tr.odd:nth-child(1) > td:nth-child(1)::text').extract()).strip()
+            product_number_raw = row.xpath('td//text()')[0].extract()
+            ## If the table contains no entries then skip
+            if product_number_raw == "No data available in table":
+                continue
             web_url = row.css(
                 f'td:nth-child(1) a::attr(href)').get(default='')
             title_raw = row.css(
