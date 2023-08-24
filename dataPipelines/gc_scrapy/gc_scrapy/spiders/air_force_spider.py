@@ -105,8 +105,13 @@ class AirForcePubsSpider(GCSeleniumSpider):
                 for item in self.parse_table(driver):
                     yield item
                             
-                last_page_raw = driver.find_element(By.CSS_SELECTOR, '#data_paginate > span > a:last-child')
-                last_page = int(last_page_raw.text)
+                try:
+                    last_page_raw = driver.find_element(By.CSS_SELECTOR, '#data_paginate > span > a:last-child')
+                    last_page = int(last_page_raw.text)
+                except:
+                    driver.back()
+                    print(f"Failed to find last page: {org} at {page_url}")
+                    continue
                 
                 while last_page > 1:
                     driver.execute_script("arguments[0].click();", WebDriverWait(driver, 5).until(
