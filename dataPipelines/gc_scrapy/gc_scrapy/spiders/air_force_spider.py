@@ -41,7 +41,13 @@ class AirForcePubsSpider(GCSeleniumSpider):
         'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=1', # AIR FORCE
         'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=16', # AIR NATIONAL GUARD
         'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=20', # UNITED STATES SPACE FORCE
-        # 'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=2' # MAJOR COMMANDS
+        'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=2', # MAJOR COMMANDS
+        'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=18', # LEAD COMMANDS
+        'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=3', # DRUs
+        'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=4', # FOAs
+        'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=5', # NUMBERED AIR FORCES
+        'https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=7' # UNITS
+
     ] # URL where the spider begins crawling
 
     file_type = "pdf" # Define filetype for the spider to identify.
@@ -80,14 +86,13 @@ class AirForcePubsSpider(GCSeleniumSpider):
             # if page_url.endswith('catID=2'):  # Optional condition to pull AF Reserve Command docs from Major Commands section
             #     organizations = ['Air Force Reserve Command'] 
             
-            for org in organizations:                
-                driver.execute_script("arguments[0].click();", WebDriverWait(driver, 10).until(
-                    EC.element_to_be_clickable((By.LINK_TEXT, org))))
-                
+            for org in organizations:
                 try:
+                    driver.execute_script("arguments[0].click();", WebDriverWait(driver, 10).until(
+                        EC.element_to_be_clickable((By.LINK_TEXT, org))))
+                
                     all_pubs = WebDriverWait(driver, 5).until(
                         EC.visibility_of_element_located((By.LINK_TEXT, '00   ALL PUBLICATIONS')))
-    
                 except:
                     driver.back()
                     print(f"Failed to find publications link for: {org} at {page_url}")
@@ -102,8 +107,13 @@ class AirForcePubsSpider(GCSeleniumSpider):
                 for item in self.parse_table(driver):
                     yield item
                             
-                last_page_raw = driver.find_element(By.CSS_SELECTOR, '#data_paginate > span > a:last-child')
-                last_page = int(last_page_raw.text)
+                try:
+                    last_page_raw = driver.find_element(By.CSS_SELECTOR, '#data_paginate > span > a:last-child')
+                    last_page = int(last_page_raw.text)
+                except:
+                    driver.back()
+                    print(f"Failed to find last page: {org} at {page_url}")
+                    continue
                 
                 while last_page > 1:
                     driver.execute_script("arguments[0].click();", WebDriverWait(driver, 5).until(
@@ -126,8 +136,10 @@ class AirForcePubsSpider(GCSeleniumSpider):
 
         ## Iterate through each row in table get column values as metadata for each downloadable document
         for row in webpage.css(row_selector):
-            product_number_raw = row.css(
-                f'td:nth-child(1) a::text').get(default='')
+            product_number_raw = row.xpath('td//text()')[0].extract()
+            ## If the table contains no entries then skip
+            if product_number_raw == "No data available in table":
+                continue
             web_url = row.css(
                 f'td:nth-child(1) a::attr(href)').get(default='')
             title_raw = row.css(
@@ -209,7 +221,7 @@ class AirForcePubsSpider(GCSeleniumSpider):
                 or '-S' in prod_num else False
 
             source_page_url = driver.current_url
-            
+
             fields = {
                 'doc_name': doc_name,
                 'doc_num': doc_num,
