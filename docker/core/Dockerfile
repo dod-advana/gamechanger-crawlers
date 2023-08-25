@@ -87,21 +87,17 @@ RUN curl -LfSo /tmp/awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-
     && /opt/aws/install
 
 ## Getting chrome browser
-COPY ./docker/core/google-chrome.repo /etc/yum.repos.d/google-chrome.repo
-RUN \
-    curl https://dl-ssl.google.com/linux/linux_signing_key.pub -o /tmp/google_key.pub \
-        && rpm --import /tmp/google_key.pub \
-        && rm /tmp/google_key.pub \
-    && yum install google-chrome-stable -y \
-    && yum clean all \
-    && rm -rf /var/cache/yum
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm -P /tmp/ \
+    && yum install /tmp/google-chrome-stable_current_x86_64.rpm -y \
+    && rm /tmp/google-chrome-stable_current_x86_64.rpm
 
 ## Getting chrome driver
 RUN \
-    wget -O /tmp/chromedriver.zip \
-        https://chromedriver.storage.googleapis.com/$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip \
-    && unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/ \
-    && rm /tmp/chromedriver.zip
+     wget -O /tmp/chromedriver.zip \
+         https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/116.0.5845.96/linux64/chromedriver-linux64.zip \
+     && unzip /tmp/chromedriver.zip chromedriver-linux64/chromedriver -d /tmp/ \
+     && mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/ \
+     && rm -rf /tmp/chromedriver*
 
 #####
 ## ## Python packages
