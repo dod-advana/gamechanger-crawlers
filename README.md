@@ -92,11 +92,11 @@ Updated as of: 12 Jul 2023
 2. Change to the gamechanger crawlers directory and export the repository path to the PYTHONPATH environment variable:
      ```shell
      cd /path/to/gamechanger-crawlers
-     $export PYTHONPATH="$(pwd)"
+     $env:PYTHONPATH = "$(Get-Location)"
      ```
 3. Create an empty directory for the crawler file outputs:
      ```shell
-     $CRAWLER_DATA_ROOT= "./path/to/download/location"
+     CRAWLER_DATA_ROOT= "./path/to/download/location"
      New-Item -ItemType Directory -Force -Path $CRAWLER_DATA_ROOT| Out-Null
      ```
 4. Create an empty previous manifest file:
@@ -109,8 +109,8 @@ Updated as of: 12 Jul 2023
      $executiveOrdersSpider = "dataPipelines/gc_scrapy/gc_scrapy/spiders/executive_orders_spider.py"
      $outputFile = Join-Path $CRAWLER_DATA_ROOT "output.json"
      scrapy runspider $executiveOrdersSpider `
->>   -a download_output_dir=$CRAWLER_DATA_ROOT `
->>   -a previous_manifest_location=$prevManifestFile `
->>   -o $outputFile
+     -a download_output_dir=$CRAWLER_DATA_ROOT `
+     -a previous_manifest_location=$prevManifestFile `
+     -o $outputFile
      ```
 6. After the crawler finishes running, you should have all files downloaded into the crawler output directory

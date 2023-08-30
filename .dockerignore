@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # path patterns that docker should ignore if entire repo is put into build context
 # ... mostly reminiscent of .gitignore, but we want to focus on ignoring large directories
 
@@ -23,3 +24,27 @@ transformer_cache.zip
 
 # ignore crawler output path
 ./downloads
+=======
+# path patterns that docker should ignore if entire repo is put into build context
+# ... mostly reminiscent of .gitignore, but we want to focus on ignoring large directories
+
+# Example: if `.git/` is in this file, then when `docker build --file <dockerfile-path> <repo-path>`
+# ... is issued, the `.git/` directory will be ignored and won't be exposed to `COPY` directives in Dockerfile
+
+# ignore git dir
+.git/
+
+# ignore tmp dirs
+tmp/
+img/
+
+# mypy cache dirs
+.mypy_cache/
+
+# pytest cache dirs
+.pytest_cache/
+
+# transformer model cache
+transformer_cache/
+transformer_cache.zip
+>>>>>>> 4ee9fa3dfe8b5fddacb7ccc360dd9dd9038dd08d
