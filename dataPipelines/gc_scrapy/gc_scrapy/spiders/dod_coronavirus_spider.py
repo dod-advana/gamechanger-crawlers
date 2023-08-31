@@ -4,6 +4,8 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
 import re
 from urllib.parse import urlparse
+import hashlib
+import os
 
 covid_re = re.compile(r'covid|covid\-19|coronavirus', flags=re.IGNORECASE)
 
@@ -32,16 +34,27 @@ class DODCoronavirusSpider(GCSpider):
             "compression_type": None
         }
 
+# TODO 
+# This is not the best way or fits every condition
+# Not Final 
+    def validateDisplayDoc(self, url):
+        if "memorandum" in url.lower(): 
+            return "Memorandum"
+        return "Document"
+    
     def parse(self, response):
         blocks = response.css('div.dgov-grid div.block')
 
         for block in blocks:
-            category_text = self.ascii_clean(block.css('h2.cat::text').get())
-            items = block.css('div.stories div.item')
+            category_text = self.ascii_clean(block.css('h2.cat::text').get()) # Category names
+            items = block.css('div.common-grid div.item') # Corrected the selector
+
 
             for item in items:
                 doc_title_raw = item.css('a.title::text').get()
                 doc_title = self.ascii_clean(doc_title_raw)
+                doc_title = self.ascii_clean(item.css('a.title::text').extract_first("").strip())
+
 
                 href_raw = item.css('a.title::attr(href)').get()
                 download_url = self.ensure_full_href_url(
@@ -58,7 +71,6 @@ class DODCoronavirusSpider(GCSpider):
 
                 noted = " ".join(item.css('*.noted *::text').getall())
                 supp_downloadable_items = []
-                # add pub date to repeatedly issued listing
                 if noted:
                     doc_title = f"{doc_title} - {publication_date}"
                     supplamental_hrefs = item.css(
@@ -66,9 +78,9 @@ class DODCoronavirusSpider(GCSpider):
                     supp_downloadable_items = [
                         self.get_downloadable_item(href) for href in supplamental_hrefs
                     ]
-
+                raw_doc_name = f"{category_text}: {doc_title}"
                 doc_name = f"{category_text}: {doc_title}"
-                display_doc_type = "Document" # Doc type for display on app
+                display_doc_type = self.validateDisplayDoc(download_url) # Doc type for display on app
                 display_source = self.data_source + " - " + self.source_title
                 display_title = self.doc_type + ": " + doc_title
                 is_revoked = False
@@ -145,8 +157,8 @@ class DODCoronavirusSpider(GCSpider):
         supp_downloadable_items = response.meta["supp_downloadable_items"]
         doc_item["downloadable_items"] = []
 
-        href_finder = self.get_body_hrefs if len(
-            response.css('div.body')) else self.get_unknown_layout_hrefs
+        href_finder = self.get_body_hrefs if len(response.css('div.body')) else self.get_unknown_layout_hrefs
+
 
         hrefs = self.filter_mailto_hrefs(href_finder(response))
 
@@ -180,4 +192,9 @@ class DODCoronavirusSpider(GCSpider):
 
         doc_item["version_hash"] = dict_to_sha256_hex_digest(doc_item["version_hash_raw_data"])
 
+        self.logger.info(f"Parsing follow page for URL: {response.url}")
+        self.logger.info(f"Captured {len(hrefs)} hrefs from URL: {response.url}")
+
         yield doc_item
+    
+    
