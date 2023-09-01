@@ -34,12 +34,10 @@ class DODCoronavirusSpider(GCSpider):
             "compression_type": None
         }
 
-# TODO 
-# This is not the best way or fits every condition
-# Not Final 
-    def validateDisplayDoc(self, url):
-        if "memorandum" in url.lower(): 
-            return "Memorandum"
+    # Doc naming convention, does not fit all cases yet
+    def validateDisplayDoc(self, title):
+        if "guidance" in title.lower(): 
+            return "Guidance"
         return "Document"
     
     def parse(self, response):
@@ -71,8 +69,10 @@ class DODCoronavirusSpider(GCSpider):
 
                 noted = " ".join(item.css('*.noted *::text').getall())
                 supp_downloadable_items = []
+                doc_title_without_date = f"{doc_title}" # Clean up display name, remove trailing date
                 if noted:
                     doc_title = f"{doc_title} - {publication_date}"
+                    
                     supplamental_hrefs = item.css(
                         '*.noted a::attr(href)').getall()
                     supp_downloadable_items = [
@@ -80,9 +80,9 @@ class DODCoronavirusSpider(GCSpider):
                     ]
                 raw_doc_name = f"{category_text}: {doc_title}"
                 doc_name = f"{category_text}: {doc_title}"
-                display_doc_type = self.validateDisplayDoc(download_url) # Doc type for display on app
+                display_doc_type = self.validateDisplayDoc(self.doc_type) # Doc type for display on app
                 display_source = self.data_source + " - " + self.source_title
-                display_title = self.doc_type + ": " + doc_title
+                display_title = self.doc_type + " - " + doc_title_without_date
                 is_revoked = False
                 source_page_url = download_url
                 source_fqdn = urlparse(source_page_url).netloc
