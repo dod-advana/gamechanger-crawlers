@@ -92,7 +92,8 @@ class DODCoronavirusSpider(GCSpider):
                     "noted": noted,
                     "doc_name": doc_name,
                     "display_title": display_title,
-                    "download_url": source_page_url
+                    "download_url": source_page_url,
+                    "display_doc_type": display_doc_type
                 }
                 
                 version_hash = dict_to_sha256_hex_digest(version_hash_fields)
