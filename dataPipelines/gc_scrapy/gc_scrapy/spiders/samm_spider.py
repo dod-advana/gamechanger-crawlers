@@ -30,7 +30,7 @@ class SammSpider(GCSpider):
             for row in response.xpath('//div[@class="view-content"]//table/tbody/tr'):
                 pm_status_text = row.xpath('td[6]/text()').get()
                 pm_status = pm_status_text.strip() if pm_status_text is not None else ""
-                if pm_status != "Incorporated":
+                if pm_status == "Active":
                     relative_urls = row.xpath('td[2]/a/@href').get()
                     doc_name = row.xpath('td[2]/a/text()').get().strip()
                     doc_title = row.xpath('normalize-space(td[5]/text())').get()
