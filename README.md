@@ -54,6 +54,35 @@ See LICENSE.md (including licensing intent - INTENT.md) and CONTRIBUTING.md
      ```
 6. That's it.
 
+## How to Setup Repo in a Docker Container and Open Env in VSCode
+1. Ensure Docker Desktop is running
+2. Clone Repo, cd into repo
+3. Within gamechaner-crawler, 
+     run rebuild script
+
+     ```shell
+     cd paasJobs/scripts/
+     DEPLOYMENT_ENV=dev ./rebuild_prod_crawlers_and_base.sh
+     ```
+4. In docker desktop, four images should be created
+     - paas/minimal
+     - centos
+     - advana/gc-crawler
+     - advana/gc-crawl-download-upload
+5. Create container with repo image
+     ```shell
+     docker run -it --entrypoint bash advana/gc-crawl-download-upload
+     ```
+
+     you can exit after creation
+6. Ensure New Container is Running 
+7. Use Remote SSH to open active container
+     - IF root opens and NOT app,
+     ```shell
+     cd /app
+     code .
+     ```
+
 ## Quickstart Guide: Running a Crawler
 1. Follow the environment setup guide above if you have not already
 2. Change to the gamechanger crawlers directory and export the repository path to the PYTHONPATH environment variable:
