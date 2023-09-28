@@ -41,8 +41,16 @@ class ArmySpider(GCSpider):
         all_hrefs = response.css(
             'li.usa-nav__primary-item')[2].css('a::attr(href)').getall() # Get all hyperlinks on page
 
+        cac_gated_hrefs = ['/ProductMaps/PubForm/EM.aspx', '/ProductMaps/PubForm/FT.aspx', '/ProductMaps/PubForm/LO.aspx', 
+        '/ProductMaps/PubForm/MWO.aspx', '/ProductMaps/PubForm/SB.aspx', '/ProductMaps/PubForm/SC.aspx', '/ProductMaps/PubForm/TB.aspx', 
+        '/ProductMaps/PubForm/TM_1_8.aspx', '/ProductMaps/PubForm/TM_9.aspx', '/ProductMaps/PubForm/TM_10.aspx', '/ProductMaps/PubForm/TM_11_4.aspx', 
+        '/ProductMaps/PubForm/TM_11_5.aspx', '/ProductMaps/PubForm/TM_11_6_7.aspx', '/ProductMaps/PubForm/TM_14_750.aspx'] # All Links Under Technical & Equipment that require external link registration    
+
         links = [link for link in all_hrefs if link not in do_not_process] # Remove items in URL stop list from hyperlinks list
 
+        public_hrefs = [public for public in links if public not in cac_gated_hrefs] # After links filtering above, removes cac_gated_hrefs
+
+        # yield from response.follow_all(public_hrefs, self.parse_source_page) # Follow each link and call parse_source_page function for each; excluding cac_gated
         yield from response.follow_all(links, self.parse_source_page) # Follow each link and call parse_source_page function for each
 
     def parse_source_page(self, response):
@@ -51,9 +59,18 @@ class ArmySpider(GCSpider):
         list of table links.
         '''
         table_links = response.css('table td a::attr(href)').extract() # Extract all links in the html table
-        yield from response.follow_all([self.pub_url+link for link in table_links], self.parse_detail_page) # Call parse_detail_page function for each link
 
-    def parse_detail_page(self, response):
+        # CAC Gate Eval
+        registration_required = response.xpath('//div//text()').getall() # Evaluates if 'registration is required' is in the source page
+        cac_login_required = False
+        for text in registration_required:
+            if 'registration is required' in text.lower():
+                cac_login_required = True
+                break
+
+        yield from response.follow_all([self.pub_url+link for link in table_links], self.parse_detail_page, cb_kwargs={'cac_login_required': cac_login_required}) # Call parse_detail_page function for each link and pass cac_login_required as an argument
+
+    def parse_detail_page(self, response, cac_login_required):
         '''
         This function generates a link and metadata for each document for use by bash download script.
         '''        
@@ -62,13 +79,7 @@ class ArmySpider(GCSpider):
         doc_num_raw = doc_name_raw.split()[-1] # Get numeric portion of document name as doc_num   #### TODO: Sometimes this is Nonetype and causes an error
         doc_type_raw = doc_name_raw.split()[0] # Get alphabetic portion of document name as doc_type
         publication_date = response.xpath("//*[contains(text(), 'Pub/Form Date')]/following-sibling::node()[1]/text()").get() # Get document publication date
-        dist_stm = response.xpath("//*[contains(text(), 'Dist Restriction Code')]/following-sibling::node()[1]/text()").get() # Get document distribution statment (re: doc accessibility)
         proponent = self.ascii_clean(response.xpath("//*[contains(text(), 'Pub/Form Proponent')]/following-sibling::node()[1]/text()").get()) # Get document "Proponent"
-        if dist_stm and (dist_stm.startswith("A") or dist_stm.startswith("N")):
-            cac_login_required = False # The distribution statement is either "A" or "Not Applicable", i.e. anyone can access
-        else:
-            cac_login_required = True # The distribution statement has more restrictions
-
         linked_items = response.xpath("//*[contains(text(), 'Unit Of Issue(s)')]/following-sibling::node()[1]/a") # Get document link in row
         downloadable_items = []
 
