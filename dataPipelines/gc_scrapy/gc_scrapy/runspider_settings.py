@@ -17,9 +17,9 @@ general_settings = {
     "LOG_LEVEL": "INFO",
     "DOWNLOAD_FAIL_ON_DATALOSS": False,
     
-    # Throttle crawler
-    "DOWNLOAD_DELAY": 0.5,  # Delay between requests in seconds
-    "DOWNLOAD_TIMEOUT": 1,  # seconds
+    # Slow down crawler
+    "DOWNLOAD_DELAY": 0.1,  # Delay between requests in seconds
+    "DOWNLOAD_TIMEOUT": 5,  # seconds
     "RETRY_ENABLE": True,
     "RETRY_TIMES": 2,
     "CONCURRENT_REQUESTS": 10,
