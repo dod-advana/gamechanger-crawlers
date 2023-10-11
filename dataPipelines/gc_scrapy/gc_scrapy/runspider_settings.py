@@ -18,12 +18,11 @@ general_settings = {
     "DOWNLOAD_FAIL_ON_DATALOSS": False,
     
     # Throttle crawler
-    "DOWNLOAD_DELAY": 0.025,  # Delay between requests in seconds
+    "DOWNLOAD_DELAY": 0.5,  # Delay between requests in seconds
     "DOWNLOAD_TIMEOUT": 1,  # seconds
     "RETRY_ENABLE": True,
     "RETRY_TIMES": 2,
     "CONCURRENT_REQUESTS": 10,
-    "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537"
 }
 selenium_settings = {
     "SELENIUM_DRIVER_NAME": "chrome",
