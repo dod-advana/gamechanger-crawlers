@@ -16,8 +16,14 @@ general_settings = {
     "ROBOTSTXT_OBEY": False,
     "LOG_LEVEL": "INFO",
     "DOWNLOAD_FAIL_ON_DATALOSS": False,
+    
+    # Slow down crawler
+    "DOWNLOAD_DELAY": 0.1,  # Delay between requests in seconds
+    "DOWNLOAD_TIMEOUT": 3.5,  # Time till skip
+    "RETRY_ENABLE": True,
+    "RETRY_TIMES": 2,
+    "CONCURRENT_REQUESTS": 10,
 }
-
 selenium_settings = {
     "SELENIUM_DRIVER_NAME": "chrome",
     "SELENIUM_DRIVER_EXECUTABLE_PATH": "/usr/local/bin/chromedriver",
@@ -32,7 +38,6 @@ selenium_settings = {
     ],
     "DOWNLOADER_MIDDLEWARES": {
         **general_settings["DOWNLOADER_MIDDLEWARES"],
-        #                                                                              make sure the values are not clashing
         "dataPipelines.gc_scrapy.gc_scrapy.downloader_middlewares.SeleniumMiddleware": max(
             general_settings["DOWNLOADER_MIDDLEWARES"].values()
         )
