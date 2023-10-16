@@ -19,7 +19,7 @@ general_settings = {
     
     # Slow down crawler
     "DOWNLOAD_DELAY": 0.1,  # Delay between requests in seconds
-    "DOWNLOAD_TIMEOUT": 3.5,  # Time till skip
+    "DOWNLOAD_TIMEOUT": 20,  # Time till skip
     "RETRY_ENABLE": True,
     "RETRY_TIMES": 2,
     "CONCURRENT_REQUESTS": 10,
