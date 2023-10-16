@@ -21,7 +21,7 @@ general_settings = {
     "DOWNLOAD_DELAY": 0.1,  # Delay between requests in seconds
     "DOWNLOAD_TIMEOUT": 20,  # Time till skip
     "RETRY_ENABLE": True,
-    "RETRY_TIMES": 2,
+    "RETRY_TIMES": 1,
     "CONCURRENT_REQUESTS": 10,
 }
 selenium_settings = {
