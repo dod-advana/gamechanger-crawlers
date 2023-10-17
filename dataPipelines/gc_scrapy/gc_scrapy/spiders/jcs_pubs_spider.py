@@ -6,6 +6,7 @@ from urllib.parse import urljoin, urlparse
 from datetime import datetime
 from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
 
+import time
 doc_type_num_re = re.compile(r'(.*)\s(\d+.*)')
 
 
@@ -39,6 +40,7 @@ class JcsPubsSpider(GCSpider):
         ]
 
         for link in doc_links:
+            time.sleep(20) # Slow crawler down to prevent blacklist
             yield response.follow(url=link, callback=self.parse_doc_table_page)
 
     def parse_doc_table_page(self, response):
@@ -93,6 +95,7 @@ class JcsPubsSpider(GCSpider):
                 a for a in nav_table.css('a.CommandButton')
                 if a.css('::text').get() == 'Next'
             )
+            time.sleep(20) # Slow crawler down to prevent blacklist
             yield response.follow(url=next_page_link,
                                   callback=self.parse_doc_table_page)
         except:
