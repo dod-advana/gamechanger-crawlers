@@ -92,7 +92,7 @@ RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.
     && rm /tmp/google-chrome-stable_current_x86_64.rpm
 
 ## Getting chrome driver
-RUN wget --no-check-certificate -O /tmp/chromedriver.zip https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/116.0.5845.96/linux64/chromedriver-linux64.zip \
+RUN wget --no-check-certificate -O /tmp/chromedriver.zip https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/118.0.5993.88/linux64/chromedriver-linux64.zip \
     && unzip /tmp/chromedriver.zip chromedriver-linux64/chromedriver -d /tmp/ \
     && mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/ \
     && rm -rf /tmp/chromedriver*
