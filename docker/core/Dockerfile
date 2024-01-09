@@ -87,12 +87,12 @@ RUN curl -LfSo /tmp/awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-
     && /opt/aws/install
 
 ## Getting chrome browser
-RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm -P /tmp/ \
-    && yum install /tmp/google-chrome-stable_current_x86_64.rpm -y \
-    && rm /tmp/google-chrome-stable_current_x86_64.rpm
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current-118.0.5993.70-1_x86_64.rpm -P /tmp/ \
+    && yum install /tmp/google-chrome-stable_current-118.0.5993.70-1_x86_64.rpm -y \
+    && rm /tmp/google-chrome-stable_current-118.0.5993.70-1_x86_64.rpm.rpm
 
 ## Getting chrome driver
-RUN wget --no-check-certificate -O /tmp/chromedriver.zip https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/118.0.5993.88/linux64/chromedriver-linux64.zip \
+RUN wget --no-check-certificate -O /tmp/chromedriver.zip https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/118.0.5993.70/linux64/chromedriver-linux64.zip \
     && unzip /tmp/chromedriver.zip chromedriver-linux64/chromedriver -d /tmp/ \
     && mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/ \
     && rm -rf /tmp/chromedriver*
