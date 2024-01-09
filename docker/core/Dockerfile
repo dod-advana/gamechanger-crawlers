@@ -88,8 +88,8 @@ RUN curl -LfSo /tmp/awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-
 
 ## Getting chrome browser
 RUN wget https://dl.google.com/linux/chrome/rpm/stable/x86_64/google-chrome-stable-120.0.6099.109-1.x86_64.rpm -P /tmp/ \
-    && yum install /tmp/google-chrome-stable_current-120.0.6099.109-1_x86_64.rpm -y \
-    && rm /tmp/google-chrome-stable_current-120.0.6099.109-1_x86_64.rpm
+    && yum install /tmp/google-chrome-stable-120.0.6099.109-1.x86_64.rpm -y \
+    && rm /tmp/google-chrome-stable-120.0.6099.109-1.x86_64.rpm
 
 ## Getting chrome driver
 RUN wget --no-check-certificate -O /tmp/chromedriver.zip https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/120.0.6099.109/linux64/chromedriver-linux64.zip \
