@@ -41,13 +41,13 @@ if [[ "${SKIP_BASE_BUILD:-no}" != "yes" ]]; then
 
   # GC_CRAWLER is the image with all of the base packages / python3 installed
   echo "Rebuilding GC_CRAWLER core image"
-  docker build -f "$REPO_DIR/docker/core/Dockerfile" \
+  docker build --no-cache -f "$REPO_DIR/docker/core/Dockerfile" \
     -t "$BASE_CRAWLER_IMAGE" \
     "$REPO_DIR"
 fi
 
 # the crawl_download_upload image builds off of GC_CRAWLER, adding the code to run everything
 echo "Rebuilding CRAWL_AND_DOWNLOAD image"
-docker build -f "$REPO_DIR/docker/crawl_download_upload/Dockerfile" \
+docker build --no-cache -f "$REPO_DIR/docker/crawl_download_upload/Dockerfile" \
   -t "$CRAWL_DOWNLOAD_UPLOAD_IMAGE" \
   "$REPO_DIR"
