@@ -3,3 +3,4 @@ milpersman_spider.py
 bupers_spider.py
 dfars_pgi_spider.py
 dla_dedso.py
+defense_spider.py
