@@ -16,6 +16,10 @@ class DlaDedsoSpider(GCSpider):
     start_urls = ['https://www.dla.mil/Defense-Data-Standards/Resources/ADC/']
     rotate_user_agent = True
     randomly_delay_request = True
+    custom_settings = {
+        **GCSpider.custom_settings,
+        "DOWNLOAD_TIMEOUT" : 10 # increase download timeout to 10 seconds
+    }
 
     @staticmethod
     def extract_doc_number(doc_name):
