@@ -9,7 +9,6 @@ from datetime import datetime
 
 
 # 878 unique PDFs as of 22 Jan 2023
-
 class DlaDedsoSpider(GCSpider):
     name = 'dla_dedso_pubs'
     allowed_domains = ['dla.mil']
@@ -43,8 +42,8 @@ class DlaDedsoSpider(GCSpider):
             doc_num = self.extract_doc_number(doc_name)
             doc_title = self.extract_doc_title(row)
 
-            doc_type = "PDF"
-            display_doc_type = "PDF Document"
+            doc_type = "ADC"
+            display_doc_type = "ADC Document"
             
             publication_date_raw = row.xpath('.//td[position()=3]/text()').get().strip()
             publication_date = datetime.strptime(publication_date_raw, '%m/%d/%Y').strftime('%Y-%m-%d')
