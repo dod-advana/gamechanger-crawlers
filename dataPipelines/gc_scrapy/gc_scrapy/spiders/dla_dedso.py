@@ -16,9 +16,13 @@ class DlaDedsoSpider(GCSpider):
     rotate_user_agent = True
     randomly_delay_request = True
     custom_settings = {
-        **GCSpider.custom_settings,
-        "DOWNLOAD_TIMEOUT" : 10 # increase download timeout to 10 seconds
-    }
+    **GCSpider.custom_settings,
+    "DOWNLOAD_DELAY": 1,  # Wait at least 1 second between requests
+    "AUTOTHROTTLE_ENABLED": True, 
+    "AUTOTHROTTLE_START_DELAY": 1,
+    "AUTOTHROTTLE_MAX_DELAY": 10,
+    "CONCURRENT_REQUESTS_PER_DOMAIN": 2,
+}
 
     @staticmethod
     def extract_doc_number(doc_name):
@@ -43,7 +47,7 @@ class DlaDedsoSpider(GCSpider):
             doc_title = self.extract_doc_title(row)
 
             doc_type = "ADC"
-            display_doc_type = "ADC Document"
+            display_doc_type = "ADC"
             
             publication_date_raw = row.xpath('.//td[position()=3]/text()').get().strip()
             publication_date = datetime.strptime(publication_date_raw, '%m/%d/%Y').strftime('%Y-%m-%d')
