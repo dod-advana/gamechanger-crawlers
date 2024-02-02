@@ -47,7 +47,7 @@ class DefenseTravelSpider(GCSpider):
                 'doc_num': doc_num,
                 'doc_title': "Joint Travel Regulations",
                 'doc_type': "PDF",
-                'display_doc_type': "PDF Document",
+                'display_doc_type': "Document",
                 'file_type': 'pdf',
                 'download_url': absolute_pdf_link,
                 'source_page_url': response.url,
