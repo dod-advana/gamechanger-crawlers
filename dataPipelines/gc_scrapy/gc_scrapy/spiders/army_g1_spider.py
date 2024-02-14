@@ -55,6 +55,7 @@ class ArmyG1Spider(GCSpider):
             pattern = r'(?:DA\s+)?PAM\s+\d{2,4}-\d{2,4}'
             cleaned_text = re.sub(pattern, '', text)
             stripped_text = cleaned_text.strip()
+            # remove HTML encoding
             if "\\xc2\\xa0" in stripped_text:
                 stripped_text = stripped_text.replace("\\xc2\\xa0", " ")
             decoded_text = html.unescape(stripped_text)
