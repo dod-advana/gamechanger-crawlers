@@ -4,3 +4,4 @@ navy_reserve_spider.py
 jcs_pubs_spider.py
 army_reserve_spider.py
 samm_spider.py
+army_g1_spider.py
