@@ -86,8 +86,12 @@ RUN curl -LfSo /tmp/awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-
     && unzip -q /tmp/awscliv2.zip -d /opt \
     && /opt/aws/install
 
+# Update CA Certificates
+RUN yum update -y ca-certificates
+
+
 ## Getting chrome browser
-RUN wget https://dl.google.com/linux/chrome/rpm/stable/x86_64/google-chrome-stable-120.0.6099.109-1.x86_64.rpm -P /tmp/ \
+RUN wget --no-check-certificate https://dl.google.com/linux/chrome/rpm/stable/x86_64/google-chrome-stable-120.0.6099.109-1.x86_64.rpm -P /tmp/ \
     && yum install /tmp/google-chrome-stable-120.0.6099.109-1.x86_64.rpm -y \
     && rm /tmp/google-chrome-stable-120.0.6099.109-1.x86_64.rpm
 
