@@ -23,12 +23,60 @@ class NDAASpider(GCSpider):
             url = link.get("href")
             if url is None:
                 continue
+            if (
+                "news/press-releases/rogers-applauds-committee-passage-fy24-ndaa"
+                in url.lower()
+            ):
+                print(url)
+                yield scrapy.Request(
+                    url=self.base_url + url,
+                    method="GET",
+                    callback=self.parse_press_release,
+                )
             if "calendar/byevent" in url.lower():
                 yield scrapy.Request(
                     url=url, method="GET", callback=self.parse_amendments_considered
                 )
             if url.lower().endswith("pdf"):
                 yield from self.get_doc_from_url(url, page_url)
+
+    def parse_press_release(self, response):
+        page_url = response.url
+        soup = bs4.BeautifulSoup(response.body, features="html.parser")
+
+        title = self.ascii_clean(soup.find(id="page-title").text)
+        date_el = response.css(".pane-node-created .pane-content ::text").get()
+        date_split = date_el.strip().split(" ")
+        print(date_split)
+        month = date_split[0].strip()
+        day = date_split[1].strip().rstrip(",")
+        year = date_split[2].strip()
+
+        date = f"{month} {day} {year}"
+
+        doc_type = self.name
+        doc_name = f"{doc_type} - {date} - {title}"
+
+        html_di = [
+            {"doc_type": "html", "download_url": page_url, "compression_type": None}
+        ]
+
+        fields = {
+            "doc_name": doc_name,
+            "doc_num": " ",  # No doc num for this crawler
+            "doc_title": title,
+            "doc_type": doc_type,
+            "cac_login_required": False,
+            "source_page_url": page_url,
+            "download_url": page_url,
+            "publication_date": date,
+            "display_doc_type": doc_type,
+            "downloadable_items": html_di,
+        }
+        ## Instantiate DocItem class and assign document's metadata values
+        doc_item = self.populate_doc_item(fields)
+
+        yield from doc_item
 
     def parse_amendments_considered(self, response):
         page_url = response.url
@@ -43,6 +91,8 @@ class NDAASpider(GCSpider):
                 yield from self.get_doc_from_url(url, page_url)
 
     def get_doc_from_url(self, url, source_url):
+        url = self.ascii_clean(url)
+        source_url = self.ascii_clean(source_url)
         doc_type = self.name
         doc_num = "0"
         doc_name = url.split("/")[-1].split(".")[-2].replace(" ", "_")
