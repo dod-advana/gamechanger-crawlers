@@ -14,12 +14,12 @@ import scrapy
 
 
 class NDAASpider(GCSpider):
-    name = "ndaa_fy24"  # Crawler name
+    name = "NDAA FY24"  # Crawler name
     rotate_user_agent = True
     base_url = "https://armedservices.house.gov"
     start_urls = [base_url + "/fy24-ndaa-resources"]
 
-    def parse(self, response: scrapy.http.Response) -> Generator[DocItem, Any, None]:
+    def parse(self, response: scrapy.http.Response) -> Generator[DocItem, None]:
         page_url = response.url
 
         soup = bs4.BeautifulSoup(response.body, features="html.parser")
@@ -30,6 +30,15 @@ class NDAASpider(GCSpider):
             if url is None:
                 continue
             if "fy24-ndaa-subcommittee" in url.lower():
+                yield scrapy.Request(
+                    url=self.base_url + url,
+                    method="GET",
+                    callback=self.parse_marks,
+                )
+            elif (
+                "news/press-releases/chairman-rogers-releases-mark-fy24-ndaa"
+                in url.lower()
+            ):
                 yield scrapy.Request(
                     url=self.base_url + url,
                     method="GET",
@@ -59,7 +68,7 @@ class NDAASpider(GCSpider):
 
     def parse_amendment_tracker(
         self, response: scrapy.http.Response
-    ) -> Generator[DocItem, Any, None]:
+    ) -> Generator[DocItem, None]:
         page_url = response.url
         soup = bs4.BeautifulSoup(response.body, features="html.parser")
 
@@ -85,6 +94,7 @@ class NDAASpider(GCSpider):
             "publication_date": date,
             "display_doc_type": doc_type,
             "downloadable_items": html_di,
+            "file_ext": "html",
         }
         ## Instantiate DocItem class and assign document's metadata values
         doc_item = self.populate_doc_item(fields)
@@ -93,7 +103,7 @@ class NDAASpider(GCSpider):
 
     def parse_press_release(
         self, response: scrapy.http.Response
-    ) -> Generator[DocItem, Any, None]:
+    ) -> Generator[DocItem, None]:
         page_url = response.url
         soup = bs4.BeautifulSoup(response.body, features="html.parser")
 
@@ -119,15 +129,14 @@ class NDAASpider(GCSpider):
             "publication_date": date,
             "display_doc_type": doc_type,
             "downloadable_items": html_di,
+            "file_ext": "html",
         }
         ## Instantiate DocItem class and assign document's metadata values
         doc_item = self.populate_doc_item(fields)
 
         yield from doc_item
 
-    def parse_marks(
-        self, response: scrapy.http.Response
-    ) -> Generator[DocItem, Any, None]:
+    def parse_marks(self, response: scrapy.http.Response) -> Generator[DocItem, None]:
         page_url = response.url
         soup = bs4.BeautifulSoup(response.body, features="html.parser")
 
@@ -142,18 +151,20 @@ class NDAASpider(GCSpider):
 
     def parse_amendments_considered(
         self, response: scrapy.http.Response
-    ) -> Generator[DocItem, Any, None]:
+    ) -> Generator[DocItem, None]:
         page_url = response.url
         soup = bs4.BeautifulSoup(response.body, features="html.parser")
         yield from self.get_all_pdf(soup, page_url)
 
     def get_all_pdf(
         self, soup: bs4.BeautifulSoup, page_url: str, date: str = ""
-    ) -> Generator[DocItem, Any, None]:
+    ) -> Generator[DocItem, None]:
         for link_el in soup.find_all("a"):
             if link_el is None:
                 continue
-            if date == "":  # need format 2023-06-14T00:00:00
+            if (
+                date == ""
+            ):  # need format 2023-06-14T00:00:00 but receiving 12/23/2024 6:23 PM
                 next_sibling = link_el.find_next_sibling("strong")
                 if next_sibling is not None:
                     date_elements = next_sibling.get_text().strip().split(" ")
@@ -189,7 +200,7 @@ class NDAASpider(GCSpider):
 
     def get_doc_from_url(
         self, url: str, source_url: str, publication_date: str = ""
-    ) -> Generator[DocItem, Any, None]:
+    ) -> Generator[DocItem, None]:
         url = self.ascii_clean(url)
         source_url = self.ascii_clean(source_url)
         doc_type = self.name
@@ -218,12 +229,13 @@ class NDAASpider(GCSpider):
             "source_page_url": source_url.strip(),
             "downloadable_items": pdf_di,
             "download_url": pdf_url,
+            "file_ext": "pdf",
         }
         return self.populate_doc_item(fields)
 
-    def populate_doc_item(self, fields: dict) -> Generator[DocItem, Any, None]:
+    def populate_doc_item(self, fields: dict) -> Generator[DocItem, None]:
         display_org = (
-            "ndaa_fy24"  # Level 1: GC app 'Source' filter for docs from this crawler
+            "NDAA FY24"  # Level 1: GC app 'Source' filter for docs from this crawler
         )
         data_source = "House Armed Services Committee"  # Level 2: GC app 'Source' metadata field for docs from this crawler
         source_title = "House Armed Services Committee"  # Level 3 filter
@@ -237,6 +249,7 @@ class NDAASpider(GCSpider):
         download_url = fields["download_url"]
         display_doc_type = fields["display_doc_type"]
         downloadable_items = fields["downloadable_items"]
+        file_ext = fields["file_ext"]
 
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + ": " + doc_title
@@ -272,6 +285,6 @@ class NDAASpider(GCSpider):
             source_title=source_title,
             display_source=display_source,
             display_title=display_title,
-            file_ext=doc_type,
+            file_ext=file_ext,
             is_revoked=is_revoked,
         )
