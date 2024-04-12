@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+from typing import Any, Generator
 import bs4
 import re
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
-from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
+from dataPipelines.gc_scrapy.gc_scrapy.utils import (
+    dict_to_sha256_hex_digest,
+    get_pub_date,
+)
 
 from urllib.parse import urlparse
 import scrapy
@@ -15,7 +19,7 @@ class NDAASpider(GCSpider):
     base_url = "https://armedservices.house.gov"
     start_urls = [base_url + "/fy24-ndaa-resources"]
 
-    def parse(self, response):
+    def parse(self, response: scrapy.http.Response) -> Generator[DocItem, Any, None]:
         page_url = response.url
 
         soup = bs4.BeautifulSoup(response.body, features="html.parser")
@@ -31,13 +35,13 @@ class NDAASpider(GCSpider):
                     method="GET",
                     callback=self.parse_marks,
                 )
-            if "fy24-ndaa-floor-amendment-tracker" in url.lower():
+            elif "fy24-ndaa-floor-amendment-tracker" in url.lower():
                 yield scrapy.Request(
                     url=self.base_url + url,
                     method="GET",
                     callback=self.parse_amendment_tracker,
                 )
-            if (
+            elif (
                 "news/press-releases/rogers-applauds-committee-passage-fy24-ndaa"
                 in url.lower()
             ):
@@ -46,14 +50,16 @@ class NDAASpider(GCSpider):
                     method="GET",
                     callback=self.parse_press_release,
                 )
-            if "calendar/byevent" in url.lower():
+            elif "calendar/byevent" in url.lower():
                 yield scrapy.Request(
                     url=url, method="GET", callback=self.parse_amendments_considered
                 )
-            if url.lower().endswith("pdf"):
+            elif url.lower().endswith("pdf"):
                 yield from self.get_doc_from_url(url, page_url)
 
-    def parse_amendment_tracker(self, response):
+    def parse_amendment_tracker(
+        self, response: scrapy.http.Response
+    ) -> Generator[DocItem, Any, None]:
         page_url = response.url
         soup = bs4.BeautifulSoup(response.body, features="html.parser")
 
@@ -85,7 +91,9 @@ class NDAASpider(GCSpider):
 
         yield from doc_item
 
-    def parse_press_release(self, response):
+    def parse_press_release(
+        self, response: scrapy.http.Response
+    ) -> Generator[DocItem, Any, None]:
         page_url = response.url
         soup = bs4.BeautifulSoup(response.body, features="html.parser")
 
@@ -117,7 +125,9 @@ class NDAASpider(GCSpider):
 
         yield from doc_item
 
-    def parse_marks(self, response):
+    def parse_marks(
+        self, response: scrapy.http.Response
+    ) -> Generator[DocItem, Any, None]:
         page_url = response.url
         soup = bs4.BeautifulSoup(response.body, features="html.parser")
 
@@ -128,36 +138,42 @@ class NDAASpider(GCSpider):
             date_el = response.css(".date-display-single ::text").get()
             date = self.parse_date(date_el)
 
-        for link in soup.find_all("a"):
-            if link is None:
+        yield from self.get_all_pdf(soup, page_url, date)
+
+    def parse_amendments_considered(
+        self, response: scrapy.http.Response
+    ) -> Generator[DocItem, Any, None]:
+        page_url = response.url
+        soup = bs4.BeautifulSoup(response.body, features="html.parser")
+        yield from self.get_all_pdf(soup, page_url)
+
+    def get_all_pdf(
+        self, soup: bs4.BeautifulSoup, page_url: str, date: str = ""
+    ) -> Generator[DocItem, Any, None]:
+        for link_el in soup.find_all("a"):
+            if link_el is None:
                 continue
-            url = link.get("href")
+            if date == "":  # need format 2023-06-14T00:00:00
+                next_sibling = link_el.find_next_sibling("strong")
+                if next_sibling is not None:
+                    print(next_sibling.get_text())
+            url = link_el.get("href")
             if url is None:
                 continue
             if url.lower().endswith("pdf"):
                 yield from self.get_doc_from_url(url, page_url, date)
 
-    def parse_amendments_considered(self, response):
-        page_url = response.url
-        soup = bs4.BeautifulSoup(response.body, features="html.parser")
-        for link in soup.find_all("a"):
-            if link is None:
-                continue
-            url = link.get("href")
-            if url is None:
-                continue
-            if url.lower().endswith("pdf"):
-                yield from self.get_doc_from_url(url, page_url)
-
-    def find_date(self, text):
+    def find_date(self, text: str) -> str:
         # Example regex pattern for "month day year" format
         # Define a regex pattern to match various date formats
-        date_pattern = r'\b(?:\d{1,2}[-/]\d{1,2}[-/]\d{2,4}|' \
-                    r'(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{1,2},? \d{2,4})\b'
+        date_pattern = (
+            r"\b(?:\d{1,2}[-/]\d{1,2}[-/]\d{2,4}|"
+            r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{1,2},? \d{2,4})\b"
+        )
         dates_found = re.findall(date_pattern, text, flags=re.IGNORECASE)
         return dates_found[0]
 
-    def parse_date(self, date_el):
+    def parse_date(self, date_el: str) -> str:
         date = self.find_date(date_el)
         month, day, year = date.strip().split(" ")
         month, day, year = month.strip(), day.strip(), year.strip()
@@ -165,7 +181,9 @@ class NDAASpider(GCSpider):
         date = get_pub_date(date)
         return date
 
-    def get_doc_from_url(self, url, source_url, publication_date=""):
+    def get_doc_from_url(
+        self, url: str, source_url: str, publication_date: str = ""
+    ) -> Generator[DocItem, Any, None]:
         url = self.ascii_clean(url)
         source_url = self.ascii_clean(source_url)
         doc_type = self.name
@@ -197,7 +215,7 @@ class NDAASpider(GCSpider):
         }
         return self.populate_doc_item(fields)
 
-    def populate_doc_item(self, fields):
+    def populate_doc_item(self, fields: dict) -> Generator[DocItem, Any, None]:
         display_org = (
             "ndaa_fy24"  # Level 1: GC app 'Source' filter for docs from this crawler
         )
