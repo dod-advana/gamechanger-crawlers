@@ -156,7 +156,13 @@ class NDAASpider(GCSpider):
             if date == "":  # need format 2023-06-14T00:00:00
                 next_sibling = link_el.find_next_sibling("strong")
                 if next_sibling is not None:
-                    print(next_sibling.get_text())
+                    date_elements = next_sibling.get_text().strip().split(" ")
+                    month, day, year = date_elements[8].split("/")
+                    hour, minute = date_elements[10].split(":")
+                    am_or_pm = date_elements[11]
+                    if am_or_pm.lower() == "pm":
+                        hour = str(int(hour) + 12)
+                    date = f"{year}:{month}:{day}T{hour}:{minute}:00"
             url = link_el.get("href")
             if url is None:
                 continue
