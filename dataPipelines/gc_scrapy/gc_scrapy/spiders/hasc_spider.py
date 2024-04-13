@@ -7,6 +7,7 @@ import typing as t
 from urllib.parse import urljoin, urlparse
 from datetime import datetime
 from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
+import re
 
 
 class HASCSpider(GCSpider):
@@ -60,44 +61,59 @@ class HASCSpider(GCSpider):
 
     def parse_hearing_detail_page(self, response):
         try:
-
+            # Get the basic details like title and date from the page
             title = self.ascii_clean(response.css("#page-title ::text").get())
             date_el = response.css("span.date-display-single ::text").get()
             date_split = date_el.split()
-            month = date_split[1]
-            day = date_split[2]
-            year = date_split[3]
-
+            month, day, year = date_split[1], date_split[2], date_split[3]
             date = f"{month} {day} {year}"
+            doc_type = "Witness Statement"
 
-            doc_type = "HASC Hearing"
-            doc_name = f"{doc_type} - {date} - {title}"
-            
-            source_page_url = response.url
+            # Extract names of speakers
+            names = response.css('b ::text').getall()
 
-            fields = {
-                'doc_name': doc_name,
-                'doc_num': ' ', # No doc num for this crawler
-                'doc_title': title,
-                'doc_type': doc_type,
-                'cac_login_required': False,
-                'source_page_url': source_page_url,
-                'download_url': source_page_url,
-                'publication_date': date
-            }
-            ## Instantiate DocItem class and assign document's metadata values
-            doc_item = self.populate_doc_item(fields)
-        
-            yield doc_item
+            # Find all <a> tags within <p> tags and check if they contain the word "statement" and point to a PDF
+            links = response.css("p a")
+            for link in links:
+                href = link.css("::attr(href)").get()
+                link_text = link.css("::text").get("").lower() # Get the text and convert it to lower case for comparison
+                
+                # Check if "statement" is in the link text and the href ends with ".pdf"
+                if "statement" in link_text and href and href.endswith(".pdf"):
+                    # Check if any of the speaker names is in the link text
+                    for name in names:
+                        if name.lower() in link_text:
+                            follow_link = urljoin(self.base_url, href)
+                            display_title = self.ascii_clean(f"HASC {title} - {name}")
+                            doc_name = display_title
+
+                            # Set up the fields with the new PDF URL
+                            fields = {
+                                'doc_name': doc_name,
+                                'doc_num': ' ',  # No doc num for this crawler
+                                'doc_title': title,
+                                'doc_type': doc_type,
+                                'cac_login_required': False,
+                                'source_page_url': response.url,
+                                'download_url': follow_link,
+                                'publication_date': date,
+                                'file_ext': 'pdf', # Set to return pdf NOT html
+                                'display_title': display_title
+                            }
+                            # Instantiate DocItem class and assign document's metadata values
+                            doc_item = self.populate_doc_item(fields)
+
+                            yield doc_item
 
         except Exception as e:
             print(e)
 
+
     def populate_doc_item(self, fields):
-        '''
-        This functions provides both hardcoded and computed values for the variables
-        in the imported DocItem object and returns the populated metadata object
-        '''
+        # '''
+        # This functions provides both hardcoded and computed values for the variables
+        # in the imported DocItem object and returns the populated metadata object
+        # '''
         display_org = "Congress" # Level 1: GC app 'Source' filter for docs from this crawler
         data_source = "House Armed Services Committee Publications" # Level 2: GC app 'Source' metadata field for docs from this crawler
         source_title = "House Armed Services Committee" # Level 3 filter
@@ -110,19 +126,20 @@ class HASCSpider(GCSpider):
         download_url = fields['download_url']
         publication_date = get_pub_date(fields['publication_date'])
 
-        display_doc_type = "Hearing" # Doc type for display on app
+        display_doc_type = fields['doc_type'] # Doc type for display on app
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_title
+        display_title = fields['display_title']
         is_revoked = False
         source_page_url = fields['source_page_url']
         source_fqdn = urlparse(source_page_url).netloc
 
         downloadable_items = [{
-                "doc_type": "html",
+                "doc_type": fields['file_ext'],
                 "download_url": download_url,
                 "compression_type": None,
             }]
-        file_ext = downloadable_items[0]["doc_type"]
+        file_ext = fields['file_ext'] # Set to return pdf NOT html
+
         ## Assign fields that will be used for versioning
         version_hash_fields = {
             "doc_name":doc_name,
@@ -154,6 +171,6 @@ class HASCSpider(GCSpider):
                     source_title = source_title, #
                     display_source = display_source, #
                     display_title = display_title, #
-                    file_ext = file_ext, #
+                    file_ext = file_ext, # Set to return pdf NOT html
                     is_revoked = is_revoked, #
-                )
+        )
