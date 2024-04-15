@@ -15,7 +15,8 @@ import scrapy
 
 
 class NDAASpider(GCSpider):
-    name = "NDAA FY24"  # Crawler name
+    name = "ndaa"  # Crawler name
+    display_name = "NDAA FY24"
     rotate_user_agent = True
     base_url = "https://armedservices.house.gov"
     start_urls = [base_url + "/fy24-ndaa-resources"]
@@ -72,7 +73,7 @@ class NDAASpider(GCSpider):
         date_el = response.css("p:nth-child(2) ::text").get()
         date = self.parse_date(date_el)
 
-        doc_type = self.name
+        doc_type = self.display_name
         doc_name = f"{doc_type} - {date} - {title}"
 
         html_di = [
@@ -107,7 +108,7 @@ class NDAASpider(GCSpider):
         date_el = response.css(".pane-node-created .pane-content ::text").get()
         date = self.parse_date(date_el)
 
-        doc_type = self.name
+        doc_type = self.display_name
         doc_name = f"{doc_type} - {date} - {title}"
 
         html_di = [
@@ -201,12 +202,12 @@ class NDAASpider(GCSpider):
     ) -> Generator[DocItem, Any, None]:
         url = self.ascii_clean(url)
         source_url = self.ascii_clean(source_url)
-        doc_type = self.name
+        doc_type = self.display_name
         doc_num = "0"
         doc_name = (
             url.split("/")[-1].split(".")[-2].replace(" ", "_").replace("%20", "_")
         )
-        doc_title = self.name + doc_name
+        doc_title = doc_type + " " + doc_name
 
         if url.lower().startswith("http"):
             pdf_url = url
