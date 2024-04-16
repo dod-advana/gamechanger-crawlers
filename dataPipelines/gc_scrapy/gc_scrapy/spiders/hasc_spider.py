@@ -7,7 +7,6 @@ import typing as t
 from urllib.parse import urljoin, urlparse
 from datetime import datetime
 from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
-import re
 
 
 class HASCSpider(GCSpider):
