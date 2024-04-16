@@ -15,8 +15,8 @@ import scrapy
 
 
 class NDAASpider(GCSpider):
-    name = "ndaa"  # Crawler name
-    display_name = "NDAA FY24"
+    name = "NDAA_pubs"  # Crawler name
+    display_name = "NDAA"
     rotate_user_agent = True
     base_url = "https://armedservices.house.gov"
     start_urls = [base_url + "/fy24-ndaa-resources"]
@@ -153,31 +153,39 @@ class NDAASpider(GCSpider):
     ) -> Generator[DocItem, Any, None]:
         page_url = response.url
         soup = bs4.BeautifulSoup(response.body, features="html.parser")
-        yield from self.get_all_pdf(soup, page_url)
+        yield from self.get_all_pdf(soup, page_url, find_title=True)
 
     def get_all_pdf(
-        self, soup: bs4.BeautifulSoup, page_url: str, date: str = ""
+        self, soup: bs4.BeautifulSoup, page_url: str, date: str = "", find_title=False
     ) -> Generator[DocItem, Any, None]:
         for link_el in soup.find_all("a"):
             if link_el is None:
                 continue
-            if (
-                date == ""
-            ):  # need format 2023-06-14T00:00:00 but receiving 12/23/2024 6:23 PM
-                next_sibling = link_el.find_next_sibling("strong")
-                if next_sibling is not None:
-                    date_elements = next_sibling.get_text().strip().split(" ")
-                    month, day, year = date_elements[8].split("/")
-                    hour, minute = date_elements[10].split(":")
-                    am_or_pm = date_elements[11]
-                    if am_or_pm.lower() == "pm":
-                        hour = str(int(hour) + 12)
-                    date = f"{year}:{month}:{day}T{hour}:{minute}:00"
             url = link_el.get("href")
             if url is None:
                 continue
             if url.lower().endswith("pdf"):
-                yield from self.get_doc_from_url(url, page_url, date)
+
+                if (
+                    date == ""
+                ):  # need format 2023-06-14T00:00:00 but receiving 12/23/2024 6:23 PM
+                    next_sibling = link_el.find_next_sibling("strong")
+                    if next_sibling is not None:
+                        date_elements = next_sibling.get_text().strip().split(" ")
+                        month, day, year = date_elements[8].split("/")
+                        hour, minute = date_elements[10].split(":")
+                        am_or_pm = date_elements[11]
+                        if am_or_pm.lower() == "pm":
+                            hour = str(int(hour) + 12)
+                        date = f"{year}:{month}:{day}T{hour}:{minute}:00"
+                
+                title = ""
+                if find_title:
+                    parent_el = self.ascii_clean(link_el.find_parent().get_text())
+                    title = parent_el.split("\n")[0].strip()
+                    if self.display_name not in title:
+                        title = self.display_name + " " + title
+                yield from self.get_doc_from_url(url, page_url, date, title)
 
     def find_date(self, text: str) -> str:
         # Example regex pattern for "month day year" format
@@ -198,7 +206,7 @@ class NDAASpider(GCSpider):
         return date
 
     def get_doc_from_url(
-        self, url: str, source_url: str, publication_date: str = ""
+        self, url: str, source_url: str, publication_date: str = "", doc_title: str = ""
     ) -> Generator[DocItem, Any, None]:
         url = self.ascii_clean(url)
         source_url = self.ascii_clean(source_url)
@@ -207,7 +215,8 @@ class NDAASpider(GCSpider):
         doc_name = (
             url.split("/")[-1].split(".")[-2].replace(" ", "_").replace("%20", "_")
         )
-        doc_title = doc_type + " " + doc_name
+        if doc_title == "":
+            doc_title = doc_type + " " + doc_name
 
         if url.lower().startswith("http"):
             pdf_url = url
@@ -233,9 +242,9 @@ class NDAASpider(GCSpider):
         return self.populate_doc_item(fields)
 
     def populate_doc_item(self, fields: dict) -> Generator[DocItem, Any, None]:
-        display_org = "Congress" # Level 1: GC app 'Source' filter for docs from this crawler
+        display_org = "House Armed Services Committee" # Level 1: GC app 'Source' filter for docs from this crawler
         data_source = "House Armed Services Committee Publications" # Level 2: GC app 'Source' metadata field for docs from this crawler
-        source_title = "National Defense Authorization Act For Fiscal Year 2024" # Level 3 filter
+        source_title = "FY24 NDAA Resources" # Level 3 filter
 
         doc_name = fields["doc_name"]
         doc_num = fields["doc_num"]
@@ -247,11 +256,11 @@ class NDAASpider(GCSpider):
         display_doc_type = fields["display_doc_type"]
         downloadable_items = fields["downloadable_items"]
         file_ext = fields["file_ext"]
+        source_page_url = fields["source_page_url"]
 
         display_source = data_source + " - " + source_title
         display_title = doc_type + " " + doc_num + ": " + doc_title
         is_revoked = False
-        source_page_url = self.start_urls[0]
         source_fqdn = urlparse(source_page_url).netloc
         version_hash_fields = {
             "doc_name": doc_name,
