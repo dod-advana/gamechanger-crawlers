@@ -108,8 +108,8 @@ class NDAASpider(GCSpider):
         date_el = response.css(".pane-node-created .pane-content ::text").get()
         date = self.parse_date(date_el)
 
-        doc_type = self.display_name
-        doc_name = f"{doc_type} - {date} - {title}"
+        doc_type = "Policy"
+        doc_name = f"{self.display_name} - {date} - {title}"
 
         html_di = [
             {"doc_type": "html", "download_url": page_url, "compression_type": None}
@@ -183,7 +183,7 @@ class NDAASpider(GCSpider):
                 if find_title:
                     parent_el = self.ascii_clean(link_el.find_parent().get_text())
                     title = parent_el.split("\n")[0].strip()
-                    if self.display_name not in title:
+                    if self.display_name.lower() not in title.lower():
                         title = self.display_name + " " + title
                 yield from self.get_doc_from_url(url, page_url, date, title)
 
@@ -210,13 +210,16 @@ class NDAASpider(GCSpider):
     ) -> Generator[DocItem, Any, None]:
         url = self.ascii_clean(url)
         source_url = self.ascii_clean(source_url)
-        doc_type = self.display_name
         doc_num = "0"
+        doc_type = "Policy"
         doc_name = (
             url.split("/")[-1].split(".")[-2].replace(" ", "_").replace("%20", "_")
         )
         if doc_title == "":
-            doc_title = doc_type + " " + doc_name
+            doc_title = doc_name
+
+        if self.display_name.lower() not in doc_title.lower():
+            doc_title = self.display_name + " " + doc_title
 
         if url.lower().startswith("http"):
             pdf_url = url
@@ -259,7 +262,6 @@ class NDAASpider(GCSpider):
         source_page_url = fields["source_page_url"]
 
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_num + ": " + doc_title
         is_revoked = False
         source_fqdn = urlparse(source_page_url).netloc
         version_hash_fields = {
@@ -267,7 +269,7 @@ class NDAASpider(GCSpider):
             "doc_num": doc_num,
             "publication_date": publication_date,
             "download_url": download_url,
-            "display_title": display_title,
+            "display_title": doc_title,
         }
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 
@@ -290,7 +292,7 @@ class NDAASpider(GCSpider):
             data_source=data_source,
             source_title=source_title,
             display_source=display_source,
-            display_title=display_title,
+            display_title=doc_title,
             file_ext=file_ext,
             is_revoked=is_revoked,
         )
