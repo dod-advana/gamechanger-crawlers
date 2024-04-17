@@ -178,7 +178,7 @@ class NDAASpider(GCSpider):
                         if am_or_pm.lower() == "pm":
                             hour = str(int(hour) + 12)
                         date = f"{year}:{month}:{day}T{hour}:{minute}:00"
-                
+
                 title = ""
                 if find_title:
                     parent_el = self.ascii_clean(link_el.find_parent().get_text())
@@ -245,9 +245,9 @@ class NDAASpider(GCSpider):
         return self.populate_doc_item(fields)
 
     def populate_doc_item(self, fields: dict) -> Generator[DocItem, Any, None]:
-        display_org = "House Armed Services Committee" # Level 1: GC app 'Source' filter for docs from this crawler
-        data_source = "House Armed Services Committee Publications" # Level 2: GC app 'Source' metadata field for docs from this crawler
-        source_title = "FY24 NDAA Resources" # Level 3 filter
+        display_org = "House Armed Services Committee"  # Level 1: GC app 'Source' filter for docs from this crawler
+        data_source = "House Armed Services Committee Publications"  # Level 2: GC app 'Source' metadata field for docs from this crawler
+        source_title = "NDAA Resources"  # Level 3 filter
 
         doc_name = fields["doc_name"]
         doc_num = fields["doc_num"]
