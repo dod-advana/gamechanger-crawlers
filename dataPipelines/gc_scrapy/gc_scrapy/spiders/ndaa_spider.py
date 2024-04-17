@@ -83,7 +83,7 @@ class NDAASpider(GCSpider):
         fields = {
             "doc_name": doc_name,
             "doc_num": " ",  # No doc num for this crawler
-            "doc_title": title,
+            "doc_title": title.replace("_", " "),
             "doc_type": doc_type,
             "cac_login_required": False,
             "source_page_url": page_url,
@@ -118,7 +118,7 @@ class NDAASpider(GCSpider):
         fields = {
             "doc_name": doc_name,
             "doc_num": " ",  # No doc num for this crawler
-            "doc_title": title,
+            "doc_title": title.replace("_", " "),
             "doc_type": doc_type,
             "cac_login_required": False,
             "source_page_url": page_url,
@@ -231,7 +231,7 @@ class NDAASpider(GCSpider):
 
         fields = {
             "doc_name": doc_name.strip(),
-            "doc_title": doc_title,
+            "doc_title": doc_title.replace("_", " "),
             "doc_num": doc_num,
             "doc_type": doc_type.strip(),
             "display_doc_type": doc_type.strip(),
