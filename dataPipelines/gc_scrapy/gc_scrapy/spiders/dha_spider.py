@@ -28,16 +28,15 @@ class DHASpider(GCSpider):
         return "Document"
 
     def parse(self, response):
-        sections = response.css('table[class="dataTable tabpanel sortable"]')
+        sections = response.css('table[class="dataTable tabpanel sortable horizScroll"]')
         for section in sections:
             headers = section.css(
                 'button , th.p:nth-child(1) , th.p:nth-child(2) , th.p:nth-child(5) , th.p:nth-child(4)::text').extract()
             headers = [re.sub(r'<.+?>', '', header).strip() for header in headers]
             rows = section.css('table.dataTable tbody tr')
-
             for row in rows:
                 doc_type = self.ascii_clean(
-                    row.css('td:nth-child(1)::text').get(default='')) \
+                    row.css('th::text').get(default='')) \
                     .replace('DHA-', 'DHA ').strip()
                 display_doc_type = self.get_display(doc_type)
                 doc_num = self.ascii_clean(
