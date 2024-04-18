@@ -19,6 +19,11 @@ class DHASpider(GCSpider):
     randomly_delay_request = True
     rotate_user_agent = True
 
+    custom_settings = {
+        **GCSpider.custom_settings,
+        "DOWNLOAD_TIMEOUT": 7.0, 
+    }
+
     @staticmethod
     def get_display(doc_type):
         for dt in display_types:
@@ -28,43 +33,63 @@ class DHASpider(GCSpider):
         return "Document"
 
     def parse(self, response):
-        sections = response.css('table[class="dataTable tabpanel sortable horizScroll"]')
-        for section in sections:
-            headers = section.css(
-                'button , th.p:nth-child(1) , th.p:nth-child(2) , th.p:nth-child(5) , th.p:nth-child(4)::text').extract()
-            headers = [re.sub(r'<.+?>', '', header).strip() for header in headers]
-            rows = section.css('table.dataTable tbody tr')
-            for row in rows:
-                doc_type = self.ascii_clean(
-                    row.css('th::text').get(default='')) \
-                    .replace('DHA-', 'DHA ').strip()
-                display_doc_type = self.get_display(doc_type)
-                doc_num = self.ascii_clean(
-                    row.css('td:nth-child(2) a::text').get(default=''))
-                href = row.css('td:nth-child(2) a::attr(href)').get(default='')
-                publication_date_raw = self.ascii_clean(
-                    row.css('td:nth-child(5)::text').get(default=''))
-                publication_date = publication_date_raw
-                doc_title = self.ascii_clean(
-                    row.css('td:nth-child(3)::text').get(default='')).replace('\r', '').replace('\n', '')
+        # table1 has all the current publication, table2 has all the cancelled publications
+        table = response.css('#table1')
+        doc_name_to_publication = {}
 
-                doc_name = f"{doc_type} {doc_num}"
-                web_url = f"https://www.health.mil{href}"
+        headers = table.css(
+            'button , th.p:nth-child(1) , th.p:nth-child(2) , th.p:nth-child(5) , th.p:nth-child(4)::text').extract()
+        headers = [re.sub(r'<.+?>', '', header).strip() for header in headers]
+        rows = table.css('table.dataTable tbody tr')
+        for row in rows:
+            doc_type = self.ascii_clean(
+                row.css('th::text').get(default='DHA')) \
+                .replace('DHA-', 'DHA ').strip()
+            display_doc_type = self.get_display(doc_type)
+            doc_num = self.ascii_clean(
+                row.css('td:nth-child(2) a::text').get(default=''))
+            href = row.css('td:nth-child(2) a::attr(href)').get(default='')
+            publication_date_raw = self.ascii_clean(
+                row.css('td:nth-child(5)::text').get(default=''))
+            publication_date = publication_date_raw
+            doc_title = self.ascii_clean(
+                row.css('td:nth-child(3)::text').get(default='')).replace('\r', '').replace('\n', '')
 
-                fields = {
-                    'doc_name': doc_name,
-                    'doc_num': doc_num,
-                    'doc_title': doc_title,
-                    'doc_type': doc_type,
-                    'cac_login_required': False,
-                    'download_url': web_url,
-                    'publication_date': publication_date,
-                    'display_doc_type': display_doc_type
-                }
+            doc_name = f"{doc_type} {doc_num}"
+            display_title = doc_name + ": " + doc_title
 
-                doc_item = self.populate_doc_item(fields)
+            """
+            The more recently published document is always encountered first, but to be sure we are ingesting all documents
+            we will check to see if the document encountered second has a more recent publication date and if so ingest it
+            """
+            if doc_name in doc_name_to_publication:
+                current_pub_date = datetime.strptime(publication_date, '%m/%d/%Y')
+                first_pub_date = datetime.strptime(doc_name_to_publication[doc_name], '%m/%d/%Y')
+                
+                if current_pub_date > first_pub_date: # if current pub date is later than the first pub date
+                    doc_name = doc_name + " Updated"
+                else: # do not ingest old documents
+                    continue
 
-                yield from doc_item
+            doc_name_to_publication[doc_name] = publication_date
+
+            web_url = f"https://www.health.mil{href}"
+
+            fields = {
+                'doc_name': doc_name,
+                'doc_num': doc_num,
+                'doc_title': doc_title,
+                'doc_type': doc_type,
+                'cac_login_required': False,
+                'download_url': web_url,
+                'publication_date': publication_date,
+                'display_doc_type': display_doc_type,
+                'display_title': display_title
+            }
+
+            doc_item = self.populate_doc_item(fields)
+
+            yield from doc_item
 
     def populate_doc_item(self, fields):
         display_org = "Defense Health Agency"  # Level 1: GC app 'Source' filter for docs from this crawler
@@ -77,12 +102,12 @@ class DHASpider(GCSpider):
         doc_type = fields['doc_type']
         cac_login_required = fields['cac_login_required']
         download_url = fields['download_url']
+        display_title = fields['display_title']
         publication_date = get_pub_date(fields['publication_date'])
 
         display_doc_type = fields['display_doc_type']
 
         display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_num + ": " + doc_title
         is_revoked = False
         source_page_url = self.start_urls[0]
         source_fqdn = urlparse(source_page_url).netloc
