@@ -19,6 +19,11 @@ class StigSpider(GCSpider):
 
     doc_type = "STIG"
 
+    custom_settings = {
+        **GCSpider.custom_settings,
+        "DOWNLOAD_TIMEOUT": 6.0,
+    }
+
     @staticmethod
     def extract_doc_number(doc_title):
         if doc_title.find(" Ver ") != -1:
