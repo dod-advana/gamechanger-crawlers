@@ -1,7 +1,9 @@
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
-from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp
-from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
+from dataPipelines.gc_scrapy.gc_scrapy.utils import (
+    dict_to_sha256_hex_digest,
+    get_pub_date,
+)
 from datetime import datetime
 from urllib.parse import urlparse
 import re
@@ -11,9 +13,7 @@ display_types = ["Instruction", "Manual", "Memo", "Regulation"]
 
 class DHASpider(GCSpider):
     name = "dha_pubs"  # Crawler name
-    start_urls = [
-        'https://www.health.mil/Reference-Center/DHA-Publications'
-    ]
+    start_urls = ["https://www.health.mil/Reference-Center/DHA-Publications"]
 
     file_type = "pdf"
     randomly_delay_request = True
@@ -21,7 +21,7 @@ class DHASpider(GCSpider):
 
     custom_settings = {
         **GCSpider.custom_settings,
-        "DOWNLOAD_TIMEOUT": 7.0, 
+        "DOWNLOAD_TIMEOUT": 7.0,
     }
 
     @staticmethod
@@ -34,7 +34,7 @@ class DHASpider(GCSpider):
 
     def parse(self, response):
         # table1 has all the current publication, table2 has all the cancelled publications
-        table = response.css('#table1')
+        table = response.css("#table1")
         doc_name_to_publication = {}
 
         headers = table.css(
@@ -63,12 +63,16 @@ class DHASpider(GCSpider):
             we will check to see if the document encountered second has a more recent publication date and if so ingest it
             """
             if doc_name in doc_name_to_publication:
-                current_pub_date = datetime.strptime(publication_date, '%m/%d/%Y')
-                first_pub_date = datetime.strptime(doc_name_to_publication[doc_name], '%m/%d/%Y')
-                
-                if current_pub_date > first_pub_date: # if current pub date is later than the first pub date
+                current_pub_date = datetime.strptime(publication_date, "%m/%d/%Y")
+                first_pub_date = datetime.strptime(
+                    doc_name_to_publication[doc_name], "%m/%d/%Y"
+                )
+
+                if (
+                    current_pub_date > first_pub_date
+                ):  # if current pub date is later than the first pub date
                     doc_name = doc_name + " Updated"
-                else: # do not ingest old documents
+                else:  # do not ingest old documents
                     continue
 
             doc_name_to_publication[doc_name] = publication_date
@@ -104,7 +108,6 @@ class DHASpider(GCSpider):
         download_url = fields['download_url']
         display_title = fields['display_title']
         publication_date = get_pub_date(fields['publication_date'])
-
         display_doc_type = fields['display_doc_type']
 
         display_source = data_source + " - " + source_title
