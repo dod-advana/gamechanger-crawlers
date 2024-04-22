@@ -213,8 +213,7 @@ class NDAASpider(GCSpider):
         doc_num = "0"
         doc_type = "Policy"
         doc_name = (
-            url.split("/")[-1].split(".")[-2].replace(" ", "_").replace("%20", "_").replace("%28", "_").replace("%29", "_")
-        )
+            url.split("/")[-1].split(".")[-2].replace(" ", "_").replace("%20", "_").replace("%28", "_").replace("%29", "_")        )
         if doc_title == "":
             doc_title = doc_name
 
