@@ -16,7 +16,9 @@ general_settings = {
     "ROBOTSTXT_OBEY": False,
     "LOG_LEVEL": "INFO",
     "DOWNLOAD_FAIL_ON_DATALOSS": False,
-    
+    "DOWNLOADER_CLIENTCONTEXTFACTORY": 'scrapy.core.downloader.contextfactory.BrowserLikeContextFactory',
+    "REQUEST_FINGERPRINTER_IMPLEMENTATION": '2.7',
+ 
     # Slow down crawler
     "DOWNLOAD_DELAY": 0.1,  # Delay between requests in seconds
     "DOWNLOAD_TIMEOUT": 3.5,  # Time till skip

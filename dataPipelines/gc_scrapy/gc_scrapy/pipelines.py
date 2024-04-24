@@ -158,7 +158,7 @@ class FileDownloadPipeline(MediaPipeline):
             print(f"No supported downloadable item for {item['doc_name']}")
             return item
 
-    def media_downloaded(self, response, request, info):
+    def media_downloaded(self, response, request, info, *, item=None):
         """Called for each completed response from get_media_requests, returned to item_completed"""
         # I dont know why this isnt being handled automatically here
         # Just filtering by response code

@@ -15,20 +15,20 @@ RUN wget https://storage.googleapis.com/chrome-for-testing-public/123.0.6312.105
     rm chromedriver-linux64.zip
 
 # Install Miniconda
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-py310_22.11.1-1-Linux-x86_64.sh && \
-    bash Miniconda3-py310_22.11.1-1-Linux-x86_64.sh -b -p /opt/miniconda && \
-    rm Miniconda3-py310_22.11.1-1-Linux-x86_64.sh
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
+    bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda && \
+    rm Miniconda3-latest-Linux-x86_64.sh
 
 ENV PATH="${PATH}:/opt/miniconda/bin/"
 
 # Create conda environment
-RUN conda create -n gc-crawlers python=3.6 -y
+RUN conda create -n gc-crawlers python=3.12 -y
 RUN echo "source activate gc-crawlers" > ~/.bashrc
 
 # Clone repo
-RUN git clone https://github.com/dod-advana/gamechanger-crawlers.git
+COPY . /home/gamechanger-crawlers
 
 # Install Python dependencies
 RUN /bin/bash -c "source activate gc-crawlers && \
                   pip install --upgrade pip setuptools wheel && \
-                  pip install -r gamechanger-crawlers/docker/core/minimal-requirements.txt"
+                  pip install -r /home/gamechanger-crawlers/docker/core/minimal-requirements.txt"
