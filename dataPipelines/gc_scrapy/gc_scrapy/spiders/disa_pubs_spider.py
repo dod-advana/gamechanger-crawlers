@@ -16,6 +16,12 @@ import scrapy
 
 
 class DisaPubsSpider(GCSpider):
+    """
+    As of 04/26/2024
+    crawls https://disa.mil/About/DISA-Issuances/Instructions for 42 pdfs (doc_type = Instruction)
+    and https://disa.mil/About/DISA-Issuances/Circulars for 6 pdfs (doc_type = Circulars)
+    """
+
     name = "DISA_pubs"  # Crawler name
     rotate_user_agent = True
     date_format = "%m/%d/%y"
@@ -32,41 +38,50 @@ class DisaPubsSpider(GCSpider):
         page_url = response.url
         soup = bs4.BeautifulSoup(response.body, features="html.parser")
         main_content = soup.find(id="main-content")
+
         for row in main_content.find_all("tr"):
             row_items = row.find_all("td")
 
-            if len(row_items) == 3:  # Ensure elements are present and skip header row
-                url = self.base_url + row_items[0].find("a").get("href")
+            if len(row_items) != 3:  # Ensure elements are present and skip header row
+                continue
 
-                doc_name = self.ascii_clean(row_items[0].find("a").get_text().strip())
-                doc_num = doc_name.split(" ")[-1]
-                doc_type = self.get_doc_type(doc_name)
-                doc_title = self.ascii_clean(row_items[1].get_text().strip())
+            link_cell, title_cell, publication_cell = row_items
 
-                # one date has an accidental space
-                published = row_items[2].get_text().strip().replace(" ", "")
-                published_timestamp = datetime.strptime(published, self.date_format)
-                published_date = published_timestamp.strftime("%Y-%m-%dT%H:%M:%S")
+            url = self.base_url + link_cell.find("a").get("href")
+            doc_name = self.ascii_clean(link_cell.find("a").get_text().strip())
+            doc_num = doc_name.split(" ")[-1]
+            doc_type = self.get_doc_type(doc_name)
 
-                pdf_di = [
-                    {"doc_type": "pdf", "download_url": url, "compression_type": None}
-                ]
+            doc_title = self.ascii_clean(title_cell.get_text().strip())
 
-                fields = {
-                    "doc_name": doc_name,
-                    "doc_title": doc_title,
-                    "doc_num": doc_num,
-                    "doc_type": doc_type,
-                    "display_doc_type": doc_type,
-                    "publication_date": published_date,
-                    "cac_login_required": False,
-                    "source_page_url": page_url,
-                    "downloadable_items": pdf_di,
-                    "download_url": url,
-                    "file_ext": "pdf",
-                }
+            published_date = self.format_publication_date(publication_cell.get_text())
 
-                yield self.populate_doc_item(fields)
+            pdf_di = [
+                {"doc_type": "pdf", "download_url": url, "compression_type": None}
+            ]
+
+            fields = {
+                "doc_name": doc_name,
+                "doc_title": doc_title,
+                "doc_num": doc_num,
+                "doc_type": doc_type,
+                "display_doc_type": doc_type,
+                "publication_date": published_date,
+                "cac_login_required": False,
+                "source_page_url": page_url,
+                "downloadable_items": pdf_di,
+                "download_url": url,
+                "file_ext": "pdf",
+            }
+
+            yield self.populate_doc_item(fields)
+
+    def format_publication_date(self, input_date: str) -> str:
+        # dates formatted as 03/17/17 and one has an accidental space (04/15/ 13)
+        published = input_date.strip().replace(" ", "")
+        published_timestamp = datetime.strptime(published, self.date_format)
+        published_date = published_timestamp.strftime("%Y-%m-%dT%H:%M:%S")
+        return published_date
 
     def get_doc_type(self, doc_name: str) -> str:
         if "DISAC" in doc_name:
