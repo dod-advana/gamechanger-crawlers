@@ -1,11 +1,13 @@
-from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
 from urllib.parse import urlparse
 from datetime import datetime
 
+from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 
 
 class DocItemFields:
+    """Designed to store all fields necessary to generate DocItems"""
+
     def __init__(
         self,
         doc_name: str,
@@ -31,7 +33,8 @@ class DocItemFields:
         self.download_url = download_url
         self.file_ext = file_ext
 
-    def _get_version_hash_fields(self):
+    def get_version_hash_fields(self) -> dict:
+        """Returns a dict of the fields used for hashing"""
         return {
             "doc_name": self.doc_name,
             "doc_num": self.doc_num,
@@ -43,11 +46,22 @@ class DocItemFields:
     def populate_doc_item(
         self, display_org: str, data_source: str, source_title: str, crawler_used: str
     ) -> DocItem:
+        """Takes the data stored in the current object and populates then returns a scrapy DocItem
+
+        Args:
+            display_org (str): Level 1 - GC app 'Source' filter for docs from this crawler
+            data_source (str): Level 2 - GC app 'Source' metadata field for docs from this crawler
+            source_title (str): Level 3 - filter
+            crawler_used (str): name of crawler used
+
+        Returns:
+            DocItem: scrapy.Item sublcass for storing Documents in GC
+        """
 
         display_source = data_source + " - " + source_title
         is_revoked = False
         source_fqdn = urlparse(self.source_page_url).netloc
-        version_hash_fields = self._get_version_hash_fields()
+        version_hash_fields = self.get_version_hash_fields()
         version_hash = dict_to_sha256_hex_digest(version_hash_fields)
 
         return DocItem(

@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 from typing import Any, Generator
-import bs4
-import scrapy
 from urllib.parse import urljoin
 from datetime import datetime
+import bs4
+import scrapy
 
 from dataPipelines.gc_scrapy.gc_scrapy.doc_item_fields import DocItemFields
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
@@ -17,10 +16,14 @@ class DisaPubsSpider(GCSpider):
     and https://disa.mil/About/DISA-Issuances/Circulars for 6 pdfs (doc_type = Circulars)
     """
 
-    name = "DISA_pubs"  # Crawler name
-    display_org = "Defense Information Systems Agency"  # Level 1: GC app 'Source' filter for docs from this crawler
-    data_source = "Defense Information Systems Agency"  # Level 2: GC app 'Source' metadata field for docs from this crawler
-    source_title = "DISA Policy/Issuances"  # Level 3 filter
+    # Crawler name
+    name = "DISA_pubs"
+    # Level 1: GC app 'Source' filter for docs from this crawler
+    display_org = "Defense Information Systems Agency"
+    # Level 2: GC app 'Source' metadata field for docs from this crawler
+    data_source = "Defense Information Systems Agency"
+    # Level 3 filter
+    source_title = "DISA Policy/Issuances"
 
     domain = "disa.mil"
     base_url = f"https://{domain}"
@@ -34,26 +37,21 @@ class DisaPubsSpider(GCSpider):
     date_format = "%m/%d/%y"
 
     def parse(self, response: scrapy.http.Response) -> Generator[DocItem, Any, None]:
+        """Parses doc items out of DISA Policy/Issuances site"""
         page_url = response.url
         soup = bs4.BeautifulSoup(response.body, features="html.parser")
-        main_content = soup.find(id="main-content")
 
-        for row in main_content.find_all("tr"):
+        for row in soup.find(id="main-content").find_all("tr"):
             row_items = row.find_all("td")
 
-            if len(row_items) != 3:  # Ensure elements are present and skip header row
+            # Ensure elements are present and skip the header row
+            if len(row_items) != 3:
                 continue
 
             link_cell, title_cell, publication_cell = row_items
 
-            url = self.base_url + link_cell.find("a").get("href")
+            url = urljoin(self.base_url, link_cell.find("a").get("href"))
             doc_name = self.ascii_clean(link_cell.find("a").get_text().strip())
-            doc_num = doc_name.split(" ")[-1]
-            doc_type = self.get_doc_type(doc_name)
-
-            doc_title = self.ascii_clean(title_cell.get_text().strip())
-
-            published_date = self.format_publication_date(publication_cell.get_text())
 
             pdf_di = [
                 {"doc_type": "pdf", "download_url": url, "compression_type": None}
@@ -61,10 +59,10 @@ class DisaPubsSpider(GCSpider):
 
             fields = DocItemFields(
                 doc_name=doc_name,
-                doc_title=doc_title,
-                doc_num=doc_num,
-                doc_type=doc_type,
-                publication_date=published_date,
+                doc_title=self.ascii_clean(title_cell.get_text().strip()),
+                doc_num=doc_name.split(" ")[-1],
+                doc_type=self.get_doc_type(doc_name),
+                publication_date=self.extract_date(publication_cell.get_text()),
                 cac_login_required=False,
                 source_page_url=page_url,
                 downloadable_items=pdf_di,
@@ -79,16 +77,16 @@ class DisaPubsSpider(GCSpider):
                 crawler_used=self.name,
             )
 
-    def format_publication_date(self, input_date: str) -> datetime:
-        # dates formatted as 03/17/17 and one has an accidental space (04/15/ 13)
+    def extract_date(self, input_date: str) -> datetime:
+        """Takes in dates formatted as 03/17/17 or 04/15/ 13 and returns datetime object"""
         published = input_date.strip().replace(" ", "")
         published_timestamp = datetime.strptime(published, self.date_format)
         return published_timestamp
 
     def get_doc_type(self, doc_name: str) -> str:
+        """Takes in the doc name and returns the type, only handles DISAC and DISAI docs"""
         if "DISAC" in doc_name:
             return "Circular"
-        elif "DISAI" in doc_name:
+        if "DISAI" in doc_name:
             return "Instruction"
-        else:
-            raise ValueError(f"Unexpected value for doc_name {doc_name}")
+        raise ValueError(f"Unexpected value for doc_name {doc_name}")
