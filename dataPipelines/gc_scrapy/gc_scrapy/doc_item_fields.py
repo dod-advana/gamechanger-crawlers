@@ -32,6 +32,7 @@ class DocItemFields:
         self.downloadable_items = downloadable_items
         self.download_url = download_url
         self.file_ext = file_ext
+        self.display_title = doc_type + " " + doc_num + ": " + doc_title
 
     def get_version_hash_fields(self) -> dict:
         """Returns a dict of the fields used for hashing"""
@@ -42,6 +43,10 @@ class DocItemFields:
             "download_url": self.download_url,
             "display_title": self.doc_title,
         }
+
+    def set_display_name(self, name: str) -> None:
+        """Update display name for DocItemFields instance"""
+        self.display_title = name
 
     def populate_doc_item(
         self, display_org: str, data_source: str, source_title: str, crawler_used: str
@@ -83,7 +88,7 @@ class DocItemFields:
             data_source=data_source,
             source_title=source_title,
             display_source=display_source,
-            display_title=self.doc_title,
+            display_title=self.display_title,
             file_ext=self.file_ext,
             is_revoked=is_revoked,
         )

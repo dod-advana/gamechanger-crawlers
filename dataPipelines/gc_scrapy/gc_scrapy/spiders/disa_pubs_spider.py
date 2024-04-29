@@ -69,6 +69,7 @@ class DisaPubsSpider(GCSpider):
                 download_url=url,
                 file_ext="pdf",
             )
+            fields.set_display_name(f"{fields.doc_name}: {fields.doc_title}")
 
             yield fields.populate_doc_item(
                 display_org=self.display_org,
