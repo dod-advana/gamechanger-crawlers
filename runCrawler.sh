@@ -1,6 +1,13 @@
 #!/bin/bash
 
+print_help () {
+    echo "Usage: ./runCrawler.sh -c={crawler name} --reset {optional: resets the data directory before running}"
+    echo "Example: ./runCrawler.sh -c=disa_pubs_spider --reset"
+    exit 1
+}
+
 RESET=false
+CRAWLER=""
 for i in "$@"; do
     case $i in
         -c=*|--crawler=*)
@@ -12,14 +19,17 @@ for i in "$@"; do
             shift # past argument with no value
         ;;
         -*|--*)
-            echo "Unknown option $i"
-            exit 1
+            print_help
         ;;
         *)
         ;;
     esac
 done
 
+if [$CRAWLER == ""]; then
+    echo "ERROR: Please use the -c option to specify a crawler"
+    print_help
+fi
 
 export PYTHONPATH="$(pwd)"
 CRAWLER_DATA_ROOT=./tmp/$CRAWLER
