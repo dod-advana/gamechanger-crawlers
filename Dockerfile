@@ -1,4 +1,12 @@
-FROM --platform=linux/amd64 ubuntu:latest
+FROM --platform=linux/amd64 ubuntu:20.04
+
+# Set timezone for tzdata
+ENV TZ=UTC
+
+# Install tzdata non-interactively
+RUN ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
+    apt-get update && \
+    apt-get install -y tzdata
 
 # Update and install necessary packages
 RUN apt-get update && apt-get upgrade -y ca-certificates && \
