@@ -2,13 +2,16 @@ from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 import re
 
-from urllib.parse import urljoin, urlparse
-from datetime import datetime
+from urllib.parse import urlparse
 from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
 
 class StigSpider(GCSpider):
+    """
+    As of 04/30/2024
+    crawls https://public.cyber.mil/stigs/downloads/ for 47 pdfs (doc_type = stig)
+    """
     name = "stig_pubs" # Crawler name
-    
+
 
     start_urls = [
         "https://public.cyber.mil/stigs/downloads/"
