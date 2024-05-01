@@ -20,12 +20,16 @@ class DocItemFields:
         downloadable_items: dict,
         download_url: str,
         file_ext: str,
+        display_doc_type: str = None,
     ):
         self.doc_name = doc_name
         self.doc_title = doc_title
         self.doc_num = doc_num
         self.doc_type = doc_type
-        self.display_doc_type = doc_type
+        if display_doc_type is None:
+            self.display_doc_type = doc_type
+        else:
+            self.display_doc_type = display_doc_type
         self.publication_date = publication_date.strftime("%Y-%m-%dT%H:%M:%S")
         self.cac_login_required = cac_login_required
         self.source_page_url = source_page_url
@@ -41,7 +45,7 @@ class DocItemFields:
             "doc_num": self.doc_num,
             "publication_date": self.publication_date,
             "download_url": self.download_url,
-            "display_title": self.doc_title,
+            "display_title": self.display_title,
         }
 
     def set_display_name(self, name: str) -> None:
