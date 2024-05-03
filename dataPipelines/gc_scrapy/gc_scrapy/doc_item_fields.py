@@ -43,16 +43,17 @@ class DocItemFields:
             "doc_num": self.doc_num,
             "publication_date": self.publication_date,
             "download_url": self.download_url,
-            "display_title": self.display_title, 
+            "display_title": self.display_title,
         }
 
     def set_version_hash_field(self, key: str, value: str) -> dict:
         """Sets a new field or updates an old one in the dict used for hashing"""
         self.hash_fields[key] = value
-        
+
     def set_display_name(self, name: str) -> None:
         """Update display name for DocItemFields instance"""
         self.display_title = name
+        self.hash_fields["display_title"] = name
 
     def populate_doc_item(
         self, display_org: str, data_source: str, source_title: str, crawler_used: str
