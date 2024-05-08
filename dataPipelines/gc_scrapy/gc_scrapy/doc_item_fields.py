@@ -38,9 +38,7 @@ class DocItemFields:
         self.file_ext = file_ext
         self.display_title = doc_type + " " + doc_num + ": " + doc_title
 
-    def get_version_hash_fields(self) -> dict:
-        """Returns a dict of the fields used for hashing"""
-        return {
+        self.hash_fields = {
             "doc_name": self.doc_name,
             "doc_num": self.doc_num,
             "publication_date": self.publication_date,
@@ -48,9 +46,14 @@ class DocItemFields:
             "display_title": self.display_title,
         }
 
+    def set_version_hash_field(self, key: str, value: str) -> dict:
+        """Sets a new field or updates an old one in the dict used for hashing"""
+        self.hash_fields[key] = value
+
     def set_display_name(self, name: str) -> None:
         """Update display name for DocItemFields instance"""
         self.display_title = name
+        self.hash_fields["display_title"] = name
 
     def populate_doc_item(
         self, display_org: str, data_source: str, source_title: str, crawler_used: str
@@ -70,8 +73,7 @@ class DocItemFields:
         display_source = data_source + " - " + source_title
         is_revoked = False
         source_fqdn = urlparse(self.source_page_url).netloc
-        version_hash_fields = self.get_version_hash_fields()
-        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
+        version_hash = dict_to_sha256_hex_digest(self.hash_fields)
 
         return DocItem(
             doc_name=self.doc_name,
@@ -86,7 +88,7 @@ class DocItemFields:
             source_page_url=self.source_page_url,
             source_fqdn=source_fqdn,
             download_url=self.download_url,
-            version_hash_raw_data=version_hash_fields,
+            version_hash_raw_data=self.hash_fields,
             version_hash=version_hash,
             display_org=display_org,
             data_source=data_source,
