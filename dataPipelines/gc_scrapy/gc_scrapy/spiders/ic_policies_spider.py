@@ -5,17 +5,32 @@ from selenium.webdriver import Chrome
 from urllib.parse import urljoin, urlparse
 from datetime import datetime
 
+from dataPipelines.gc_scrapy.gc_scrapy.doc_item_fields import DocItemFields
 from dataPipelines.gc_scrapy.gc_scrapy.GCSeleniumSpider import GCSeleniumSpider
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.utils import abs_url
 from dataPipelines.gc_scrapy.gc_scrapy.utils import (
     dict_to_sha256_hex_digest,
-    get_pub_date,
+    parse_timestamp,
 )
 
 
 class IcPoliciesSpider(GCSeleniumSpider):
-    name = "ic_policies"  # Crawler name
+    """
+    As of 05/15/2024
+    crawls https://www.dni.gov/index.php/what-we-do/ic-related-menus/ic-related-links/intelligence-community-directives for 70 pdfs (doc_type = ICD)
+    and https://www.dni.gov/index.php/what-we-do/ic-related-menus/ic-related-links/intelligence-community-policy-guidance for 29 pdfs (doc_type = ICPG)
+    and https://www.dni.gov/index.php/what-we-do/ic-related-menus/ic-related-links/intelligence-community-policy-memorandums for 5 pdfs (doc_type = ICPG)
+    """
+
+    # Crawler name
+    name = "ic_policies"
+    # Level 1: GC app 'Source' filter for docs from this crawler
+    display_org = "Intelligence Community"
+    # Level 2: GC app 'Source' metadata field for docs from this crawler
+    data_source = "Office of Director of National Intelligence"
+    # Level 3 filter
+    source_title = "Unlisted Source"
 
     allowed_domains = ["www.dni.gov"]
     base_url = "https://www.dni.gov"
@@ -55,23 +70,17 @@ class IcPoliciesSpider(GCSeleniumSpider):
 
     @staticmethod
     def get_display_doc_type(doc_type):
-        """This function returns value for display_doc_type based on doc_type -> display_doc_type mapping"""
+        """Returns value for display_doc_type based on doc_type -> display_doc_type mapping"""
         display_type_dict = {"icd": "Directive", "icpg": "Guide", "icpm": "Manual"}
         if doc_type.lower() in display_type_dict.keys():
             return display_type_dict[doc_type.lower()]
         else:
             return "Document"
 
-    # def parse(self, response):
-    #     base_url = 'https://www.dni.gov'
-    #     links = response.css('div[itemprop="articleBody"]').css('ul')[
-    #         0].css('li')[:-1]
-    #     full_links = [base_url + l.css('a::attr(href)').get() for l in links]
-    #     yield from response.follow_all(full_links, self.parse_documents)
-
     def parse(self, response):
+        """Parses doc items out of IC Policies and Directives site"""
 
-        # Assign Chrome as the WebDriver instance to perform "user" actions  ##(**What is .meta['driver']?)
+        # Assign Chrome as the WebDriver instance to perform "user" actions
         driver: Chrome = response.meta["driver"]
 
         for page_url in self.start_urls:
@@ -109,9 +118,12 @@ class IcPoliciesSpider(GCSeleniumSpider):
                 name_pattern = re.compile(r"^[A-Z]*\s\d*.\d*.\d*.\d*\s")
 
                 names = re.findall(name_pattern, data)
-                parsed_text = ""
-                if len(names) >= 0:
+                try:
                     parsed_text = names[0]
+                except Exception as e:
+                    print(e)
+                    print(link)
+                    print(page_url)
                 parsed_name = parsed_text.split(" ")
                 doc_name = " ".join(parsed_name[:2])
                 doc_num = parsed_name[1]
@@ -130,85 +142,31 @@ class IcPoliciesSpider(GCSeleniumSpider):
                     or any(x in doc_title for x in cac_required)
                     else False
                 )
+                downloadable_items = [
+                    {
+                        "doc_type": "pdf",
+                        "download_url": pdf_url,
+                        "compression_type": None,
+                    }
+                ]
+                fields = DocItemFields(
+                    doc_name=doc_name.strip(),
+                    doc_title=doc_title,
+                    doc_num=doc_num,
+                    doc_type=doc_type,
+                    publication_date=parse_timestamp(publication_date),
+                    cac_login_required=cac_login_required,
+                    source_page_url=page_url.strip(),
+                    downloadable_items=downloadable_items,
+                    download_url=pdf_url,
+                    file_ext="pdf",
+                    display_doc_type=self.get_display_doc_type(doc_type),
+                )
+                fields.set_display_name(f"{fields.doc_name}: {fields.doc_title}")
 
-                fields = {
-                    "doc_name": doc_name.strip(),
-                    "doc_num": doc_num,
-                    "doc_title": doc_title,
-                    "doc_type": doc_type,
-                    "cac_login_required": cac_login_required,
-                    "download_url": pdf_url,
-                    "source_page_url": page_url.strip(),
-                    "publication_date": publication_date,
-                }
-                ## Instantiate DocItem class and assign document's metadata values
-                doc_item = self.populate_doc_item(fields)
-
-                yield doc_item
-
-    def populate_doc_item(self, fields):
-        """
-        This functions provides both hardcoded and computed values for the variables
-        in the imported DocItem object and returns the populated metadata object
-        """
-        display_org = "Intelligence Community"  # Level 1: GC app 'Source' filter for docs from this crawler
-        data_source = "Office of Director of National Intelligence"  # Level 2: GC app 'Source' metadata field for docs from this crawler
-        source_title = "Unlisted Source"  # Level 3 filter
-
-        doc_name = fields["doc_name"]
-        doc_num = fields["doc_num"]
-        doc_title = fields["doc_title"]
-        doc_type = fields["doc_type"]
-        cac_login_required = fields["cac_login_required"]
-        download_url = fields["download_url"]
-        publication_date = get_pub_date(fields["publication_date"])
-
-        display_doc_type = self.get_display_doc_type(doc_type)
-        display_source = data_source + " - " + source_title
-        display_title = doc_type + " " + doc_num + ": " + doc_title
-        is_revoked = False
-        source_page_url = fields["source_page_url"]
-        source_fqdn = urlparse(source_page_url).netloc
-
-        downloadable_items = [
-            {
-                "doc_type": "pdf",
-                "download_url": download_url,
-                "compression_type": None,
-            }
-        ]
-        file_ext = downloadable_items[0]["doc_type"]
-        ## Assign fields that will be used for versioning
-        version_hash_fields = {
-            "doc_name": doc_name,
-            "doc_num": doc_num,
-            "publication_date": publication_date,
-            "download_url": download_url,
-            "display_title": display_title,
-        }
-
-        version_hash = dict_to_sha256_hex_digest(version_hash_fields)
-
-        return DocItem(
-            doc_name=doc_name,
-            doc_title=doc_title,
-            doc_num=doc_num,
-            doc_type=doc_type,
-            display_doc_type=display_doc_type,  #
-            publication_date=publication_date,
-            cac_login_required=cac_login_required,
-            crawler_used=self.name,
-            downloadable_items=downloadable_items,
-            source_page_url=source_page_url,  #
-            source_fqdn=source_fqdn,  #
-            download_url=download_url,  #
-            version_hash_raw_data=version_hash_fields,  #
-            version_hash=version_hash,
-            display_org=display_org,  #
-            data_source=data_source,  #
-            source_title=source_title,  #
-            display_source=display_source,  #
-            display_title=display_title,  #
-            file_ext=file_ext,  #
-            is_revoked=is_revoked,  #
-        )
+                yield fields.populate_doc_item(
+                    display_org=self.display_org,
+                    data_source=self.data_source,
+                    source_title=self.source_title,
+                    crawler_used=self.name,
+                )

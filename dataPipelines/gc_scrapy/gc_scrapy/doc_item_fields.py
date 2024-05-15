@@ -30,7 +30,10 @@ class DocItemFields:
             self.display_doc_type = doc_type
         else:
             self.display_doc_type = display_doc_type
-        self.publication_date = publication_date.strftime("%Y-%m-%dT%H:%M:%S")
+        try:
+            self.publication_date = publication_date.strftime("%Y-%m-%dT%H:%M:%S")
+        except AttributeError:
+            self.publication_date = None
         self.cac_login_required = cac_login_required
         self.source_page_url = source_page_url
         self.downloadable_items = downloadable_items
