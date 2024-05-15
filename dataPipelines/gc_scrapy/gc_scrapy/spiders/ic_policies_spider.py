@@ -21,6 +21,7 @@ class IcPoliciesSpider(GCSeleniumSpider):
     crawls https://www.dni.gov/index.php/what-we-do/ic-related-menus/ic-related-links/intelligence-community-directives for 70 pdfs (doc_type = ICD)
     and https://www.dni.gov/index.php/what-we-do/ic-related-menus/ic-related-links/intelligence-community-policy-guidance for 29 pdfs (doc_type = ICPG)
     and https://www.dni.gov/index.php/what-we-do/ic-related-menus/ic-related-links/intelligence-community-policy-memorandums for 5 pdfs (doc_type = ICPG)
+    and https://www.dni.gov/index.php/who-we-are/organizations/ogc/ogc-related-menus/ogc-related-content/ic-legal-reference-book for 1 pdf (doc_type = ICLR)
     """
 
     # Crawler name
@@ -87,7 +88,6 @@ class IcPoliciesSpider(GCSeleniumSpider):
             driver.get(page_url)
             time.sleep(5)
 
-            """Parse document objects from page of text"""
             # parse html response
             soup = bs4.BeautifulSoup(driver.page_source, features="html.parser")
             div = soup.find("div", attrs={"itemprop": "articleBody"})
@@ -120,14 +120,15 @@ class IcPoliciesSpider(GCSeleniumSpider):
                 names = re.findall(name_pattern, data)
                 try:
                     parsed_text = names[0]
-                except Exception as e:
-                    print(e)
-                    print(link)
-                    print(page_url)
-                parsed_name = parsed_text.split(" ")
-                doc_name = " ".join(parsed_name[:2])
-                doc_num = parsed_name[1]
-                doc_title = re.sub(parsed_text, "", data)
+                    parsed_name = parsed_text.split(" ")
+                    doc_name = " ".join(parsed_name[:2])
+                    doc_num = parsed_name[1]
+                    doc_title = re.sub(parsed_text, "", data)
+                except IndexError:
+                    split_data = data.split(" ")
+                    doc_name = " ".join(split_data[:-1])
+                    doc_num = split_data[-1]
+                    doc_title = doc_name
 
                 pdf_url = abs_url(self.base_url, link)
 
@@ -162,7 +163,6 @@ class IcPoliciesSpider(GCSeleniumSpider):
                     file_ext="pdf",
                     display_doc_type=self.get_display_doc_type(doc_type),
                 )
-                fields.set_display_name(f"{fields.doc_name}: {fields.doc_title}")
 
                 yield fields.populate_doc_item(
                     display_org=self.display_org,
