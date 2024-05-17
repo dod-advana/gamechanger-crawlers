@@ -18,6 +18,14 @@ class HASCSpider(GCSpider):
 
     randomly_delay_request = True
     rotate_user_agent = True
+    custom_settings = {
+        **GCSpider.custom_settings,
+        "DOWNLOAD_DELAY": 1,  # Wait at least 1 second between requests
+        "AUTOTHROTTLE_ENABLED": True, 
+        "AUTOTHROTTLE_START_DELAY": 1,
+        "AUTOTHROTTLE_MAX_DELAY": 10,
+        "CONCURRENT_REQUESTS_PER_DOMAIN": 2,
+    }
 
     def parse(self, _):
         pages_parser_map = [
@@ -58,6 +66,11 @@ class HASCSpider(GCSpider):
             except Exception as e:
                 print(e)
 
+    def extract_doc_name_from_url(self, url):
+        doc_name =  url.split('/')[-1].split('.')[0]
+        doc_name = doc_name.replace('%', '_').replace('-', '')
+        return doc_name
+
     def parse_hearing_detail_page(self, response):
         try:
             # Get the basic details like title and date from the page
@@ -84,7 +97,7 @@ class HASCSpider(GCSpider):
                         if name.lower() in link_text:
                             follow_link = urljoin(self.base_url, href)
                             display_title = self.ascii_clean(f"HASC {title} - {name}")
-                            doc_name = display_title
+                            doc_name = self.extract_doc_name_from_url(follow_link)
 
                             # Set up the fields with the new PDF URL
                             fields = {
@@ -142,7 +155,7 @@ class HASCSpider(GCSpider):
         ## Assign fields that will be used for versioning
         version_hash_fields = {
             "doc_name":doc_name,
-            # "doc_num": doc_num,
+            "doc_title": fields['doc_title'],
             "publication_date": publication_date,
             "download_url": download_url,
             "display_title": display_title
