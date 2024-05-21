@@ -1,4 +1,5 @@
 from scrapy import Selector
+import bs4
 
 from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSeleniumSpider import GCSeleniumSpider
@@ -33,6 +34,10 @@ class NavyMedSpider(GCSeleniumSpider):
         "BUMED Notices (Notes)": "BUMEDNOTE",
         "All Pubs and Manuals": "NAVMED"
     }
+    custom_settings = {
+        **GCSeleniumSpider.custom_settings,
+        "DOWNLOAD_TIMEOUT": 7.0,
+    }
 
     def get_tab_button_els(self, driver: Chrome):
         tab_button_els = driver.find_elements_by_css_selector(
@@ -50,10 +55,12 @@ class NavyMedSpider(GCSeleniumSpider):
         for i, doc_type in enumerate(self.tabs_doc_type_dict.values()):
             # must re-grab button ref if page has changed (table paged etc)
             driver.get(self.start_urls[0])    # navigating to the homepage again to reset the page (because refresh doesn't work)
-            time.sleep(5)   # waiting to be sure that it loaded
+            time.sleep(8)   # waiting to be sure that it loaded
             try:
                 button = self.get_tab_button_els(driver)[i]
             except Exception as e:
+                print(doc_type)
+                print(self.tabs_ul_selector) 
                 print("Error when getting tab button: " + e)
             try:
                 ActionChains(driver).move_to_element(button).click(button).perform()
@@ -97,7 +104,7 @@ class NavyMedSpider(GCSeleniumSpider):
 
             except Exception:
                 raise NoSuchElementException(
-                    f"Failed to find table to scrape from using css selector: {self.table_selector}"
+                    f"Failed to find table to scrape from using css selector: {self.tabs_ul_selector}"
                 )
             try:
                 if has_next_page:
@@ -108,20 +115,42 @@ class NavyMedSpider(GCSeleniumSpider):
 
     def parse_table(self, driver: Chrome, doc_type, index):
         response = Selector(text=driver.page_source)
-        rows_selector = f'table#dnn_ctr48257_ViewTabs_rptTabBody_Default_{index}_List_{index}_grdData_{index} tr'
-        rows = response.css(rows_selector)
+        soup = bs4.BeautifulSoup(driver.page_source, features="html.parser")
+        element = soup.find(id=f'dnn_ctr48257_ViewTabs_rptTabBody_Default_{index}_List_{index}_OuterDiv_{index}')
+        rows = element.find_all('tr')
 
         bumednote_seen = set({})
         dup_change_seen = False
+        if doc_type == "NAVMED":
+            title_id = 0
+            publication_id = 1
+            doc_num_id = 2
+        else:
+            title_id = 2
+            publication_id = 3
+            doc_num_id = 1    
+
         for row in rows:
-            doc_num_raw: str = row.css('td:nth-child(1)::text').get(default='')
+            cells = row.find_all('td')
+            if len(cells) == 0:
+                continue
+            doc_num_cell = cells[doc_num_id]
+            title_cell = cells[title_id]
+            publication_date_cell = cells[publication_id]
+            doc_num_raw: str = doc_num_cell.get_text().strip()
             if not doc_num_raw:
+                print("doc num is null, skipping")
                 continue
 
-            doc_title_raw = row.css(
-                'td:nth-child(2)::text').get(default='')
-            publication_date = row.css('td:nth-child(3)::text').get(default='')
-            href_raw = row.css('td:nth-child(4) a::attr(href)').get()
+            doc_title_raw = title_cell.get_text().strip()
+            publication_date = publication_date_cell.get_text().strip()
+            try:
+                href_raw = doc_num_cell.find_all('a')[0]['href']
+            except IndexError as e:
+                print("Index error encountered")
+                print(row)
+                print(doc_num_id)
+                continue
 
             doc_name = None
             doc_num = None
@@ -166,6 +195,7 @@ class NavyMedSpider(GCSeleniumSpider):
                 doc_title = self.ascii_clean(doc_title_raw)
 
             if not href_raw:
+                print("href is null, skipping")
                 continue
 
             download_url = self.ensure_full_href_url(
