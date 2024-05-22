@@ -1,8 +1,10 @@
-from scrapy import Selector
-import bs4
+from typing import Any, Generator
 import time
 from urllib.parse import urljoin, urlparse
 from datetime import datetime
+from scrapy import Selector
+from scrapy.http import Response
+import bs4
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -17,22 +19,30 @@ from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp
 
 
 class NavyMedSpider(GCSeleniumSpider):
-    name = "navy_med_pubs"  # Crawler name
+    """
+    As of 05/22/2024
+    crawls https://www.med.navy.mil/Directives for 398 pdfs total: 318 pdfs (doc_type = BUMEDINST),
+    22 pdfs(doc_type = BUMEDNOTE) & and 58 pdfs (doc_type = NAVMED)
+    """
+
+    # Crawler name
+    name = "navy_med_pubs"
+    # Level 1: GC app 'Source' filter for docs from this crawler
+    display_org = "US Navy Medicine"
+    # Level 2: GC app 'Source' metadata field for docs from this crawler
+    data_source = "Navy Medicine"
+    # Level 3 filter
+    source_title = "Unlisted Source"
 
     start_urls = ["https://www.med.navy.mil/Directives/"]
     tabs_ul_selector = "ul.z-tabs-nav.z-tabs-desktop"
 
-    #    selenium_request_overrides = {
-    #        "wait_until": EC.element_to_be_clickable(
-    #            (By.CSS_SELECTOR, tabs_ul_selector))
-    #    }
-
-    tabs_parsed = set({})
     tabs_doc_type_dict = {
         "BUMED Instructions": "BUMEDINST",
         "BUMED Notices (Notes)": "BUMEDNOTE",
         "All Pubs and Manuals": "NAVMED",
     }
+
     rotate_user_agent = True
     randomly_delay_request = True
     custom_settings = {
@@ -40,7 +50,8 @@ class NavyMedSpider(GCSeleniumSpider):
         "DOWNLOAD_TIMEOUT": 7.0,
     }
 
-    def get_tab_button_els(self, driver: Chrome):
+    def get_tab_button_els(self, driver: Chrome) -> list:
+        """Return list of all tab elements"""
         tab_button_els = driver.find_elements_by_css_selector(
             f"{self.tabs_ul_selector} li a"
         )
@@ -48,12 +59,26 @@ class NavyMedSpider(GCSeleniumSpider):
         tabs_to_click = [
             el
             for el in tab_button_els
-            if el.get_attribute("textContent") in self.tabs_doc_type_dict.keys()
+            if el.get_attribute("textContent") in self.tabs_doc_type_dict
         ]
 
         return tabs_to_click
 
-    def parse(self, response):
+    def get_next_page_anchor(self, driver: Chrome) -> Generator[DocItem, Any, None]:
+        """Find the next button"""
+        els = driver.find_elements_by_css_selector(
+            "table.PagingTable tr td:nth-child(2) a"
+        )
+
+        try:
+            next_button_el = next(iter([el for el in els if el.text == "Next"]))
+
+            return next_button_el
+        except Exception as exc:
+            raise NoSuchElementException from exc
+
+    def parse(self, response: Response) -> Generator[DocItem, Any, None]:
+        """Parse doc items out of navy med pubs site"""
         driver: Chrome = response.meta["driver"]
 
         for i, doc_type in enumerate(self.tabs_doc_type_dict.values()):
@@ -80,19 +105,10 @@ class NavyMedSpider(GCSeleniumSpider):
             except Exception as e:
                 print("error when getting items: " + e)
 
-    def get_next_page_anchor(self, driver):
-        els = driver.find_elements_by_css_selector(
-            "table.PagingTable tr td:nth-child(2) a"
-        )
-
-        try:
-            next_button_el = next(iter([el for el in els if el.text == "Next"]))
-
-            return next_button_el
-        except Exception as e:
-            raise NoSuchElementException
-
-    def parse_tab(self, driver: Chrome, doc_type, index):
+    def parse_tab(
+        self, driver: Chrome, doc_type: str, index: int
+    ) -> Generator[DocItem, Any, None]:
+        """After selecting a tab iterate through each page and parse the table"""
         has_next_page = True
         page_num = 1
 
@@ -100,7 +116,7 @@ class NavyMedSpider(GCSeleniumSpider):
             try:
                 next_page_el = self.get_next_page_anchor(driver)
 
-            except NoSuchElementException as e:
+            except NoSuchElementException:
                 # expected when on last page, set exit condition then parse table
                 has_next_page = False
 
@@ -108,10 +124,10 @@ class NavyMedSpider(GCSeleniumSpider):
                 for item in self.parse_table(driver, doc_type, index):
                     yield item
 
-            except Exception:
+            except Exception as exc:
                 raise NoSuchElementException(
                     f"Failed to find table to scrape from using css selector: {self.tabs_ul_selector}"
-                )
+                ) from exc
             try:
                 if has_next_page:
                     next_page_el.click()
@@ -119,7 +135,10 @@ class NavyMedSpider(GCSeleniumSpider):
             except Exception as e:
                 print("Could not go to next page: " + e)
 
-    def parse_table(self, driver: Chrome, doc_type, index):
+    def parse_table(
+        self, driver: Chrome, doc_type, index
+    ) -> Generator[DocItem, Any, None]:
+        """Parse table for all documents"""
         soup = bs4.BeautifulSoup(driver.page_source, features="html.parser")
         element = soup.find(
             id=f"dnn_ctr48257_ViewTabs_rptTabBody_Default_{index}_List_{index}_OuterDiv_{index}"
@@ -129,8 +148,8 @@ class NavyMedSpider(GCSeleniumSpider):
         bumednote_seen = set({})
         dup_change_seen = False
         if doc_type == "NAVMED":
-            title_id = 0
-            publication_id = 1
+            title_id = 1
+            publication_id = 0
             doc_num_id = 2
         else:
             title_id = 2
@@ -153,11 +172,13 @@ class NavyMedSpider(GCSeleniumSpider):
             publication_date = publication_date_cell.get_text().strip()
             try:
                 href_raw = doc_num_cell.find_all("a")[0]["href"]
-            except IndexError as e:
-                print("Index error encountered")
-                print(row)
-                print(doc_num_id)
-                continue
+            except IndexError:
+                # Looks for href in full row
+                try:
+                    href_raw = row.find_all("a")[0]["href"]
+                except IndexError:
+                    print(f"Could not find link to document {doc_title_raw}")
+                    continue
 
             doc_name = None
             doc_num = None
@@ -242,8 +263,8 @@ class NavyMedSpider(GCSeleniumSpider):
             )
 
             yield fields.populate_doc_item(
-                display_org="US Navy Medicine",  # Level 1: GC app 'Source' filter for docs from this crawler
-                data_source="Navy Medicine",  # Level 2: GC app 'Source' metadata field for docs from this crawler
-                source_title="Unlisted Source",  # Level 3 filter
+                display_org=self.display_org,
+                data_source=self.data_source,
+                source_title=self.source_title,
                 crawler_used=self.name,
             )
