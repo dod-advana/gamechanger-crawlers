@@ -8,6 +8,8 @@ from urllib.parse import urljoin, urlparse
 from datetime import datetime
 from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
 
+# only scrape witness statements
+# 193 documents
 
 class HASCSpider(GCSpider):
     name = "HASC" # Crawler name
@@ -18,15 +20,15 @@ class HASCSpider(GCSpider):
 
     randomly_delay_request = True
     rotate_user_agent = True
+    
     custom_settings = {
         **GCSpider.custom_settings,
-        "DOWNLOAD_DELAY": 1,  # Wait at least 1 second between requests
         "AUTOTHROTTLE_ENABLED": True, 
-        "AUTOTHROTTLE_START_DELAY": 1,
-        "AUTOTHROTTLE_MAX_DELAY": 10,
-        "CONCURRENT_REQUESTS_PER_DOMAIN": 2,
+        "AUTOTHROTTLE_START_DELAY": 10,
+        "AUTOTHROTTLE_MAX_DELAY": 60,
+        "CONCURRENT_REQUESTS_PER_DOMAIN": 1,
     }
-
+    
     def parse(self, _):
         pages_parser_map = [
             (f"{self.base_url}/hearings", self.recursive_parse_hearings),
@@ -67,8 +69,8 @@ class HASCSpider(GCSpider):
                 print(e)
 
     def extract_doc_name_from_url(self, url):
-        doc_name =  url.split('/')[-1].split('.')[0]
-        doc_name = doc_name.replace('%', '_').replace('-', '')
+        doc_name =  url.split('/')[-1]
+        doc_name = doc_name.replace('.pdf', '').replace('%', '_').replace('.', '').replace('-', '')
         return doc_name
 
     def parse_hearing_detail_page(self, response):
