@@ -1,13 +1,8 @@
 from typing import Any, Generator
 import time
-from urllib.parse import urljoin, urlparse
-from datetime import datetime
-from scrapy import Selector
-from scrapy.http import Response
 import bs4
+from scrapy.http import Response
 
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import Chrome
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import NoSuchElementException
@@ -20,7 +15,7 @@ from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp
 
 class NavyMedSpider(GCSeleniumSpider):
     """
-    As of 05/22/2024
+    As of 05/23/2024
     crawls https://www.med.navy.mil/Directives for 398 pdfs total: 318 pdfs (doc_type = BUMEDINST),
     22 pdfs(doc_type = BUMEDNOTE) & and 58 pdfs (doc_type = NAVMED)
     """
@@ -126,7 +121,7 @@ class NavyMedSpider(GCSeleniumSpider):
 
             except Exception as exc:
                 raise NoSuchElementException(
-                    f"Failed to find table to scrape from using css selector: {self.tabs_ul_selector}"
+                    f"Failed to find table to scrape from using selector: {self.tabs_ul_selector}"
                 ) from exc
             try:
                 if has_next_page:
@@ -136,7 +131,7 @@ class NavyMedSpider(GCSeleniumSpider):
                 print("Could not go to next page: " + e)
 
     def parse_table(
-        self, driver: Chrome, doc_type, index
+        self, driver: Chrome, doc_type: str, index: int
     ) -> Generator[DocItem, Any, None]:
         """Parse table for all documents"""
         soup = bs4.BeautifulSoup(driver.page_source, features="html.parser")
@@ -148,13 +143,9 @@ class NavyMedSpider(GCSeleniumSpider):
         bumednote_seen = set({})
         dup_change_seen = False
         if doc_type == "NAVMED":
-            title_id = 1
-            publication_id = 0
-            doc_num_id = 2
+            title_id, publication_id, doc_num_id = 1, 0, 2
         else:
-            title_id = 2
-            publication_id = 3
-            doc_num_id = 1
+            title_id, publication_id, doc_num_id = 2, 3, 1
 
         for row in rows:
             cells = row.find_all("td")
