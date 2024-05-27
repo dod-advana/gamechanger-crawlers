@@ -281,7 +281,7 @@ def parse_timestamp(ts: t.Union[str, datetime.datetime], raise_parse_error: bool
             ts = parse(ts, default=default)
             if str(ts) == 'NaT':
                 return None
-            if ts = default:
+            if ts == default:
                 return None
             else:
                 return ts
