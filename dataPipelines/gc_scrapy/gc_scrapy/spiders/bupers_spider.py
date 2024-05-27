@@ -7,7 +7,6 @@ from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from dataPipelines.gc_scrapy.gc_scrapy.utils import dict_to_sha256_hex_digest, get_pub_date
 from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp
-import pandas as pd #############
 
 
 class BupersSpider(GCSpider):

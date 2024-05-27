@@ -15,7 +15,6 @@ incremental==21.3.0
 itemadapter==0.2.0
 jsonschema==3.2.0
 lxml==4.5.1
-pandas==1.0.4
 parsel==1.6.0
 Protego==0.1.16
 pyasn1==0.4.8

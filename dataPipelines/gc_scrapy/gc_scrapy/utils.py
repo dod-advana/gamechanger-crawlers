@@ -17,7 +17,8 @@ import re
 import os
 import typing as t
 import datetime
-import pandas
+from dateutil.parser import parse
+
 
 def str_to_sha256_hex_digest(_str: str) -> str:
     """Converts string to sha256 hex digest"""
@@ -276,12 +277,16 @@ def parse_timestamp(ts: t.Union[str, datetime.datetime], raise_parse_error: bool
             return ts
 
         try:
-            ts = pandas.to_datetime(ts).to_pydatetime()
+            default = datetime.datetime(1978, 1, 1, 0, 0)
+            ts = parse(ts, default=default)
             if str(ts) == 'NaT':
+                return None
+            if ts = default:
                 return None
             else:
                 return ts
-        except:
+        except Exception as e:
+            print(e)
             return None
 
     parsed_ts = _parse(ts)
