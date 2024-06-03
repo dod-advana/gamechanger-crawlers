@@ -29,9 +29,6 @@ class UFCSpider(GCSpider):
     allowed_domains = [domain]
     start_urls = [urljoin(base_url, "/ffc/dod/unified-facilities-criteria-ufc")]
 
-    rotate_user_agent = True
-    date_format = "%m/%d/%y"
-
     def parse(self, response: scrapy.http.Response) -> Generator[DocItem, Any, None]:
         """Parses UFC doc items out of Whole Building Design Guide site"""
         page_url = response.url
@@ -57,7 +54,6 @@ class UFCSpider(GCSpider):
 
                 try:
                     full_title = cells[0].get_text().strip()
-                    acronym = full_title.split(" ")[0]
                     doc_num = full_title.split(" ")[1]
                     doc_title = " ".join(full_title.split(" ")[2:])
                     publication_date = parse_timestamp(cells[1].get_text().strip())
@@ -70,12 +66,16 @@ class UFCSpider(GCSpider):
                     doc_name=full_title,
                     doc_title=self.ascii_clean(doc_title),
                     doc_num=doc_num,
-                    doc_type=self.get_doc_type(acronym),
+                    doc_type="Document",
                     publication_date=publication_date,
                     cac_login_required=False,
                     source_page_url=url,
                     downloadable_items=[
-                        {"doc_type": "pdf", "download_url": url, "compression_type": None}
+                        {
+                            "doc_type": "pdf",
+                            "download_url": url,
+                            "compression_type": None,
+                        }
                     ],
                     download_url=url,
                     file_ext="pdf",
@@ -95,9 +95,3 @@ class UFCSpider(GCSpider):
                 callback=self.parse_table,
                 meta={"page_id": page_id},
             )
-
-    def get_doc_type(self, doc_name: str) -> str:
-        """Takes in the doc name and returns the type, only handles DISAC and DISAI docs"""
-        if "FC" in doc_name:
-            return "Document"
-        raise ValueError(f"Unexpected value for doc_name {doc_name}")
