@@ -56,7 +56,12 @@ class UFCSpider(GCSpider):
                     full_title = cells[0].get_text().strip()
                     doc_num = full_title.split(" ")[1]
                     doc_title = " ".join(full_title.split(" ")[2:])
-                    publication_date = parse_timestamp(cells[1].get_text().strip())
+                    date = cells[1].get_text().strip()
+                    change_date = cells[2].get_text().strip()
+                    if change_date != "":
+                        publication_date = parse_timestamp(change_date)
+                    else:
+                        publication_date = parse_timestamp(date)
                     url = cells[3].find("a").get("href")
                 except AttributeError as e:
                     print(e)
