@@ -213,10 +213,12 @@ class UFCSpider(GCSpider):
         self, response: scrapy.http.Response
     ) -> Generator[DocItem, Any, None]:
         """
-        Parses docs from table in 
+        Parses docs from table in
         https://wbdg.org/ffc/dod/unified-facilities-criteria-ufc/fc-2-000-05n
         """
-        content = response.xpath('//*[@id="node-6064"]/div/div/div[3]/div/div/table').get()
+        content = response.xpath(
+            '//*[@id="node-6064"]/div/div/div[3]/div/div/table'
+        ).get()
         if content is None:
             return None
         soup = bs4.BeautifulSoup(
@@ -227,14 +229,14 @@ class UFCSpider(GCSpider):
 
         if table_body is not None:
             for row in table_body.find_all("tr"):
-                
+
                 try:
                     cells = row.find_all("td")
                     doc_title = self.ascii_clean(cells[0].get_text().strip())
                     publication_date = cells[1].get_text().strip()
-                    download_url = urljoin(self.base_url, cells[2].find("a").get("href"))
-
-                    print(f"doc_title: {doc_title} | publication_date: {publication_date} | download_url: {download_url}")
+                    download_url = urljoin(
+                        self.base_url, cells[2].find("a").get("href")
+                    )
                 except IndexError as e:
                     print(e)
                     continue
