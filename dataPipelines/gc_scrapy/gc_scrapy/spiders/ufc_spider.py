@@ -12,8 +12,8 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 class UFCSpider(GCSpider):
     """
     As of 05/29/2024
-    crawls https://www.wbdg.org/ffc/dod/unified-facilities-criteria-ufc for 168 pdfs (doc_type = Document)
-    crawls https://www.wbdg.org/ffc/dod/unified-facilities-guide-specifications-ufgs for 168 pdfs (doc_type = Document)
+    crawls https://www.wbdg.org/ffc/dod/unified-facilities-criteria-ufc for 169 pdfs (doc_type = Document)
+    crawls https://www.wbdg.org/ffc/dod/unified-facilities-guide-specifications-ufgs for 762 pdfs (doc_type = Document)
     """
 
     # Crawler name
