@@ -12,7 +12,7 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 class UFCSpider(GCSpider):
     """
     As of 05/29/2024
-    crawls https://www.wbdg.org/ffc/dod/unified-facilities-criteria-ufc for 169 pdfs (doc_type = Document)
+    crawls https://www.wbdg.org/ffc/dod/unified-facilities-criteria-ufc for 186 pdfs (doc_type = Document)
     crawls https://www.wbdg.org/ffc/dod/unified-facilities-guide-specifications-ufgs for 762 pdfs (doc_type = Document)
     """
 
@@ -228,11 +228,11 @@ class UFCSpider(GCSpider):
         table_body = soup.find("tbody")
 
         if table_body is not None:
-            for row in table_body.find_all("tr"):
-
+            rows = table_body.find_all("tr")
+            for row in rows:
                 try:
                     cells = row.find_all("td")
-                    doc_title = self.ascii_clean(cells[0].get_text().strip())
+                    doc_name = self.ascii_clean(cells[0].get_text().strip())
                     publication_date = cells[1].get_text().strip()
                     download_url = urljoin(
                         self.base_url, cells[2].find("a").get("href")
@@ -241,29 +241,33 @@ class UFCSpider(GCSpider):
                     print(e)
                     continue
 
-            fields = DocItemFields(
-                doc_name=doc_title,
-                doc_title=doc_title,
-                doc_num=" ",
-                doc_type="Document",
-                publication_date=parse_timestamp(publication_date),
-                cac_login_required=False,
-                source_page_url=response.url,
-                downloadable_items=[
-                    {
-                        "doc_type": "pdf",
-                        "download_url": download_url,
-                        "compression_type": None,
-                    }
-                ],
-                download_url=download_url,
-                file_ext="pdf",
-            )
-            fields.set_display_name(doc_title)
+                doc_title = doc_name
+                if "FC 2-000-05N" not in doc_title:
+                    doc_title = "FC 2-000-05N: " + doc_title 
 
-            yield fields.populate_doc_item(
-                display_org=self.display_org,
-                data_source=self.data_source,
-                source_title=self.source_title,
-                crawler_used=self.name,
-            )
+                fields = DocItemFields(
+                    doc_name=doc_name,
+                    doc_title=doc_title,
+                    doc_num=" ",
+                    doc_type="Document",
+                    publication_date=parse_timestamp(publication_date),
+                    cac_login_required=False,
+                    source_page_url=response.url,
+                    downloadable_items=[
+                        {
+                            "doc_type": "pdf",
+                            "download_url": download_url,
+                            "compression_type": None,
+                        }
+                    ],
+                    download_url=download_url,
+                    file_ext="pdf",
+                )
+                fields.set_display_name(doc_title)
+
+                yield fields.populate_doc_item(
+                    display_org=self.display_org,
+                    data_source=self.data_source,
+                    source_title=self.source_title,
+                    crawler_used=self.name,
+                )
