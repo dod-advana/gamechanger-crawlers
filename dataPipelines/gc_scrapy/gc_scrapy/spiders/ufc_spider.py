@@ -11,9 +11,11 @@ from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 
 class UFCSpider(GCSpider):
     """
-    As of 05/29/2024
-    crawls https://www.wbdg.org/ffc/dod/unified-facilities-criteria-ufc for 186 pdfs (doc_type = Document)
-    crawls https://www.wbdg.org/ffc/dod/unified-facilities-guide-specifications-ufgs for 762 pdfs (doc_type = Document)
+    As of 06/06/2024
+    crawls https://wbdg.org/ffc/dod/unified-facilities-criteria-ufc for 168 pdfs (doc_type = Document) &
+    crawls https://wbdg.org/ffc/dod/unified-facilities-criteria-ufc/fc-2-000-05n for 18 pdfs (doc_type = Document) &
+    crawls https://wbdg.org/ffc/dod/unified-facilities-guide-specifications-ufgs for 695 pdfs (doc_type = Document) &
+    crawls https://wbdg.org/ffc/dod/unified-facilities-guide-specifications-ufgs/ufgs-changes-revisions for 67 pdfs (doc_type = Document) that are not in the main table
     """
 
     # Crawler name
@@ -243,7 +245,7 @@ class UFCSpider(GCSpider):
 
                 doc_title = doc_name
                 if "FC 2-000-05N" not in doc_title:
-                    doc_title = "FC 2-000-05N: " + doc_title 
+                    doc_title = "FC 2-000-05N: " + doc_title
 
                 fields = DocItemFields(
                     doc_name=doc_name,
