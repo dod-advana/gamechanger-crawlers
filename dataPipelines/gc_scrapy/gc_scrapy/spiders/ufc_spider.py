@@ -147,12 +147,17 @@ class UFCSpider(GCSpider):
                 download_url = url
         if download_url == "":
             return None
+        
+        doc_type = "UFC"
+        if "unified-facilities-guide-specifications-ufgs" in response.url:
+            doc_type = "UFGS"
 
         fields = DocItemFields(
             doc_name=full_title,
             doc_title=self.ascii_clean(doc_title),
             doc_num=doc_num,
-            doc_type="Document",
+            doc_type=doc_type,
+            display_doc_type="Document",
             publication_date=parse_timestamp(publication_date),
             cac_login_required=False,
             source_page_url=response.url,
@@ -250,8 +255,9 @@ class UFCSpider(GCSpider):
                 fields = DocItemFields(
                     doc_name=doc_name,
                     doc_title=doc_title,
-                    doc_num=" ",
-                    doc_type="Document",
+                    doc_num="2-000-05N",
+                    doc_type="UFC",
+                    display_doc_type="Document",
                     publication_date=parse_timestamp(publication_date),
                     cac_login_required=False,
                     source_page_url=response.url,
