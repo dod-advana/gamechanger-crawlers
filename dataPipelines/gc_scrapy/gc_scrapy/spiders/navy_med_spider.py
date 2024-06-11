@@ -16,8 +16,9 @@ from dataPipelines.gc_scrapy.gc_scrapy.utils import parse_timestamp
 class NavyMedSpider(GCSeleniumSpider):
     """
     As of 05/23/2024
-    crawls https://www.med.navy.mil/Directives for 398 pdfs total: 318 pdfs (doc_type = BUMEDINST),
-    22 pdfs(doc_type = BUMEDNOTE) & and 58 pdfs (doc_type = NAVMED)
+    crawls https://www.med.navy.mil/Directives for 402 pdfs total: 321 pdfs (doc_type = BUMEDINST),
+    24 pdfs(doc_type = BUMEDNOTE) & and 57 pdfs (doc_type = NAVMED)
+    Note: BUMEDINST has 322 docs in the table but one requries a CAC
     """
 
     # Crawler name
@@ -176,15 +177,14 @@ class NavyMedSpider(GCSeleniumSpider):
             doc_title = None
 
             # Changes for each tab
-            # BUMEDINST
-            if index == 0:
-                doc_num_raw = doc_num_raw.split()[0]
             # BUMEDNOTE
-            elif index == 1:
+            if index == 1:
                 doc_num_raw = doc_num_raw.replace("NOTE ", "")
                 # BUMEDNOTE has a lot of duplicate nums with completely different docs
                 if doc_num_raw in bumednote_seen:
                     doc_num_raw = f"{doc_num_raw} {doc_title_raw}"
+                    if doc_num_raw in bumednote_seen:
+                        doc_num_raw = f"{doc_num_raw}-REVISION"
 
                 bumednote_seen.add(doc_num_raw)
 
