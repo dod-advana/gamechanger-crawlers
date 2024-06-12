@@ -78,17 +78,18 @@ class NavyMedSpider(GCSeleniumSpider):
         driver: Chrome = response.meta["driver"]
 
         for i, doc_type in enumerate(self.tabs_doc_type_dict.values()):
-            # must re-grab button ref if page has changed (table paged etc)
-            driver.get(
-                self.start_urls[0]
-            )  # navigating to the homepage again to reset the page (because refresh doesn't work)
+            # navigating to the homepage again to reset the page (because refresh doesn't work)
+            driver.get(self.start_urls[0])
             time.sleep(8)  # waiting to be sure that it loaded
+            # must re-grab button ref if page has changed (table paged etc)
             try:
                 button = self.get_tab_button_els(driver)[i]
             except Exception as e:
-                print(doc_type)
-                print(self.tabs_ul_selector)
-                print("Error when getting tab button: " + e)
+                print(
+                    f"""Error getting tab button: {e} |\n
+                    Selector: {self.tabs_ul_selector} |\n
+                    Doc_type: {doc_type}"""
+                )
             try:
                 ActionChains(driver).move_to_element(button).click(button).perform()
             except Exception as e:
@@ -106,12 +107,10 @@ class NavyMedSpider(GCSeleniumSpider):
     ) -> Generator[DocItem, Any, None]:
         """After selecting a tab iterate through each page and parse the table"""
         has_next_page = True
-        page_num = 1
 
         while has_next_page:
             try:
                 next_page_el = self.get_next_page_anchor(driver)
-
             except NoSuchElementException:
                 # expected when on last page, set exit condition then parse table
                 has_next_page = False
@@ -119,15 +118,14 @@ class NavyMedSpider(GCSeleniumSpider):
             try:
                 for item in self.parse_table(driver, doc_type, index):
                     yield item
-
             except Exception as exc:
                 raise NoSuchElementException(
                     f"Failed to find table to scrape from using selector: {self.tabs_ul_selector}"
                 ) from exc
+
             try:
                 if has_next_page:
                     next_page_el.click()
-                    page_num += 1
             except Exception as e:
                 print("Could not go to next page: " + e)
 
@@ -176,7 +174,6 @@ class NavyMedSpider(GCSeleniumSpider):
             doc_num = None
             doc_title = None
 
-            # Changes for each tab
             # BUMEDNOTE
             if index == 1:
                 doc_num_raw = doc_num_raw.replace("NOTE ", "")
@@ -198,20 +195,15 @@ class NavyMedSpider(GCSeleniumSpider):
                     doc_name = "NAVMED " + doc_num_raw
                 else:
                     ref_name = "NAVMED P-117"
-
                     doc_title = self.ascii_clean(doc_title_raw)
                     doc_name = f"{ref_name} {doc_num_raw}"
 
                     # special case to match old crawler
-                    if (
-                        doc_name == "NAVMED P-117 MANMED CHANGE 126"
-                        and not dup_change_seen
-                    ):
-                        dup_change_seen = True
-                    elif (
-                        doc_name == "NAVMED P-117 MANMED CHANGE 126" and dup_change_seen
-                    ):
-                        doc_name = "NAVMED P-117 MANMED CHANGE 126-1"
+                    if doc_name == "NAVMED P-117 MANMED CHANGE 126":
+                        if dup_change_seen:
+                            doc_name = "NAVMED P-117 MANMED CHANGE 126-1"
+                        else:
+                            dup_change_seen = True
 
             if not doc_num:
                 doc_num = self.ascii_clean(doc_num_raw)
