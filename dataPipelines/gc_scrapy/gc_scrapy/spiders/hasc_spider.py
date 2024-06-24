@@ -30,35 +30,20 @@ class HASCSpider(GCSpider):
     }
     
     def parse(self, _):
-        pages_parser_map = [
-            (f"{self.base_url}/hearings", self.recursive_parse_hearings),
-            # (f"{self.base_url}/legislation",) # setup for future crawlers if needed
-        ]
-
-        for page_url, parser_func in pages_parser_map:
-            yield scrapy.Request(page_url, callback=parser_func)
+        yield scrapy.Request(f"{self.base_url}/committee-activity/hearings/all?page=0", callback=self.parse_hearings_table_page)
 
     @staticmethod
     def get_next_relative_url(response):
         return response.css("li.pager-next > a::attr(href)").get()
 
-    def recursive_parse_hearings(self, response):
-
-        yield from self.parse_hearings_table_page(response)
-
-        next_relative_url = self.get_next_relative_url(response)
-        if next_relative_url:
-            next_url = f"{self.base_url}{next_relative_url}"
-            yield scrapy.Request(url=next_url, callback=self.recursive_parse_hearings)
-
     def parse_hearings_table_page(self, response):
 
-        rows = response.css(
-            "div.view-content div")
+        page_id = int(response.url[-1])
+        rows = response.css(".evo-views-row")
 
         for row in rows:
             try:
-                link = row.css("h3.field-content a::attr(href)").get()
+                link = row.css("div.h3.mt-0.font-weight-bold a::attr(href)").get()
 
                 if not link:
                     continue
@@ -67,6 +52,10 @@ class HASCSpider(GCSpider):
                 yield scrapy.Request(url=follow_link, callback=self.parse_hearing_detail_page)
             except Exception as e:
                 print(e)
+        
+        if len(rows) > 0:
+            next_url = f"{response.url[0:-1]}{page_id+1}"
+            yield scrapy.Request(url=next_url, callback=self.parse_hearings_table_page) 
 
     def extract_doc_name_from_url(self, url):
         doc_name =  url.split('/')[-1]
@@ -76,8 +65,8 @@ class HASCSpider(GCSpider):
     def parse_hearing_detail_page(self, response):
         try:
             # Get the basic details like title and date from the page
-            title = self.ascii_clean(response.css("#page-title ::text").get())
-            date_el = response.css("span.date-display-single ::text").get()
+            title = self.ascii_clean(response.css("h1.display-4 ::text").get())
+            date_el = response.css("time ::text").get()
             date_split = date_el.split()
             month, day, year = date_split[1], date_split[2], date_split[3]
             date = f"{month} {day} {year}"
