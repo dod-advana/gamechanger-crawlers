@@ -42,17 +42,15 @@ class HASCSpider(GCSpider):
     def extract_doc_name_from_url(url: str) -> str:
         """Returns a doc name given a full URL"""
         doc_name = url.split("/")[-1]
-        doc_name = (
+        return (
             doc_name.replace(".pdf", "")
             .replace("%", "_")
             .replace(".", "")
             .replace("-", "")
         )
-        return doc_name
 
     def parse(self, response: Response) -> Generator[DocItem, Any, None]:
         """Recursively parses doc items out of House Armed Services Committee site"""
-        page_id = int(response.url[-1])
         rows = response.css(".evo-views-row")
 
         for row in rows:
@@ -63,51 +61,54 @@ class HASCSpider(GCSpider):
 
                 follow_link = f"{self.base_url}{link}"
                 yield scrapy.Request(url=follow_link, callback=self.parse_hearing_page)
-            except ValueError as e:
+            except Exception as e:
                 print(e)
 
+        # If data was found in this table then check the next page
         if len(rows) > 0:
-            next_url = f"{response.url[0:-1]}{page_id+1}"
+            current_page_id = int(response.url[-1])
+            next_url = f"{response.url[0:-1]}{current_page_id+1}"
             yield scrapy.Request(url=next_url, callback=self.parse)
 
     def parse_hearing_page(self, response: Response) -> Generator[DocItem, Any, None]:
         """Parses all statements available given a hearing details page"""
         try:
             # Get the basic details like title and date from the page
-            title = self.ascii_clean(response.css("h1.display-4 ::text").get())
-            date = datetime.strptime(
+            doc_title = self.ascii_clean(response.css("h1.display-4 ::text").get())
+            publication_date = datetime.strptime(
                 response.css("time ::text").get(), "%a, %m/%d/%Y - %I:%M %p"
             )
             doc_type = "Witness Statement"
 
             # Extract names of speakers
-            names = response.css("b ::text").getall()
+            speaker_names = response.css("b ::text").getall()
 
             # Find all links and check if they contain the word "statement" and point to a PDF
             for link in response.css("p a"):
                 href = link.css("::attr(href)").get()
                 if not href or not href.endswith(".pdf"):
                     continue
+
                 # Get the text and convert it to lower case for comparison
                 link_text = link.css("::text").get("").lower()
                 if "statement" not in link_text:
                     continue
 
                 # Check if any of the speaker names is in the link text
-                for name in names:
-                    if name.lower() not in link_text:
+                for speaker_name in speaker_names:
+                    if speaker_name.lower() not in link_text:
                         continue
 
                     follow_link = urljoin(self.base_url, href)
-                    display_title = self.ascii_clean(f"HASC {title} - {name}")
+                    display_title = self.ascii_clean(f"HASC {doc_title} - {speaker_name}")
                     doc_name = self.extract_doc_name_from_url(follow_link)
 
                     fields = DocItemFields(
                         doc_name=doc_name,
-                        doc_title=title,
+                        doc_title=doc_title,
                         doc_num=" ",
                         doc_type=doc_type,
-                        publication_date=date,
+                        publication_date=publication_date,
                         cac_login_required=False,
                         source_page_url=response.url,
                         downloadable_items=[
@@ -123,7 +124,7 @@ class HASCSpider(GCSpider):
                     )
                     # Match fields to previous crawler iterations
                     fields.remove_version_hash_field("doc_num")
-                    fields.set_version_hash_field("doc_title", title)
+                    fields.set_version_hash_field("doc_title", doc_title)
                     fields.set_display_name(display_title)
 
                     yield fields.populate_doc_item(
@@ -133,5 +134,5 @@ class HASCSpider(GCSpider):
                         crawler_used=self.name,
                     )
 
-        except ValueError as e:
+        except Exception as e:
             print(e)
