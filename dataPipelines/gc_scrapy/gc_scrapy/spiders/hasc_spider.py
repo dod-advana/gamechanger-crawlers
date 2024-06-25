@@ -1,7 +1,10 @@
+from typing import Any, Generator
 from urllib.parse import urljoin
 from datetime import datetime
 import scrapy
+from scrapy.http import Response
 
+from dataPipelines.gc_scrapy.gc_scrapy.items import DocItem
 from dataPipelines.gc_scrapy.gc_scrapy.GCSpider import GCSpider
 from dataPipelines.gc_scrapy.gc_scrapy.doc_item_fields import DocItemFields
 
@@ -36,7 +39,7 @@ class HASCSpider(GCSpider):
     }
 
     @staticmethod
-    def extract_doc_name_from_url(url):
+    def extract_doc_name_from_url(url: str) -> str:
         """Returns a doc name given a full URL"""
         doc_name = url.split("/")[-1]
         doc_name = (
@@ -47,7 +50,7 @@ class HASCSpider(GCSpider):
         )
         return doc_name
 
-    def parse(self, response):
+    def parse(self, response: Response) -> Generator[DocItem, Any, None]:
         """Recursively parses doc items out of House Armed Services Committee site"""
         page_id = int(response.url[-1])
         rows = response.css(".evo-views-row")
@@ -55,13 +58,12 @@ class HASCSpider(GCSpider):
         for row in rows:
             try:
                 link = row.css("div.h3.mt-0.font-weight-bold a::attr(href)").get()
-
                 if not link:
                     continue
 
                 follow_link = f"{self.base_url}{link}"
                 yield scrapy.Request(
-                    url=follow_link, callback=self.parse_hearing_detail_page
+                    url=follow_link, callback=self.parse_hearing_page
                 )
             except ValueError as e:
                 print(e)
@@ -70,7 +72,7 @@ class HASCSpider(GCSpider):
             next_url = f"{response.url[0:-1]}{page_id+1}"
             yield scrapy.Request(url=next_url, callback=self.parse)
 
-    def parse_hearing_detail_page(self, response):
+    def parse_hearing_page(self, response: Response) -> Generator[DocItem, Any, None]:
         """Parses all statements available given a hearing details page"""
         try:
             # Get the basic details like title and date from the page
@@ -86,48 +88,52 @@ class HASCSpider(GCSpider):
             # Find all links and check if they contain the word "statement" and point to a PDF
             for link in response.css("p a"):
                 href = link.css("::attr(href)").get()
+                if not href or not href.endswith(".pdf"):
+                    continue
                 # Get the text and convert it to lower case for comparison
                 link_text = link.css("::text").get("").lower()
+                if "statement" not in link_text:
+                    continue
 
-                # Check if "statement" is in the link text and the href ends with ".pdf"
-                if "statement" in link_text and href and href.endswith(".pdf"):
-                    # Check if any of the speaker names is in the link text
-                    for name in names:
-                        if name.lower() in link_text:
-                            follow_link = urljoin(self.base_url, href)
-                            display_title = self.ascii_clean(f"HASC {title} - {name}")
-                            doc_name = self.extract_doc_name_from_url(follow_link)
+                # Check if any of the speaker names is in the link text
+                for name in names:
+                    if name.lower() not in link_text:
+                        continue
 
-                            fields = DocItemFields(
-                                doc_name=doc_name,
-                                doc_title=title,
-                                doc_num=" ",
-                                doc_type=doc_type,
-                                publication_date=date,
-                                cac_login_required=False,
-                                source_page_url=response.url,
-                                downloadable_items=[
-                                    {
-                                        "doc_type": "pdf",
-                                        "download_url": follow_link,
-                                        "compression_type": None,
-                                    }
-                                ],
-                                download_url=follow_link,
-                                file_ext="pdf",
-                                display_doc_type=doc_type,
-                            )
-                            # Match fields to previous crawler iterations
-                            fields.remove_version_hash_field("doc_num")
-                            fields.set_version_hash_field("doc_title", title)
-                            fields.set_display_name(display_title)
+                    follow_link = urljoin(self.base_url, href)
+                    display_title = self.ascii_clean(f"HASC {title} - {name}")
+                    doc_name = self.extract_doc_name_from_url(follow_link)
 
-                            yield fields.populate_doc_item(
-                                display_org=self.display_org,
-                                data_source=self.data_source,
-                                source_title=self.source_title,
-                                crawler_used=self.name,
-                            )
+                    fields = DocItemFields(
+                        doc_name=doc_name,
+                        doc_title=title,
+                        doc_num=" ",
+                        doc_type=doc_type,
+                        publication_date=date,
+                        cac_login_required=False,
+                        source_page_url=response.url,
+                        downloadable_items=[
+                            {
+                                "doc_type": "pdf",
+                                "download_url": follow_link,
+                                "compression_type": None,
+                            }
+                        ],
+                        download_url=follow_link,
+                        file_ext="pdf",
+                        display_doc_type=doc_type,
+                    )
+                    # Match fields to previous crawler iterations
+                    fields.remove_version_hash_field("doc_num")
+                    fields.set_version_hash_field("doc_title", title)
+                    fields.set_display_name(display_title)
+
+                    yield fields.populate_doc_item(
+                        display_org=self.display_org,
+                        data_source=self.data_source,
+                        source_title=self.source_title,
+                        crawler_used=self.name,
+                    )
 
         except ValueError as e:
             print(e)
