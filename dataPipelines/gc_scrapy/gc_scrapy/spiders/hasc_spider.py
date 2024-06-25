@@ -62,9 +62,7 @@ class HASCSpider(GCSpider):
                     continue
 
                 follow_link = f"{self.base_url}{link}"
-                yield scrapy.Request(
-                    url=follow_link, callback=self.parse_hearing_page
-                )
+                yield scrapy.Request(url=follow_link, callback=self.parse_hearing_page)
             except ValueError as e:
                 print(e)
 
