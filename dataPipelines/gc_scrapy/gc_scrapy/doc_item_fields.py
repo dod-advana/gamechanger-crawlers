@@ -53,6 +53,10 @@ class DocItemFields:
         """Sets a new field or updates an old one in the dict used for hashing"""
         self.hash_fields[key] = value
 
+    def remove_version_hash_field(self, key: str) -> None:
+        """Removes a field from tthe dict used for hashing"""
+        self.hash_fields.pop(key)
+
     def set_display_name(self, name: str) -> None:
         """Update display name for DocItemFields instance"""
         self.display_title = name
