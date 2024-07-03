@@ -13,6 +13,11 @@ SHELL ["/bin/bash", "-c"]
 # LOCALE (important for python, etc.)
 RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 
+# Update mirrors due to Centos7 EOL
+RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo
+RUN sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo
+RUN sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo
+
 ENV LANG="en_US.UTF-8"
 ENV LANGUAGE="en_US.UTF-8"
 ENV LC_CTYPE="en_US.UTF-8"
