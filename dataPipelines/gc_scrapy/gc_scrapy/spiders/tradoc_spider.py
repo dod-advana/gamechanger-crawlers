@@ -105,16 +105,17 @@ class TRADOCSpider(GCSpider):
 
                 doc_name = f'TRADOC {doc_num}'
 
-                fields = {
-                    "doc_name": self.clean_name(doc_name),
-                    "doc_num": self.ascii_clean(doc_num),
-                    "doc_title": self.ascii_clean(doc_title),
-                    "doc_type": self.ascii_clean(doc_category),
-                    "publication_date": publication_date,
-                    "source_page_url": response.url,
-                    "downloadable_items": downloadable_items
-                }
-                yield self.populate_doc_item(fields)
+                if len(downloadable_items) > 0:
+                    fields = {
+                        "doc_name": self.clean_name(doc_name),
+                        "doc_num": self.ascii_clean(doc_num),
+                        "doc_title": self.ascii_clean(doc_title),
+                        "doc_type": self.ascii_clean(doc_category),
+                        "publication_date": publication_date,
+                        "source_page_url": response.url,
+                        "downloadable_items": downloadable_items
+                    }
+                    yield self.populate_doc_item(fields)
 
     def clean_name(self, name):
         return ' '.join(re.sub(r'[^a-zA-Z0-9. ()-_]', '', self.ascii_clean(name).replace('/', '_')).split())
