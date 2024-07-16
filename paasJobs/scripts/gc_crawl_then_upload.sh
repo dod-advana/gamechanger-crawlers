@@ -87,7 +87,7 @@ function recreate_host_dl_dir() {
 function grab_manifest() {
   local rc
   >&2 echo -e "\n[INFO] GRABBING LATEST MANIFEST\n"
-  aws s3 cp "${S3FULLPATH_MANIFEST}" "${LOCAL_PREVIOUS_MANIFEST_LOCATION}" && rc=$? || rc=$?
+  /usr/local/bin/aws s3 cp "${S3FULLPATH_MANIFEST}" "${LOCAL_PREVIOUS_MANIFEST_LOCATION}" && rc=$? || rc=$?
 
   if [[ "$rc" -ne 0 ]]; then
     >&2 echo -e "\n[ERROR] FAILED TO GRAB MANIFEST\n"
@@ -101,10 +101,10 @@ function update_manifest() {
 
   >&2 echo -e "\n[INFO] UPDATING LATEST MANIFEST\n"
   # backup old manifest
-  aws s3 cp "${S3FULLPATH_MANIFEST}" "$s3_backup_cumulative_manifest" \
+  /usr/local/bin/aws s3 cp "${S3FULLPATH_MANIFEST}" "$s3_backup_cumulative_manifest" \
     || >&2 echo -e "\n[WARNING] FAILED TO BACKUP OLD MANIFEST\n"
   # upload new manifest
-  aws s3 cp "${local_new_cumulative_manifest}" "${S3FULLPATH_MANIFEST}" \
+  /usr/local/bin/aws s3 cp "${local_new_cumulative_manifest}" "${S3FULLPATH_MANIFEST}" \
     || >&2 echo -e "\n[WARNING] FAILED TO UPDATE CUMULATIVE MANIFEST\n"
 }
 
