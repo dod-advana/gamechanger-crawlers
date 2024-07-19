@@ -47,7 +47,7 @@ function upload_logs() {
     local local_log_path="$1"
     local s3_log_path="$2"
 
-    ${AWS_CMD:-aws} s3 cp "$local_log_path" "$s3_log_path"
+    ${AWS_CMD:-/usr/local/bin/aws} s3 cp "$local_log_path" "$s3_log_path"
     return "$?"
   else
     >&2 echo "[SKIPPING] Uploading logs ..."
