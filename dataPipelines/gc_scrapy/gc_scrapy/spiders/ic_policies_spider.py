@@ -1,7 +1,5 @@
 import re
 import bs4
-import time
-from selenium.webdriver import Chrome
 from scrapy import Request
 
 from dataPipelines.gc_scrapy.gc_scrapy.doc_item_fields import DocItemFields
@@ -41,17 +39,22 @@ class IcPoliciesSpider(GCSeleniumSpider):
     rotate_user_agent = True
     randomly_delay_request = range(2, 6)
     headers = {
-        "authority": "www.dni.gov",
-        "referer": "https://www.dni.gov/",
-        "accept": "text/html,application/xhtml+xml;q=0.9,image/webp,*/*;q=0.8;v=b3;q=0.7",
-        "accept-language": "en-US,en;q=0.9",
-        "cache-control": "no-cache",
-        "pragma": "no-cache",
-        "sec-ch-ua": '" Not;A Brand";v="99", "Google Chrome";v="91", "Chromium";v="91"',
-        "sec-ch-ua-mobile": "?0",
-        "sec-fetch-dest": "empty",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "same-origin",
+        "Host": "www.dni.gov",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "DNT": "1",
+        "Sec-GPC": "1",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+        "Priority": "u=0, i",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "TE": "trailers",
     }
     custom_settings = {
         **GCSeleniumSpider.custom_settings,
