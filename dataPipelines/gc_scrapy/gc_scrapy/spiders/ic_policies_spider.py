@@ -2,6 +2,7 @@ import re
 import bs4
 import time
 from selenium.webdriver import Chrome
+from scrapy import Request
 
 from dataPipelines.gc_scrapy.gc_scrapy.doc_item_fields import DocItemFields
 from dataPipelines.gc_scrapy.gc_scrapy.GCSeleniumSpider import GCSeleniumSpider
@@ -38,7 +39,7 @@ class IcPoliciesSpider(GCSeleniumSpider):
     ]
 
     rotate_user_agent = True
-    randomly_delay_request = True
+    randomly_delay_request = range(2, 6)
     headers = {
         "authority": "www.dni.gov",
         "referer": "https://www.dni.gov/",
@@ -114,64 +115,63 @@ class IcPoliciesSpider(GCSeleniumSpider):
             else False
         )
 
+    def start_requests(self):
+        for start_url in self.start_urls:
+            yield Request(start_url, dont_filter=True)
+
     def parse(self, response):
         """Parses doc items out of IC Policies and Directives site"""
-        driver: Chrome = response.meta["driver"]
 
-        for page_url in self.start_urls:
-            driver.get(page_url)
-            time.sleep(5)
+        # parse html response
+        div = bs4.BeautifulSoup(response.body, features="html.parser").find(
+            "div", attrs={"itemprop": "articleBody"}
+        )
 
-            # parse html response
-            div = bs4.BeautifulSoup(driver.page_source, features="html.parser").find(
-                "div", attrs={"itemprop": "articleBody"}
+        # set policy type
+        doc_type = self.get_doc_type(response.url)
+
+        # iterate through each publication
+        for row in div.find_all("p"):
+            # skip empty rows
+            if row.a is None:
+                continue
+
+            data = re.sub(r"\u00a0", " ", row.text)
+            pdf_url = abs_url(self.base_url, row.a["href"])
+
+            # patterns to match
+            try:
+                doc_name, doc_num, doc_title = self.get_policy_doc_info(data)
+            except IndexError:
+                doc_name, doc_num, doc_title = self.get_legal_doc_info(data)
+
+            # extract publication date from the pdf url
+            matches = re.findall(r"\((.+)\)", pdf_url.replace("%20", "-"))
+            publication_date = matches[-1] if len(matches) > 0 else None
+
+            fields = DocItemFields(
+                doc_name=doc_name.strip(),
+                doc_title=doc_title,
+                doc_num=doc_num,
+                doc_type=doc_type,
+                publication_date=parse_timestamp(publication_date),
+                cac_login_required=self.is_cac_required(pdf_url, doc_title),
+                source_page_url=response.url.strip(),
+                downloadable_items=[
+                    {
+                        "doc_type": "pdf",
+                        "download_url": pdf_url,
+                        "compression_type": None,
+                    }
+                ],
+                download_url=pdf_url,
+                file_ext="pdf",
+                display_doc_type=self.get_display_doc_type(doc_type),
             )
 
-            # set policy type
-            doc_type = self.get_doc_type(page_url)
-
-            # iterate through each publication
-            for row in div.find_all("p"):
-                # skip empty rows
-                if row.a is None:
-                    continue
-
-                data = re.sub(r"\u00a0", " ", row.text)
-                pdf_url = abs_url(self.base_url, row.a["href"])
-
-                # patterns to match
-                try:
-                    doc_name, doc_num, doc_title = self.get_policy_doc_info(data)
-                except IndexError:
-                    doc_name, doc_num, doc_title = self.get_legal_doc_info(data)
-
-                # extract publication date from the pdf url
-                matches = re.findall(r"\((.+)\)", pdf_url.replace("%20", "-"))
-                publication_date = matches[-1] if len(matches) > 0 else None
-
-                fields = DocItemFields(
-                    doc_name=doc_name.strip(),
-                    doc_title=doc_title,
-                    doc_num=doc_num,
-                    doc_type=doc_type,
-                    publication_date=parse_timestamp(publication_date),
-                    cac_login_required=self.is_cac_required(pdf_url, doc_title),
-                    source_page_url=page_url.strip(),
-                    downloadable_items=[
-                        {
-                            "doc_type": "pdf",
-                            "download_url": pdf_url,
-                            "compression_type": None,
-                        }
-                    ],
-                    download_url=pdf_url,
-                    file_ext="pdf",
-                    display_doc_type=self.get_display_doc_type(doc_type),
-                )
-
-                yield fields.populate_doc_item(
-                    display_org=self.display_org,
-                    data_source=self.data_source,
-                    source_title=self.source_title,
-                    crawler_used=self.name,
-                )
+            yield fields.populate_doc_item(
+                display_org=self.display_org,
+                data_source=self.data_source,
+                source_title=self.source_title,
+                crawler_used=self.name,
+            )
